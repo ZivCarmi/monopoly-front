@@ -1,0 +1,128 @@
+.board {
+  grid-column-start: 8;
+  display: grid;
+  grid-template-columns: var(--board-corner-size) repeat(9, 80px) var(
+      --board-corner-size
+    );
+  grid-template-rows: var(--board-corner-size) repeat(9, 80px) var(
+      --board-corner-size
+    );
+  @apply border border-neutral-600;
+}
+
+.centerBox {
+  direction: rtl;
+}
+
+.row {
+  display: grid;
+}
+
+.row.horizontal {
+  grid-template-columns: var(--board-corner-size) repeat(9, 80px);
+}
+
+.row:nth-child(2) {
+  grid-area: 1 / span 10;
+}
+
+.row:nth-child(3) {
+  grid-template-rows: var(--board-corner-size) repeat(9, 80px);
+  grid-column: 11;
+}
+
+.row:nth-child(4) {
+  grid-area: 11/2 / auto/12;
+  direction: rtl;
+}
+
+.row:nth-child(5) {
+  grid-template-rows: repeat(9, 80px) var(--board-corner-size);
+}
+
+.row:nth-child(5) li:first-child {
+  grid-row: 10;
+}
+
+.row:nth-child(5) li:nth-child(2) {
+  grid-row: 9;
+}
+
+.row:nth-child(5) li:nth-child(3) {
+  grid-row: 8;
+}
+
+.row:nth-child(5) li:nth-child(4) {
+  grid-row: 7;
+}
+
+.row:nth-child(5) li:nth-child(5) {
+  grid-row: 6;
+}
+
+.row:nth-child(5) li:nth-child(6) {
+  grid-row: 5;
+}
+
+.row:nth-child(5) li:nth-child(7) {
+  grid-row: 4;
+}
+
+.row:nth-child(5) li:nth-child(8) {
+  grid-row: 3;
+}
+
+.row:nth-child(5) li:nth-child(9) {
+  grid-row: 2;
+}
+
+.row:nth-child(5) li:nth-child(10) {
+  grid-row: 1;
+}
+
+.row li:first-of-type .tileBody {
+  align-items: center;
+}
+
+.row:nth-child(2) li:not(:first-child) button {
+  flex-direction: column-reverse;
+}
+
+.row:nth-child(2) li:not(:first-child) .tileBody {
+  align-items: flex-end;
+}
+
+.row:nth-child(4) li:not(:first-child) button {
+  flex-direction: column;
+}
+
+.row:nth-child(3) li:not(:first-child) button .tileBody {
+  writing-mode: vertical-lr;
+  transform: rotate(-180deg);
+  align-items: flex-end;
+}
+
+.row:nth-child(5) li:not(:first-child) button {
+  flex-direction: row-reverse;
+}
+
+.row:nth-child(5) li:not(:first-child) button .tileBody {
+  writing-mode: vertical-lr;
+  align-items: flex-end;
+}
+
+.row:nth-child(2) li {
+  @apply border-r border-neutral-700;
+}
+
+.row:nth-child(3) li {
+  @apply border-b border-neutral-700;
+}
+
+.row:nth-child(4) li {
+  @apply border-l border-neutral-700;
+}
+
+.row:nth-child(5) li {
+  @apply border-t border-neutral-700;
+}
