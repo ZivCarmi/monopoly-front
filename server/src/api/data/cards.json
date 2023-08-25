@@ -1,0 +1,74 @@
+{
+  "chanceCards": [
+    {
+      "message": "מצאת ארנק עם כסף. הרווחת $200.",
+      "event": {
+        "type": "PAYMENT",
+        "amount": 200,
+        "paymentType": "EARN"
+      }
+    },
+    {
+      "message": "חנוכה הגיע וסבתא החליטה לפנק אותך ב $30.",
+      "event": {
+        "type": "PAYMENT",
+        "amount": 30,
+        "paymentType": "EARN"
+      }
+    },
+    {
+      "message": "הטלפון שלך הלך קפוט. שלם $200 לתיקון.",
+      "event": {
+        "type": "GROUP_PAYMENT",
+        "amount": 50,
+        "paymentType": "PAY"
+      }
+    },
+    {
+      "message": "הרמת חפלה בבית. גבה מכל משתמש $50.",
+      "event": {
+        "type": "GROUP_PAYMENT",
+        "amount": 50,
+        "paymentType": "EARN"
+      }
+    },
+    {
+      "message": "הפסדת בהתערבות עם החבר'ה. שלם לכל אחד $50.",
+      "event": {
+        "type": "GROUP_PAYMENT",
+        "amount": 50,
+        "paymentType": "PAY"
+      }
+    },
+    {
+      "message": "התקדם לדרך צלחה",
+      "event": {
+        "type": "ADVANCE_TO_TILE",
+        "tileIndex": 0,
+        "shouldGetGoReward": true
+      }
+    },
+    {
+      "message": "התקדם לSt. Charles Place",
+      "event": {
+        "type": "ADVANCE_TO_TILE",
+        "tileIndex": 11,
+        "shouldGetGoReward": true
+      }
+    },
+    {
+      "message": "התקדם לשדה התעופה הקרוב",
+      "event": {
+        "type": "ADVANCE_TO_TILE_TYPE",
+        "tileType": "airport"
+      }
+    },
+    {
+      "message": "התקדם לחברה הקרובה",
+      "event": {
+        "type": "ADVANCE_TO_TILE_TYPE",
+        "tileType": "company"
+      }
+    }
+  ]
+}
