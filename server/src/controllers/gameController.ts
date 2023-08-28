@@ -1,9 +1,8 @@
 import { Server, Socket } from "socket.io";
 import Player, { NewPlayer } from "../api/types/Player";
-import { Room } from "../api/types/Room";
-import JSONBoard from "../api/data/board.json";
+import Room from "../api/types/Room";
 import { chanceCards } from "../api/data/cards.json";
-import Board, { ITax, PurchasableTile } from "../api/types/Board";
+import { ITax, PurchasableTile } from "../api/types/Board";
 import {
   AIRPORT_RENTS,
   COMPANY_RENTS,
@@ -73,29 +72,7 @@ class GameController {
       });
     }
 
-    let room: Room = {
-      id: roomId,
-      players: {},
-      map: {
-        board: JSONBoard.flat() as Board,
-        chances: {
-          cards: chanceCards,
-          currentIndex: 0,
-        },
-        goRewards: {
-          pass: 200,
-          land: 300,
-        },
-      },
-      participantsCount: 1,
-      gameStarted: false,
-      hostId: socket.id,
-      dices: [1, 1],
-      currentPlayerTurnId: null,
-      doublesInARow: 0,
-      suspendedPlayers: {},
-      logs: [],
-    };
+    let room = new Room(roomId, chanceCards, socket.id);
 
     if (this.rooms[roomId] !== undefined) {
       // Update room
@@ -285,6 +262,7 @@ class GameController {
       }
     } else if (landedTile.type === "chance") {
       // TO-DO
+
       this.rooms[roomId].map.chances.currentIndex++;
     } else if (landedTile.type === "tax") {
       this.payTax(roomId, playerId, landedTile);
@@ -381,17 +359,17 @@ class GameController {
       this.rooms[gameRoom].suspendedPlayers[currentPlayerTurnId];
     const board = this.rooms[gameRoom].map.board;
     const jailTile = getJailTile(board);
-    let randomizeDices = [
-      DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
-      DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
-    ];
-    // let randomizeDices = [6, 4];
+    // let randomizeDices = [
+    //   DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
+    //   DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
+    // ];
+    let randomizeDices = [1, 1];
 
     const allPlayers = this.rooms[gameRoom].players;
 
     // test dices for first player
     if (Object.keys(allPlayers)[0] === currentPlayerTurnId) {
-      randomizeDices = [5, 5];
+      // randomizeDices = [1, 5];
     }
 
     const isDouble = randomizeDices[0] === randomizeDices[1];

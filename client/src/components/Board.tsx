@@ -3,10 +3,11 @@ import Center from "./Center";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { selectGameBoard, selectPlayers } from "@/slices/game-slice";
 import { setSelectedTile } from "@/slices/ui-slice";
-import { LayoutGroup } from "framer-motion";
+import { AnimatePresence, LayoutGroup } from "framer-motion";
 import { useEffect, useState } from "react";
 import { GameTile } from "@backend/types/Board";
 import Player from "@backend/types/Player";
+import DrawnCardBox from "./DrawnCardBox";
 
 type MappedPlayersByTiles = {
   [tileIndex: number]: Player[];
@@ -15,10 +16,14 @@ type MappedPlayersByTiles = {
 const Board = () => {
   const board = useAppSelector(selectGameBoard);
   const players = useAppSelector(selectPlayers);
-  const { suspendedPlayers } = useAppSelector((state) => state.game);
+  const { suspendedPlayers, drawnChanceCard, currentPlayerTurnId } =
+    useAppSelector((state) => state.game);
   const dispatch = useAppDispatch();
   const [gameBoard, setGameBoard] = useState<GameTile[][]>([]);
   const [mappedPlayers, setMappedPlayers] = useState<MappedPlayersByTiles>({});
+  const currentPlayerPosition = players.find(
+    (player) => player.id === currentPlayerTurnId
+  );
 
   useEffect(() => {
     const initialMap: MappedPlayersByTiles = {};
@@ -67,7 +72,15 @@ const Board = () => {
                 tile.type === "company";
 
               return (
-                <li key={tile.position} className="relative">
+                <li key={tile.position} className="relative rtl text-right">
+                  <AnimatePresence>
+                    {tile.type === "chance" &&
+                      drawnChanceCard &&
+                      currentPlayerPosition &&
+                      currentPlayerPosition.tilePos === tile.position && (
+                        <DrawnCardBox>{drawnChanceCard.message}</DrawnCardBox>
+                      )}
+                  </AnimatePresence>
                   {tile.type === "jail" && (
                     <div className="absolute w-full h-full grid grid-cols-8">
                       {[...Array(8)].map((_, idx) => (

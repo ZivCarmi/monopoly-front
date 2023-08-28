@@ -92,23 +92,21 @@
   align-items: flex-end;
 }
 
+.row:nth-child(3) li:not(:first-child) button {
+  flex-direction: row-reverse;
+}
+
+.row:nth-child(3) li:not(:first-child) button .tileBody {
+  writing-mode: vertical-rl;
+  transform: rotate(-180deg);
+}
+
 .row:nth-child(4) li:not(:first-child) button {
   flex-direction: column;
 }
 
-.row:nth-child(3) li:not(:first-child) button .tileBody {
-  writing-mode: vertical-lr;
-  transform: rotate(-180deg);
-  align-items: flex-end;
-}
-
-.row:nth-child(5) li:not(:first-child) button {
-  flex-direction: row-reverse;
-}
-
 .row:nth-child(5) li:not(:first-child) button .tileBody {
-  writing-mode: vertical-lr;
-  align-items: flex-end;
+  writing-mode: vertical-rl;
 }
 
 .row:nth-child(2) li {

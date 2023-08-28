@@ -3,8 +3,9 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useEffect } from "react";
 import { Button } from "./ui/button";
 import { useSocket } from "@/app/socket-context";
-import { ArrowLeft, PlusSquare, RefreshCcw } from "lucide-react";
+import { ArrowLeft, PlusSquare, RefreshCcw, User } from "lucide-react";
 import CreateRoom from "./CreateRoom";
+import Room from "@backend/types/Room";
 
 const LobbyGameRooms = ({ onGoBack }: { onGoBack: () => void }) => {
   const dispatch = useAppDispatch();
@@ -56,21 +57,44 @@ const LobbyGameRooms = ({ onGoBack }: { onGoBack: () => void }) => {
             Select the room you would like to join:
           </p>
           <ul className="space-y-2 max-h-[300px] overflow-auto">
-            {lobbyRooms.map((room) => (
-              <li key={room.id} className="pe-2">
-                <button
-                  onClick={() => dispatch(handleRoomJoin(socket, room.id))}
-                  className="w-full p-4 rounded-lg text-left space-y-1 bg-background border hover:bg-muted/50 transition-colors text-sm"
-                >
-                  <h2>
-                    <strong>Room ID:</strong> {room.id}
-                  </h2>
-                  <div>
-                    <strong>Players:</strong> {room.participantsCount}
-                  </div>
-                </button>
-              </li>
-            ))}
+            {lobbyRooms.map((room: Room) => {
+              const roomSpectatorsCount =
+                room.participantsCount - Object.keys(room.players).length;
+
+              return (
+                <li key={room.id} className="pe-2">
+                  <button
+                    onClick={() => dispatch(handleRoomJoin(socket, room.id))}
+                    className="w-full p-4 rounded-lg text-left space-y-1 bg-background border hover:bg-muted/50 transition-colors text-sm"
+                  >
+                    <h2>
+                      <strong>Room ID:</strong> {room.id}
+                    </h2>
+                    <div>
+                      <strong>Participants:</strong> {room.participantsCount}
+                    </div>
+                    <div className="flex items-center">
+                      <strong>Players:</strong>&nbsp;
+                      <ul className="flex items-center gap-[2px]">
+                        {Object.values(room.players).map((player) => (
+                          <li key={player.id}>
+                            <img src={`/${player.character}.png`} width={24} />
+                          </li>
+                        ))}
+                        {Array.from(
+                          { length: roomSpectatorsCount },
+                          (_, idx) => (
+                            <li key={idx}>
+                              <User size={18} width={24} />
+                            </li>
+                          )
+                        )}
+                      </ul>
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </>
       ) : (

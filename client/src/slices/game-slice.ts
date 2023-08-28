@@ -1,6 +1,6 @@
 import { RootState } from "@/app/store";
 import Player from "@backend/types/Player";
-import { Room } from "@backend/types/Room";
+import Room from "@backend/types/Room";
 import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
 import { TURN_TIMES } from "@/lib/constants";
 import Board, { PurchasableTile } from "@backend/types/Board";
@@ -36,7 +36,7 @@ export interface GameState {
       left: number;
     };
   };
-  drewChanceCard: {} | null;
+  drawnChanceCard: {} | null;
   counter: number;
 }
 
@@ -64,7 +64,7 @@ const initialState: GameState = {
   doublesInARow: 0,
   forceEndTurn: false,
   suspendedPlayers: {},
-  drewChanceCard: null,
+  drawnChanceCard: null,
   counter: TURN_TIMES.rollDices,
 };
 
@@ -93,8 +93,10 @@ export const gameSlice = createSlice({
     resetRoom: () => {
       return initialState;
     },
-    setPlayers: (state, action: PayloadAction<Player[]>) => {
+    setSelfPlayerReady: (state) => {
       state.isReady = true;
+    },
+    setPlayers: (state, action: PayloadAction<Player[]>) => {
       state.players = action.payload;
     },
     startGame: (
@@ -117,20 +119,22 @@ export const gameSlice = createSlice({
       state.cubesRolledInTurn = true;
       state.doublesInARow = isDouble ? ++state.doublesInARow : 0;
     },
-    setPlayerPosition: (state, action: PayloadAction<{ playerId: string }>) => {
+    incrementPlayerPosition: (
+      state,
+      action: PayloadAction<{ playerId: string }>
+    ) => {
       const boardLength = state.map.board.length;
       const { playerId } = action.payload;
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === playerId
+      );
 
-      state.players = state.players.map((player) => {
-        if (player.id === playerId) {
-          player = {
-            ...player,
-            tilePos: cyclicRangeNumber(player.tilePos + 1, boardLength),
-          };
-        }
-
-        return player;
-      });
+      if (playerIndex >= 0) {
+        state.players[playerIndex].tilePos = cyclicRangeNumber(
+          state.players[playerIndex].tilePos + 1,
+          boardLength
+        );
+      }
     },
     movePlayer: (
       state,
@@ -140,41 +144,33 @@ export const gameSlice = createSlice({
       }>
     ) => {
       const { playerId, tilePosition } = action.payload;
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === playerId
+      );
 
-      state.players = state.players.map((player) => {
-        if (player.id === playerId) {
-          player = {
-            ...player,
-            tilePos: tilePosition,
-          };
-        }
-
-        return player;
-      });
+      if (playerIndex >= 0) {
+        state.players[playerIndex].tilePos = tilePosition;
+      }
     },
     allowTurnActions: (state, action: PayloadAction<boolean>) => {
       state.canPerformTurnActions = action.payload;
     },
     transferMoney: (state, action: PayloadAction<TransferMoneyArgs>) => {
       const { payerId, recieverId, amount } = action.payload;
+      const payerIndex = state.players.findIndex(
+        (player) => player.id === payerId
+      );
+      const recieverIndex = state.players.findIndex(
+        (player) => player.id === recieverId
+      );
 
-      state.players = state.players.map((player) => {
-        if (payerId && player.id === payerId) {
-          player = {
-            ...player,
-            money: player.money - amount,
-          };
-        }
+      if (payerIndex >= 0) {
+        state.players[payerIndex].money -= amount;
+      }
 
-        if (recieverId && player.id === recieverId) {
-          player = {
-            ...player,
-            money: player.money + amount,
-          };
-        }
-
-        return player;
-      });
+      if (recieverIndex >= 0) {
+        state.players[recieverIndex].money += amount;
+      }
     },
     purchaseProperty: (
       state,
@@ -259,10 +255,14 @@ export const gameSlice = createSlice({
         current(state.suspendedPlayers)
       );
     },
+    resetCards: (state) => {
+      state.drawnChanceCard = null;
+    },
     drawChanceCard: (state) => {
-      const { cards: chancesCards, currentIndex } = state.map.chances;
+      const { cards: chanceCards, currentIndex } = state.map.chances;
 
-      state.drewChanceCard = cycleNextItem(currentIndex, chancesCards);
+      state.drawnChanceCard = cycleNextItem(currentIndex, chanceCards);
+      state.map.chances.currentIndex += 1;
     },
     switchTurn: (state, action: PayloadAction<{ nextPlayerId: string }>) => {
       const { nextPlayerId } = action.payload;
@@ -279,10 +279,11 @@ export const gameSlice = createSlice({
 export const {
   setRoom,
   resetRoom,
+  setSelfPlayerReady,
   setPlayers,
   startGame,
   setDices,
-  setPlayerPosition,
+  incrementPlayerPosition,
   movePlayer,
   allowTurnActions,
   transferMoney,
@@ -291,6 +292,7 @@ export const {
   staySuspendedTurn,
   endPlayerTurn,
   freePlayer,
+  resetCards,
   drawChanceCard,
   switchTurn,
 } = gameSlice.actions;

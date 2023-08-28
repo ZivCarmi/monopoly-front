@@ -12,6 +12,7 @@ import {
   switchTurn,
   transferMoney,
   freePlayer,
+  setPlayers,
 } from "@/slices/game-slice";
 import Player from "@backend/types/Player";
 import { writeLog } from "@/slices/ui-slice";
@@ -68,15 +69,28 @@ const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
     );
   };
 
+  const onCreatedPlayer = ({
+    players,
+    message,
+  }: {
+    players: Player[];
+    message: string;
+  }) => {
+    dispatch(setPlayers(players));
+    dispatch(writeLog(message));
+  };
+
   useEffect(() => {
     if (!socket) return;
 
+    socket.on("player_created", onCreatedPlayer);
     socket.on("game_started", onGameStarted);
     socket.on("switched_turn", onSwitchedTurn);
     socket.on("purchased_property", onPurchasedProperty);
     socket.on("paid_out_of_jail", onPaidOutOfJail);
 
     return () => {
+      socket.off("player_created");
       socket.off("game_started");
       socket.off("switched_turn");
       socket.off("purchased_property");

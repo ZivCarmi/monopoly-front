@@ -16,9 +16,10 @@ import {
   staySuspendedTurn,
   freePlayer,
   setDices,
-  setPlayerPosition,
+  incrementPlayerPosition,
   allowTurnActions,
   endPlayerTurn,
+  setSelfPlayerReady,
 } from "@/slices/game-slice";
 import {
   resetUi,
@@ -28,8 +29,8 @@ import {
   writeLog,
 } from "@/slices/ui-slice";
 import Player, { NewPlayer } from "@backend/types/Player";
+import Room from "@backend/types/Room";
 import { getGoTile, getJailTile } from "@backend/helpers";
-import { Room } from "@backend/types/Room";
 import { Socket } from "socket.io-client";
 import { ITax, PurchasableTile } from "@backend/types/Board";
 import { MS_TO_MOVE_ON_TILES } from "@/lib/constants";
@@ -95,13 +96,10 @@ export const handleCreatedPlayer = (
   socket.emit("create_player", { player });
 
   return (dispatch) => {
-    socket.on(
-      "player_created",
-      ({ players, message }: { players: Player[]; message: string }) => {
-        dispatch(setPlayers(players));
-        dispatch(writeLog(message));
-      }
-    );
+    socket.on("player_created", ({ players }: { players: Player[] }) => {
+      dispatch(setSelfPlayerReady());
+      dispatch(setPlayers(players));
+    });
 
     socket.on("player_create_error", ({ error }) => {
       dispatch(
@@ -117,7 +115,7 @@ export const handleCreatedPlayer = (
 export const walkPlayer = (playerId: string, steps: number): AppThunk => {
   return (dispatch, getState) => {
     const interval = setInterval(() => {
-      dispatch(setPlayerPosition({ playerId }));
+      dispatch(incrementPlayerPosition({ playerId }));
 
       const { players, map } = getState().game;
       const walkingPlayer = players.find((player) => playerId === player.id);

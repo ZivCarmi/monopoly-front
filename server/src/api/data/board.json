@@ -272,7 +272,7 @@
     {
       "position": 28,
       "type": "company",
-      "name": "חברת מים",
+      "name": "חברת המים",
       "cost": 150,
       "owner": null
     },
@@ -363,7 +363,7 @@
     {
       "position": 38,
       "type": "company",
-      "name": "חברת טלפון",
+      "name": "חברת הטלפון",
       "cost": 150,
       "owner": null
     },

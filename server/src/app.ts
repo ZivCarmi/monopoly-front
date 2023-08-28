@@ -24,15 +24,15 @@ io.on("connection", (socket) => {
     `New connection ${socket.id}, Clients count: ${io.engine.clientsCount}`
   );
 
-  socket.on("join_game", async ({ roomId }) => {
+  socket.on("join_game", ({ roomId }) => {
     gameController.joinRoom(io, socket, roomId);
   });
 
-  socket.on("get_rooms", async () => {
+  socket.on("get_rooms", () => {
     gameController.getRooms(io, socket);
   });
 
-  socket.on("back_to_lobby", async () => {
+  socket.on("back_to_lobby", () => {
     gameController.backToLobby(io, socket);
   });
 
@@ -40,7 +40,7 @@ io.on("connection", (socket) => {
     gameController.addPlayer(io, socket, player);
   });
 
-  socket.on("disconnecting", (reason) => {
+  socket.on("disconnecting", () => {
     gameController.playerLeaving(io, socket);
   });
 
