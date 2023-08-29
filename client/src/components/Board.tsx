@@ -5,7 +5,7 @@ import { selectGameBoard, selectPlayers } from "@/slices/game-slice";
 import { setSelectedTile } from "@/slices/ui-slice";
 import { AnimatePresence, LayoutGroup } from "framer-motion";
 import { useEffect, useState } from "react";
-import { GameTile } from "@backend/types/Board";
+import { GameTile, TileTypes } from "@backend/types/Board";
 import Player from "@backend/types/Player";
 import DrawnCardBox from "./DrawnCardBox";
 
@@ -57,31 +57,32 @@ const Board = () => {
   return (
     <div className={styles.board}>
       <Center />
-      {gameBoard.map((row, key) => (
+      {gameBoard.map((row, rowIndex) => (
         <ul
+          key={rowIndex}
           className={`${styles.row}${
-            key % 2 === 0 ? " " + styles.horizontal : ""
+            rowIndex % 2 === 0 ? ` ${styles.horizontal}` : ""
           }`}
-          key={key}
         >
           <LayoutGroup>
-            {row.map((tile, i) => {
+            {row.map((tile, rowTileIndex) => {
+              const tileIndex = 10 * rowIndex + rowTileIndex;
               const isPurchasableTile =
-                tile.type === "property" ||
-                tile.type === "airport" ||
-                tile.type === "company";
+                tile.type === TileTypes.PROPERTY ||
+                tile.type === TileTypes.AIRPORT ||
+                tile.type === TileTypes.COMPANY;
 
               return (
-                <li key={tile.position} className="relative rtl text-right">
+                <li key={tileIndex} className="relative rtl text-right">
                   <AnimatePresence>
-                    {tile.type === "chance" &&
+                    {tile.type === TileTypes.CHANCE &&
                       drawnChanceCard &&
                       currentPlayerPosition &&
-                      currentPlayerPosition.tilePos === tile.position && (
+                      currentPlayerPosition.tilePos === tileIndex && (
                         <DrawnCardBox>{drawnChanceCard.message}</DrawnCardBox>
                       )}
                   </AnimatePresence>
-                  {tile.type === "jail" && (
+                  {tile.type === TileTypes.JAIL && (
                     <div className="absolute w-full h-full grid grid-cols-8">
                       {[...Array(8)].map((_, idx) => (
                         <span
@@ -93,16 +94,14 @@ const Board = () => {
                   )}
                   <button
                     className="w-full h-full flex gap-2"
-                    onClick={() =>
-                      dispatch(setSelectedTile(board[tile.position]))
-                    }
+                    onClick={() => dispatch(setSelectedTile(board[tileIndex]))}
                   >
-                    {i !== 0 && (
+                    {rowTileIndex !== 0 && (
                       <div
                         className="w-full h-full flex-[0_0_20%]"
                         style={{
                           backgroundColor:
-                            tile.type === "property" ? tile.color : "",
+                            tile.type === TileTypes.PROPERTY ? tile.color : "",
                         }}
                       />
                     )}
@@ -122,12 +121,12 @@ const Board = () => {
                       />
                     )}
                   </button>
-                  {mappedPlayers[tile.position]?.map((player, idx) => (
+                  {mappedPlayers[tileIndex]?.map((player, idx) => (
                     <button
                       key={player.character}
                       className={`w-8 h-8 rounded-full border border-neutral-400 p-[0.1rem] pointer-events-auto bg-black bg-opacity-75 absolute top-2${
                         suspendedPlayers[player.id] &&
-                        suspendedPlayers[player.id].reason === "jail"
+                        suspendedPlayers[player.id].reason === TileTypes.JAIL
                           ? " z-[-1]"
                           : ""
                       }`}

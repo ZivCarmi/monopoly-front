@@ -1,8 +1,9 @@
 import { useAppSelector } from "@/app/hooks";
 import { isProperty } from "@/helpers/tiles";
-import { AIRPORT_RENTS, COMPANY_RENTS } from "@backend/constans";
+import { AIRPORT_RENTS, COMPANY_RENTS } from "@backend/constants";
 import { Home, Hotel, Plane, Store } from "lucide-react";
 import { AnimatePresence, motion } from "framer-motion";
+import { TileTypes } from "@backend/types/Board";
 
 const TileInfo = () => {
   const selectedTile = useAppSelector((state) => state.ui.selectedTilePos);
@@ -15,9 +16,9 @@ const TileInfo = () => {
   }
 
   if (
-    selectedTile.type !== "property" &&
-    selectedTile.type !== "company" &&
-    selectedTile.type !== "airport"
+    selectedTile.type !== TileTypes.PROPERTY &&
+    selectedTile.type !== TileTypes.AIRPORT &&
+    selectedTile.type !== TileTypes.COMPANY
   ) {
     return null;
   }
@@ -42,7 +43,7 @@ const TileInfo = () => {
         >
           <div className="flex flex-col text-center [&>*]:p-2 [&>*:not(:last-child)]:border-b [&>*:not(:last-child)]:border-red-600 min-h-[25rem]">
             <h2 className="text-lg font-medium">{selectedTile.name}</h2>
-            {selectedTile.type === "property" && (
+            {selectedTile.type === TileTypes.PROPERTY && (
               <ul className="space-y-1 grow">
                 {selectedTile.rent!.map((amount, i) => (
                   <li className="flex items-center" key={amount}>
@@ -67,7 +68,7 @@ const TileInfo = () => {
                 ))}
               </ul>
             )}
-            {selectedTile.type === "airport" && (
+            {selectedTile.type === TileTypes.AIRPORT && (
               <ul className="space-y-1 grow">
                 {AIRPORT_RENTS.map((price, i) => (
                   <li className="flex items-center" key={price}>
@@ -83,7 +84,7 @@ const TileInfo = () => {
                 ))}
               </ul>
             )}
-            {selectedTile.type === "company" && (
+            {selectedTile.type === TileTypes.COMPANY && (
               <ul className="space-y-1 grow">
                 {COMPANY_RENTS.map((price, i) => (
                   <li className="flex items-center" key={price}>

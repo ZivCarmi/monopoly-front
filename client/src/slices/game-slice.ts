@@ -5,6 +5,7 @@ import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
 import { TURN_TIMES } from "@/lib/constants";
 import Board, { PurchasableTile } from "@backend/types/Board";
 import { SuspensionReasons } from "@backend/types/Game";
+import { GameChanceCard } from "@backend/types/Cards";
 import { cycleNextItem, cyclicRangeNumber } from "@backend/utils";
 
 export interface GameState {
@@ -15,7 +16,7 @@ export interface GameState {
   map: {
     board: Board;
     chances: {
-      cards: {}[];
+      cards: GameChanceCard[];
       currentIndex: number;
     };
     goRewards: {
@@ -36,7 +37,7 @@ export interface GameState {
       left: number;
     };
   };
-  drawnChanceCard: {} | null;
+  drawnChanceCard: GameChanceCard | null;
   counter: number;
 }
 
@@ -232,34 +233,18 @@ export const gameSlice = createSlice({
     endPlayerTurn: (state) => {
       state.forceEndTurn = true;
     },
-    freePlayer: (
-      state,
-      action: PayloadAction<{
-        playerId: string;
-        forceEndTurn?: boolean | undefined;
-      }>
-    ) => {
-      const { playerId, forceEndTurn } = action.payload;
-
-      console.log(
-        "before update suspended players state",
-        current(state.suspendedPlayers)
-      );
+    freePlayer: (state, action: PayloadAction<{ playerId: string }>) => {
+      const { playerId } = action.payload;
 
       delete state.suspendedPlayers[playerId];
-
-      state.forceEndTurn = forceEndTurn ? forceEndTurn : false;
-
-      console.log(
-        "updated suspended players state",
-        current(state.suspendedPlayers)
-      );
     },
     resetCards: (state) => {
       state.drawnChanceCard = null;
     },
     drawChanceCard: (state) => {
       const { cards: chanceCards, currentIndex } = state.map.chances;
+
+      console.log(chanceCards);
 
       state.drawnChanceCard = cycleNextItem(currentIndex, chanceCards);
       state.map.chances.currentIndex += 1;

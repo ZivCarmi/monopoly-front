@@ -1,7 +1,8 @@
 import Player from "./Player";
 import Board from "./Board";
 import { SuspensionReasons } from "./Game";
-import JSONBoard from "../data/board.json";
+import { GameChanceCard } from "./Cards";
+import { initializeMap } from "../helpers";
 
 class Room {
   id: string;
@@ -9,7 +10,7 @@ class Room {
   map: {
     board: Board;
     chances: {
-      cards: {}[]; // temp empty object
+      cards: GameChanceCard[];
       currentIndex: number;
     };
     goRewards: {
@@ -31,20 +32,10 @@ class Room {
   };
   logs: string[];
 
-  constructor(roomId: string, chanceCards: {}[], socketId: string) {
+  constructor(roomId: string, socketId: string) {
     this.id = roomId;
     this.players = {};
-    this.map = {
-      board: JSONBoard.flat() as Board,
-      chances: {
-        cards: chanceCards,
-        currentIndex: 0,
-      },
-      goRewards: {
-        pass: 200,
-        land: 300,
-      },
-    };
+    this.map = initializeMap();
     this.participantsCount = 1;
     this.gameStarted = false;
     this.hostId = socketId;

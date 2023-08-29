@@ -1,15 +1,14 @@
 import { Server, Socket } from "socket.io";
 import Player, { NewPlayer } from "../api/types/Player";
 import Room from "../api/types/Room";
-import { chanceCards } from "../api/data/cards.json";
-import { ITax, PurchasableTile } from "../api/types/Board";
+import { IJail, ITax, PurchasableTile, TileTypes } from "../api/types/Board";
 import {
   AIRPORT_RENTS,
   COMPANY_RENTS,
   DICE_OPTIONS,
   PAY_OUT_FROM_JAIL_AMOUNT,
-} from "../api/constans";
-import { getJailTile } from "../api/helpers";
+} from "../api/constants";
+import { getJailTileIndex } from "../api/helpers";
 import { shuffleArray, cycleNextItem, cyclicRangeNumber } from "../api/utils";
 
 class GameController {
@@ -72,16 +71,14 @@ class GameController {
       });
     }
 
-    let room = new Room(roomId, chanceCards, socket.id);
+    let room = new Room(roomId, socket.id);
 
     if (this.rooms[roomId] !== undefined) {
       // Update room
       room = this.rooms[roomId];
       this.rooms[roomId].participantsCount++;
     } else {
-      // Create room
-      shuffleArray(chanceCards);
-
+      // Set new room
       this.rooms[roomId] = room;
     }
 
@@ -193,17 +190,17 @@ class GameController {
 
     if (!owner) return;
 
-    if (tile.type === "property") {
+    if (tile.type === TileTypes.PROPERTY) {
       rentAmount = tile.rent[tile.rentIndex];
-    } else if (tile.type === "airport") {
+    } else if (tile.type === TileTypes.AIRPORT) {
       const ownedAirportsCount = this.rooms[roomId].map.board.filter(
-        (_tile) => _tile.type === "airport" && _tile.owner === owner.id
+        (_tile) => _tile.type === TileTypes.AIRPORT && _tile.owner === owner.id
       ).length;
 
       rentAmount = AIRPORT_RENTS[ownedAirportsCount - 1];
-    } else if (tile.type === "company") {
+    } else if (tile.type === TileTypes.COMPANY) {
       const ownedCompaniesCount = this.rooms[roomId].map.board.filter(
-        (_tile) => _tile.type === "company" && _tile.owner === owner.id
+        (_tile) => _tile.type === TileTypes.COMPANY && _tile.owner === owner.id
       ).length;
       const rentIndexAmount = COMPANY_RENTS[ownedCompaniesCount - 1];
 
@@ -218,7 +215,7 @@ class GameController {
 
     this.writeLogToRoom(
       roomId,
-      `${payingPlayer.name} שילם שכירות בסך ${rentAmount} לידי ${owner.name}`
+      `${payingPlayer.name} שילם שכירות בסך $${rentAmount} לידי ${owner.name}`
     );
 
     if (moneyAfterDeduction < 0) {
@@ -245,7 +242,7 @@ class GameController {
     const playerName = this.rooms[roomId].players[playerId].name;
     const goRewardOnLand = this.rooms[roomId].map.goRewards.land;
 
-    if (landedTile.type === "go") {
+    if (landedTile.type === TileTypes.GO) {
       this.rooms[roomId].players[playerId].money += goRewardOnLand;
 
       this.writeLogToRoom(
@@ -253,38 +250,39 @@ class GameController {
         `${playerName} נחת על ${landedTile.name} והרוויח $${goRewardOnLand}`
       );
     } else if (
-      landedTile.type === "property" ||
-      landedTile.type === "airport" ||
-      landedTile.type === "company"
+      landedTile.type === TileTypes.PROPERTY ||
+      landedTile.type === TileTypes.AIRPORT ||
+      landedTile.type === TileTypes.COMPANY
     ) {
       if (landedTile.owner && landedTile.owner !== playerId) {
         this.payRent(roomId, playerId, landedTile);
       }
-    } else if (landedTile.type === "chance") {
+    } else if (landedTile.type === TileTypes.CHANCE) {
       // TO-DO
 
       this.rooms[roomId].map.chances.currentIndex++;
-    } else if (landedTile.type === "tax") {
+    } else if (landedTile.type === TileTypes.TAX) {
       this.payTax(roomId, playerId, landedTile);
-    } else if (landedTile.type === "surprise") {
+    } else if (landedTile.type === TileTypes.SURPRISE) {
       // TO-DO
-    } else if (landedTile.type === "jail") {
+    } else if (landedTile.type === TileTypes.JAIL) {
       // Maybe do here something? not sure
-    } else if (landedTile.type === "vacation") {
+    } else if (landedTile.type === TileTypes.VACATION) {
       this.rooms[roomId].suspendedPlayers[playerId] = {
-        reason: "vacation",
+        reason: TileTypes.VACATION,
         left: landedTile.suspensionAmount,
       };
 
       this.writeLogToRoom(roomId, `${playerName} יצא לחופשה`);
-    } else if (landedTile.type === "go-to-jail") {
-      const jailTile = getJailTile(this.rooms[roomId].map.board);
+    } else if (landedTile.type === TileTypes.GO_TO_JAIL) {
+      const jailTileIndex = getJailTileIndex(this.rooms[roomId].map.board);
+      const jailTile = this.rooms[roomId].map.board[jailTileIndex] as IJail;
 
       if (!jailTile) return;
 
-      this.rooms[roomId].players[playerId].tilePos = jailTile.position;
+      this.rooms[roomId].players[playerId].tilePos = jailTileIndex;
       this.rooms[roomId].suspendedPlayers[playerId] = {
-        reason: "jail",
+        reason: TileTypes.JAIL,
         left: jailTile.suspensionAmount,
       };
     }
@@ -309,9 +307,9 @@ class GameController {
     console.log("Tile", tile);
 
     if (
-      tile.type !== "property" &&
-      tile.type !== "airport" &&
-      tile.type !== "company"
+      tile.type !== TileTypes.PROPERTY &&
+      tile.type !== TileTypes.AIRPORT &&
+      tile.type !== TileTypes.COMPANY
     )
       return;
 
@@ -358,7 +356,8 @@ class GameController {
     const isSuspendedPlayer =
       this.rooms[gameRoom].suspendedPlayers[currentPlayerTurnId];
     const board = this.rooms[gameRoom].map.board;
-    const jailTile = getJailTile(board);
+    const jailTileIndex = getJailTileIndex(board);
+    const jailTile = board[jailTileIndex] as IJail;
     // let randomizeDices = [
     //   DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
     //   DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
@@ -385,7 +384,7 @@ class GameController {
 
     if (
       isSuspendedPlayer !== undefined &&
-      isSuspendedPlayer.reason === "jail"
+      isSuspendedPlayer.reason === TileTypes.JAIL
     ) {
       if (!isDouble) {
         this.rooms[gameRoom].suspendedPlayers[currentPlayerTurnId].left--;
@@ -398,9 +397,9 @@ class GameController {
 
     // send player to jail
     if (jailTile && this.rooms[gameRoom].doublesInARow === 3) {
-      this.rooms[gameRoom].players[socket.id].tilePos = jailTile.position;
+      this.rooms[gameRoom].players[socket.id].tilePos = jailTileIndex;
       this.rooms[gameRoom].suspendedPlayers[socket.id] = {
-        reason: "jail",
+        reason: TileTypes.JAIL,
         left: jailTile.suspensionAmount,
       };
 
@@ -448,7 +447,7 @@ class GameController {
 
     // check if next player is suspended
     if (nextSuspendedPlayer !== undefined) {
-      if (nextSuspendedPlayer.reason === "vacation") {
+      if (nextSuspendedPlayer.reason === TileTypes.VACATION) {
         if (nextSuspendedPlayer.left === 0) {
           // can safely remove the player from suspension
           delete this.rooms[gameRoom].suspendedPlayers[nextPlayerTurnId];
@@ -496,6 +495,9 @@ class GameController {
 
     if (player.money >= PAY_OUT_FROM_JAIL_AMOUNT) {
       this.rooms[gameRoom].players[socket.id].money -= PAY_OUT_FROM_JAIL_AMOUNT;
+
+      // Remove player from suspension state
+      delete this.rooms[gameRoom].suspendedPlayers[currentPlayerTurnId];
 
       io.in(gameRoom).emit("paid_out_of_jail", { player });
 

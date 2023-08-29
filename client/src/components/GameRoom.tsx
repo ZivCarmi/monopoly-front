@@ -16,7 +16,7 @@ import {
 } from "@/slices/game-slice";
 import Player from "@backend/types/Player";
 import { writeLog } from "@/slices/ui-slice";
-import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constans";
+import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constants";
 
 const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
   const { isReady, started } = useAppSelector((state) => state.game);
@@ -60,7 +60,7 @@ const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
       transferMoney({ payerId: player.id, amount: PAY_OUT_FROM_JAIL_AMOUNT })
     );
 
-    dispatch(freePlayer({ playerId: player.id, forceEndTurn: true }));
+    dispatch(freePlayer({ playerId: player.id }));
 
     dispatch(
       writeLog(

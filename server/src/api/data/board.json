@@ -2,12 +2,12 @@
   [
     {
       "position": 0,
-      "type": "go",
+      "type": "GO",
       "name": "דרך צלחה"
     },
     {
       "position": 1,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Mediter-ranean Avenue",
       "cost": 60,
       "color": "violet",
@@ -19,12 +19,12 @@
     },
     {
       "position": 2,
-      "type": "chance",
+      "type": "CHANCE",
       "name": "צ'אנסה"
     },
     {
       "position": 3,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Baltic Avenue",
       "cost": 60,
       "color": "violet",
@@ -36,20 +36,20 @@
     },
     {
       "position": 4,
-      "type": "tax",
+      "type": "TAX",
       "name": "מס הכנסה",
       "taxRate": 10
     },
     {
       "position": 5,
-      "type": "airport",
-      "name": "Reading Airport",
+      "type": "AIRPORT",
+      "name": "Reading AIRPORT",
       "cost": 200,
       "owner": null
     },
     {
       "position": 6,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Oriental Avenue",
       "cost": 100,
       "color": "lightblue",
@@ -61,12 +61,12 @@
     },
     {
       "position": 7,
-      "type": "surprise",
+      "type": "SURPRISE",
       "name": "הפתעה"
     },
     {
       "position": 8,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Vermont Avenue",
       "cost": 100,
       "color": "lightblue",
@@ -78,7 +78,7 @@
     },
     {
       "position": 9,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Connecticut Avenue",
       "cost": 120,
       "color": "lightblue",
@@ -92,14 +92,13 @@
   [
     {
       "position": 10,
-      "type": "jail",
+      "type": "JAIL",
       "name": "כלא",
-      "suspendedPlayers": {},
       "suspensionAmount": 3
     },
     {
       "position": 11,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "St. Charles Place",
       "cost": 140,
       "color": "purple",
@@ -111,14 +110,14 @@
     },
     {
       "position": 12,
-      "type": "company",
+      "type": "COMPANY",
       "name": "חברת החשמל",
       "cost": 150,
       "owner": null
     },
     {
       "position": 13,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "States Avenue",
       "cost": 140,
       "color": "purple",
@@ -130,7 +129,7 @@
     },
     {
       "position": 14,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Virginia Avenue",
       "cost": 160,
       "color": "purple",
@@ -142,14 +141,14 @@
     },
     {
       "position": 15,
-      "type": "airport",
-      "name": "Pennsylvania Airport",
+      "type": "AIRPORT",
+      "name": "Pennsylvania AIRPORT",
       "cost": 200,
       "owner": null
     },
     {
       "position": 16,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "St. James Place",
       "cost": 180,
       "color": "orange",
@@ -161,12 +160,12 @@
     },
     {
       "position": 17,
-      "type": "chance",
+      "type": "CHANCE",
       "name": "צ'אנסה"
     },
     {
       "position": 18,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Tennessee Avenue",
       "cost": 180,
       "color": "orange",
@@ -178,7 +177,7 @@
     },
     {
       "position": 19,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "New York Avenue",
       "cost": 200,
       "color": "orange",
@@ -192,14 +191,13 @@
   [
     {
       "position": 20,
-      "type": "vacation",
+      "type": "VACATION",
       "name": "חופשה",
-      "suspendedPlayers": {},
       "suspensionAmount": 1
     },
     {
       "position": 21,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Kentucky Avenue",
       "cost": 220,
       "color": "red",
@@ -211,12 +209,12 @@
     },
     {
       "position": 22,
-      "type": "surprise",
+      "type": "SURPRISE",
       "name": "הפתעה"
     },
     {
       "position": 23,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Indiana Avenue",
       "cost": 220,
       "color": "red",
@@ -228,7 +226,7 @@
     },
     {
       "position": 24,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Illinois Avenue",
       "cost": 240,
       "color": "red",
@@ -240,14 +238,14 @@
     },
     {
       "position": 25,
-      "type": "airport",
-      "name": "B&O Airport",
+      "type": "AIRPORT",
+      "name": "B&O AIRPORT",
       "cost": 200,
       "owner": null
     },
     {
       "position": 26,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Atlantic Avenue",
       "cost": 260,
       "color": "yellow",
@@ -259,7 +257,7 @@
     },
     {
       "position": 27,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Ventnor Avenue",
       "cost": 260,
       "color": "yellow",
@@ -271,14 +269,14 @@
     },
     {
       "position": 28,
-      "type": "company",
+      "type": "COMPANY",
       "name": "חברת המים",
       "cost": 150,
       "owner": null
     },
     {
       "position": 29,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Marvin Gardens",
       "cost": 280,
       "color": "yellow",
@@ -292,12 +290,12 @@
   [
     {
       "position": 30,
-      "type": "go-to-jail",
+      "type": "GO_TO_JAIL",
       "name": "הכנס לכלא"
     },
     {
       "position": 31,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Pacific Avenue",
       "cost": 300,
       "color": "green",
@@ -309,7 +307,7 @@
     },
     {
       "position": 32,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "North Carolina Avenue",
       "cost": 300,
       "color": "green",
@@ -321,12 +319,12 @@
     },
     {
       "position": 33,
-      "type": "chance",
+      "type": "CHANCE",
       "name": "צ'אנסה"
     },
     {
       "position": 34,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Pennsylvania Avenue",
       "cost": 320,
       "color": "green",
@@ -338,19 +336,19 @@
     },
     {
       "position": 35,
-      "type": "airport",
+      "type": "AIRPORT",
       "name": "Short Line",
       "cost": 200,
       "owner": null
     },
     {
       "position": 36,
-      "type": "surprise",
+      "type": "SURPRISE",
       "name": "הפתעה"
     },
     {
       "position": 37,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Park Place",
       "cost": 350,
       "color": "blue",
@@ -362,14 +360,14 @@
     },
     {
       "position": 38,
-      "type": "company",
+      "type": "COMPANY",
       "name": "חברת הטלפון",
       "cost": 150,
       "owner": null
     },
     {
       "position": 39,
-      "type": "property",
+      "type": "PROPERTY",
       "name": "Boardwalk",
       "cost": 400,
       "color": "blue",

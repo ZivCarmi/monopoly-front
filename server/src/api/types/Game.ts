@@ -1,1 +1,3 @@
-export type SuspensionReasons = "jail" | "vacation";
+import { TileTypes } from "./Board";
+
+export type SuspensionReasons = TileTypes.VACATION | TileTypes.JAIL;

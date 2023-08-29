@@ -1,10 +1,22 @@
 export interface ITile {
-  position: number;
   name: string;
 }
 
+export enum TileTypes {
+  PROPERTY = "PROPERTY",
+  AIRPORT = "AIRPORT",
+  COMPANY = "COMPANY",
+  TAX = "TAX",
+  CHANCE = "CHANCE",
+  SURPRISE = "SURPRISE",
+  GO = "GO",
+  JAIL = "JAIL",
+  VACATION = "VACATION",
+  GO_TO_JAIL = "GO_TO_JAIL",
+}
+
 export interface IProperty extends ITile {
-  type: "property";
+  type: TileTypes.PROPERTY;
   cost: number;
   color: string;
   rent: number[];
@@ -14,95 +26,61 @@ export interface IProperty extends ITile {
   owner: string | null;
 }
 
+export interface IIndustry extends ITile {
+  type: TileTypes.AIRPORT | TileTypes.COMPANY;
+  cost: number;
+  owner: string | null;
+}
+
 export interface IAirport extends ITile {
-  type: "airport";
+  type: TileTypes.AIRPORT;
   cost: number;
   owner: string | null;
 }
 
 export interface ICompany extends ITile {
-  type: "company";
+  type: TileTypes.COMPANY;
   cost: number;
   owner: string | null;
 }
 
 export interface ITax extends ITile {
-  type: "tax";
+  type: TileTypes.TAX;
   taxRate: number;
 }
 
 export interface IChance extends ITile {
-  type: "chance";
+  type: TileTypes.CHANCE;
 }
 
 export interface ISurprise extends ITile {
-  type: "surprise";
+  type: TileTypes.SURPRISE;
 }
 
 export interface IGo extends ITile {
-  type: "go";
+  type: TileTypes.GO;
 }
 
 export interface IJail extends ITile {
-  type: "jail";
-  suspendedPlayers: { [playerId: string]: number };
+  type: TileTypes.JAIL;
   suspensionAmount: number;
 }
 
 export interface IVacation extends ITile {
-  type: "vacation";
-  suspendedPlayers: { [playerId: string]: number };
+  type: TileTypes.VACATION;
   suspensionAmount: number;
 }
 
 export interface IGoToJail extends ITile {
-  type: "go-to-jail";
+  type: TileTypes.GO_TO_JAIL;
+}
+
+export interface ISuspension extends ITile {
+  type: TileTypes.JAIL | TileTypes.VACATION;
+  suspensionAmount: number;
 }
 
 type Board = GameTile[];
-
-// type Board = [
-//   IGo,
-//   IProperty,
-//   IChance,
-//   IProperty,
-//   ITax,
-//   IAirport,
-//   IProperty,
-//   ISurprise,
-//   IProperty,
-//   IProperty,
-//   IJail,
-//   IProperty,
-//   ICompany,
-//   IProperty,
-//   IProperty,
-//   IAirport,
-//   IProperty,
-//   IChance,
-//   IProperty,
-//   IProperty,
-//   IVacation,
-//   IProperty,
-//   ISurprise,
-//   IProperty,
-//   IProperty,
-//   IAirport,
-//   IProperty,
-//   IProperty,
-//   ICompany,
-//   IProperty,
-//   IGoToJail,
-//   IProperty,
-//   IProperty,
-//   IChance,
-//   IProperty,
-//   IAirport,
-//   ISurprise,
-//   IProperty,
-//   ICompany,
-//   IProperty
-// ];
 
 export type GameTile =
   | IProperty
@@ -115,6 +93,18 @@ export type GameTile =
   | IJail
   | IVacation
   | IGoToJail;
+
+export type GameTileType =
+  | TileTypes.PROPERTY
+  | TileTypes.AIRPORT
+  | TileTypes.COMPANY
+  | TileTypes.TAX
+  | TileTypes.CHANCE
+  | TileTypes.SURPRISE
+  | TileTypes.GO
+  | TileTypes.JAIL
+  | TileTypes.VACATION
+  | TileTypes.GO_TO_JAIL;
 
 export type PurchasableTile = IProperty | IAirport | ICompany;
 

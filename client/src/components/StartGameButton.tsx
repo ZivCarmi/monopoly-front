@@ -18,7 +18,7 @@ const StartGameButton = () => {
   return (
     <div className="flex items-center justify-center h-full">
       <Button onClick={startGameHandler} disabled={players.length < 2}>
-        Start game
+        התחל משחק
       </Button>
     </div>
   );

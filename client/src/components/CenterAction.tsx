@@ -8,9 +8,9 @@ import {
 import RollDices from "./RollDices";
 import { ShoppingCart } from "lucide-react";
 import { useSocket } from "@/app/socket-context";
-import { PurchasableTile } from "@backend/types/Board";
+import { PurchasableTile, TileTypes } from "@backend/types/Board";
 import { selectCurrentPlayerTurn, selectGameBoard } from "@/slices/game-slice";
-import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constans";
+import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constants";
 
 const CenterAction = () => {
   const { socket } = useSocket();
@@ -50,7 +50,7 @@ const CenterAction = () => {
           />
         )}
         {selfPlayerSuspended &&
-          selfPlayerSuspended.reason === "jail" &&
+          selfPlayerSuspended.reason === TileTypes.JAIL &&
           !cubesRolledInTurn && (
             <ButtonWithIcon
               icon={ShoppingCart}
