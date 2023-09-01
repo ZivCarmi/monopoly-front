@@ -1,9 +1,5 @@
 import { AppThunk } from "@/app/store";
-import {
-  AIRPORT_RENTS,
-  COMPANY_RENTS,
-  PAY_OUT_FROM_JAIL_AMOUNT,
-} from "@backend/constants";
+import { AIRPORT_RENTS, COMPANY_RENTS } from "@backend/constants";
 import { setLobbyRooms } from "@/slices/lobby-slice";
 import {
   setPlayers,
@@ -21,43 +17,24 @@ import {
   endPlayerTurn,
   setSelfPlayerReady,
 } from "@/slices/game-slice";
-import {
-  resetUi,
-  setHighlightProperties,
-  setRoomUi,
-  showToast,
-  writeLog,
-} from "@/slices/ui-slice";
+import { resetUi, setRoomUi, showToast, writeLog } from "@/slices/ui-slice";
 import Player, { NewPlayer } from "@backend/types/Player";
 import Room from "@backend/types/Room";
-import { getGoTile, getJailTileIndex } from "@backend/helpers";
+import {
+  getGoTile,
+  getJailTileIndex,
+  hasBuildings,
+  hasMonopoly,
+} from "@backend/helpers";
 import { Socket } from "socket.io-client";
 import { IJail, ITax, PurchasableTile, TileTypes } from "@backend/types/Board";
 import { MS_TO_MOVE_ON_TILES } from "@/lib/constants";
-
-export const handlePlayerDisconnection = (socket: Socket): AppThunk => {
-  socket.emit("back_to_lobby");
-
-  return (dispatch, getState) => {
-    socket.on("player_left", ({ playerId, message }) => {
-      const players = getState().game.players;
-
-      const remainingPlayers = players.filter(
-        (player) => player.id !== playerId
-      );
-
-      dispatch(setPlayers(remainingPlayers));
-      dispatch(writeLog(message));
-    });
-
-    ["left_room", "on_lobby"].forEach((event) => {
-      socket.on(event, () => {
-        dispatch(resetRoom());
-        dispatch(resetUi());
-      });
-    });
-  };
-};
+import { ChanceCardTypes } from "@backend/types/Cards";
+import {
+  advanceToTileChanceCard,
+  advanceToTileTypeChanceCard,
+  paymentChanceCard,
+} from "./chances-actions";
 
 export const getRoomsHandler = (socket: Socket): AppThunk => {
   socket.emit("get_rooms");
@@ -112,10 +89,39 @@ export const handleCreatedPlayer = (
   };
 };
 
+export const handlePlayerDisconnection = (socket: Socket): AppThunk => {
+  socket.emit("back_to_lobby");
+
+  return (dispatch, getState) => {
+    socket.on("player_left", ({ playerId, message }) => {
+      const players = getState().game.players;
+
+      const remainingPlayers = players.filter(
+        (player) => player.id !== playerId
+      );
+
+      dispatch(setPlayers(remainingPlayers));
+      dispatch(writeLog(message));
+    });
+
+    ["left_room", "on_lobby"].forEach((event) => {
+      socket.on(event, () => {
+        dispatch(resetRoom());
+        dispatch(resetUi());
+      });
+    });
+  };
+};
+
 export const walkPlayer = (playerId: string, steps: number): AppThunk => {
   return (dispatch, getState) => {
+    dispatch(allowTurnActions(false));
+
+    // if steps is positive we move forward, otherwise backwards on the board
+    const incrementor = steps > 0 ? 1 : -1;
+
     const interval = setInterval(() => {
-      dispatch(incrementPlayerPosition({ playerId }));
+      dispatch(incrementPlayerPosition({ playerId, incrementor }));
 
       const { players, map } = getState().game;
       const walkingPlayer = players.find((player) => playerId === player.id);
@@ -139,8 +145,10 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
         );
       }
 
+      steps += incrementor === 1 ? -1 : 1;
+
       // when finished walking
-      if (--steps === 0) {
+      if (steps === 0) {
         clearInterval(interval);
 
         setTimeout(() => {
@@ -230,55 +238,6 @@ export const handleStaySuspendedPlayer = (playerId: string): AppThunk => {
   };
 };
 
-export const handlePurchaseProperty = (
-  socket: Socket,
-  propertyPos: number
-): AppThunk => {
-  return (dispatch, getState) => {
-    const state = getState();
-    const tile = state.game.map.board[propertyPos] as PurchasableTile;
-
-    const isAllowedToPurchase = state.game.players.find(
-      (player) => player.id === socket.id && player.money >= tile.cost
-    );
-
-    if (!isAllowedToPurchase) {
-      return dispatch(
-        showToast({
-          variant: "destructive",
-          title: "נראה שאין לך מספיק כסף לבצע את הפעולה.",
-        })
-      );
-    }
-
-    // otherwise, process purchase
-    socket.emit("purchase_property");
-  };
-};
-
-export const handlePayOutOfJail = (socket: Socket): AppThunk => {
-  return (dispatch, getState) => {
-    const state = getState();
-
-    const canPayOutOfJail = state.game.players.find(
-      (player) =>
-        player.id === socket.id && player.money >= PAY_OUT_FROM_JAIL_AMOUNT
-    );
-
-    if (!canPayOutOfJail) {
-      return dispatch(
-        showToast({
-          variant: "destructive",
-          title: "נראה שאין לך מספיק כסף לבצע את הפעולה.",
-        })
-      );
-    }
-
-    // otherwise, process purchase
-    socket.emit("pay_out_of_jail");
-  };
-};
-
 export const handlePlayerLanding = (playerId: string): AppThunk => {
   return (dispatch, getState) => {
     const { players, map } = getState().game;
@@ -337,29 +296,35 @@ export const handlePlayerLanding = (playerId: string): AppThunk => {
           })
         );
       case TileTypes.GO_TO_JAIL:
-        const jailTileIndex = getJailTileIndex(map.board);
-        const jailTile = map.board[jailTileIndex] as IJail;
-
-        if (!jailTile) {
-          throw new Error("Jail tile not found on the board");
-        }
-
-        dispatch(
-          movePlayer({ playerId: player.id, tilePosition: jailTileIndex })
-        );
-
-        dispatch(endPlayerTurn());
-
-        dispatch(writeLog(`${player.name} נשלח לכלא`));
-
-        return dispatch(
-          suspendPlayer({
-            playerId,
-            suspensionReason: TileTypes.JAIL,
-            suspensionLeft: jailTile.suspensionAmount,
-          })
-        );
+        dispatch(sendPlayerToJail(player));
     }
+  };
+};
+
+export const sendPlayerToJail = (player: Player): AppThunk => {
+  return (dispatch, getState) => {
+    const { map } = getState().game;
+
+    const jailTileIndex = getJailTileIndex(map.board);
+    const jailTile = map.board[jailTileIndex] as IJail;
+
+    if (!jailTile) {
+      throw new Error("Jail tile not found on the board");
+    }
+
+    dispatch(movePlayer({ playerId: player.id, tilePosition: jailTileIndex }));
+
+    dispatch(endPlayerTurn());
+
+    dispatch(writeLog(`${player.name} נשלח לכלא`));
+
+    return dispatch(
+      suspendPlayer({
+        playerId: player.id,
+        suspensionReason: TileTypes.JAIL,
+        suspensionLeft: jailTile.suspensionAmount,
+      })
+    );
   };
 };
 
@@ -369,9 +334,21 @@ export const handleChanceCard = (player: Player): AppThunk => {
 
     if (!drawnChanceCard) throw new Error("No chance card was found.");
 
-    // switch (drawChanceCard) {
-    //   case
-    // }
+    switch (drawnChanceCard.type) {
+      case ChanceCardTypes.PAYMENT:
+      case ChanceCardTypes.GROUP_PAYMENT:
+        return dispatch(paymentChanceCard(player.id, drawnChanceCard));
+      case ChanceCardTypes.ADVANCE_TO_TILE:
+        dispatch(advanceToTileChanceCard(player.id, drawnChanceCard));
+        return dispatch(handlePlayerLanding(player.id));
+      case ChanceCardTypes.ADVANCE_TO_TILE_TYPE:
+        dispatch(advanceToTileTypeChanceCard(player.id, drawnChanceCard));
+        return dispatch(handlePlayerLanding(player.id));
+      case ChanceCardTypes.WALK:
+        return dispatch(walkPlayer(player.id, drawnChanceCard.event.steps));
+      case ChanceCardTypes.GO_TO_JAIL:
+        return dispatch(sendPlayerToJail(player));
+    }
   };
 };
 
@@ -380,18 +357,13 @@ export const handleTaxPayment = (player: Player, tile: ITax): AppThunk => {
     if (!tile.taxRate) return;
 
     const rentAmount = Math.ceil((player.money * tile.taxRate) / 100);
-    const canPayTheRent = player.money >= rentAmount;
 
-    if (canPayTheRent) {
-      dispatch(
-        transferMoney({
-          payerId: player.id,
-          amount: rentAmount,
-        })
-      );
-    } else {
-      dispatch(handleBudgetOverrun(player));
-    }
+    dispatch(
+      transferMoney({
+        payerId: player.id,
+        amount: rentAmount,
+      })
+    );
   };
 };
 
@@ -400,30 +372,37 @@ export const handleRentPayment = (
   tile: PurchasableTile
 ): AppThunk => {
   return (dispatch, getState) => {
-    const state = getState();
-    const owner = state.game.players.find((player) => player.id === tile.owner);
+    const {
+      players,
+      map: { board },
+    } = getState().game;
+    const owner = players.find((player) => player.id === tile.owner);
     let rentAmount: number = 0;
 
-    if (!owner) return;
+    if (!owner) {
+      throw new Error("Owner was not found in handleRentPayment");
+    }
 
     if (tile.type === TileTypes.PROPERTY) {
-      rentAmount = tile.rent[tile.rentIndex];
+      const doubleRent =
+        !hasBuildings(board, tile.country.id) &&
+        hasMonopoly(board, tile.country.id);
+
+      rentAmount = doubleRent ? tile.rent[0] * 2 : tile.rent[tile.rentIndex];
     } else if (tile.type === TileTypes.AIRPORT) {
-      const ownedAirportsCount = state.game.map.board.filter(
+      const ownedAirportsCount = board.filter(
         (_tile) => _tile.type === TileTypes.AIRPORT && _tile.owner === owner.id
       ).length;
 
       rentAmount = AIRPORT_RENTS[ownedAirportsCount - 1];
     } else if (tile.type === TileTypes.COMPANY) {
-      const ownedCompaniesCount = state.game.map.board.filter(
+      const ownedCompaniesCount = board.filter(
         (_tile) => _tile.type === TileTypes.COMPANY && _tile.owner === owner.id
       ).length;
       const rentIndexAmount = COMPANY_RENTS[ownedCompaniesCount - 1];
 
       rentAmount = Math.ceil((payer.money * rentIndexAmount) / 100);
     }
-
-    const moneyAfterDeduction = payer.money - rentAmount;
 
     dispatch(
       writeLog(
@@ -438,19 +417,5 @@ export const handleRentPayment = (
         amount: rentAmount,
       })
     );
-
-    if (moneyAfterDeduction < 0) {
-      dispatch(handleBudgetOverrun(payer));
-    }
-  };
-};
-
-export const handleBudgetOverrun = (player: Player): AppThunk => {
-  return (dispatch) => {
-    if (player.properties.length > 0) {
-      dispatch(setHighlightProperties());
-    } else {
-      // need to handle bankruptcy
-    }
   };
 };

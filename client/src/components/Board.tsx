@@ -94,7 +94,7 @@ const Board = () => {
                   )}
                   <button
                     className="w-full h-full flex gap-2"
-                    onClick={() => dispatch(setSelectedTile(board[tileIndex]))}
+                    onClick={() => dispatch(setSelectedTile(tileIndex))}
                   >
                     {rowTileIndex !== 0 && (
                       <div

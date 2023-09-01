@@ -1,4 +1,3 @@
-import { GameTile } from "@backend/types/Board";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface UiState {
@@ -7,15 +6,13 @@ export interface UiState {
     title: string;
   } | null;
   gameLog: { id: number; message: string }[];
-  selectedTilePos: GameTile | undefined;
-  highlightProperties: boolean;
+  selectedTileIndex: number | null;
 }
 
 const initialState: UiState = {
   toast: null,
   gameLog: [],
-  selectedTilePos: undefined,
-  highlightProperties: false,
+  selectedTileIndex: null,
 };
 
 export const gameSlice = createSlice({
@@ -40,22 +37,13 @@ export const gameSlice = createSlice({
         message: action.payload,
       });
     },
-    setSelectedTile: (state, action: PayloadAction<GameTile>) => {
-      state.selectedTilePos = action.payload;
-    },
-    setHighlightProperties: (state) => {
-      state.highlightProperties = !state.highlightProperties;
+    setSelectedTile: (state, action: PayloadAction<number>) => {
+      state.selectedTileIndex = action.payload;
     },
   },
 });
 
-export const {
-  resetUi,
-  showToast,
-  setRoomUi,
-  writeLog,
-  setSelectedTile,
-  setHighlightProperties,
-} = gameSlice.actions;
+export const { resetUi, showToast, setRoomUi, writeLog, setSelectedTile } =
+  gameSlice.actions;
 
 export default gameSlice.reducer;

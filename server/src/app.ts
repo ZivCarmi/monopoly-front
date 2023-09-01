@@ -56,11 +56,22 @@ io.on("connection", (socket) => {
     gameController.switchTurn(io, socket);
   });
 
-  socket.on("purchase_property", () => {
-    gameController.purchaseProperty(io, socket);
-  });
-
   socket.on("pay_out_of_jail", () => {
     gameController.payOutOfJail(io, socket);
+  });
+
+  socket.on(
+    "purchase_property",
+    ({ propertyIndex }: { propertyIndex: number }) => {
+      gameController.purchaseProperty(io, socket, propertyIndex);
+    }
+  );
+
+  socket.on("sell_property", ({ propertyIndex }: { propertyIndex: number }) => {
+    gameController.sellProperty(io, socket, propertyIndex);
+  });
+
+  socket.on("upgrade_city", ({ tileIndex }: { tileIndex: number }) => {
+    gameController.upgradeCity(io, socket, tileIndex);
   });
 });

@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import Board from "./Board";
 import Scoreboard from "./Scoreboard";
-import TileInfo from "./TileInfo";
+import TileCard from "./TileCard";
 import { Button } from "./ui/button";
 import PlayersForm from "./PlayersForm";
 import { useEffect } from "react";
@@ -13,6 +13,7 @@ import {
   transferMoney,
   freePlayer,
   setPlayers,
+  sellProperty,
 } from "@/slices/game-slice";
 import Player from "@backend/types/Player";
 import { writeLog } from "@/slices/ui-slice";
@@ -42,15 +43,25 @@ const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
   };
 
   const onPurchasedProperty = ({
-    playerId,
-    tileIndex,
+    propertyIndex,
     message,
   }: {
-    playerId: string;
-    tileIndex: number;
+    propertyIndex: number;
     message: string;
   }) => {
-    dispatch(purchaseProperty({ playerId, tileIndex }));
+    dispatch(purchaseProperty({ propertyIndex }));
+
+    dispatch(writeLog(message));
+  };
+
+  const onSoldProperty = ({
+    propertyIndex,
+    message,
+  }: {
+    propertyIndex: number;
+    message: string;
+  }) => {
+    dispatch(sellProperty({ propertyIndex }));
 
     dispatch(writeLog(message));
   };
@@ -87,6 +98,7 @@ const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
     socket.on("game_started", onGameStarted);
     socket.on("switched_turn", onSwitchedTurn);
     socket.on("purchased_property", onPurchasedProperty);
+    socket.on("sold_property", onSoldProperty);
     socket.on("paid_out_of_jail", onPaidOutOfJail);
 
     return () => {
@@ -94,6 +106,7 @@ const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
       socket.off("game_started");
       socket.off("switched_turn");
       socket.off("purchased_property");
+      socket.off("sold_property");
       socket.off("paid_out_of_jail");
     };
   }, []);
@@ -104,7 +117,7 @@ const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
       <div className="grid items-center justify-center min-h-screen grid-cols-[repeat(15,_1fr)]">
         <div className="flex flex-col col-start-2 col-end-7 h-full py-8">
           <Scoreboard />
-          <TileInfo />
+          <TileCard />
         </div>
         <Board />
         <div className="flex flex-col col-start-10 col-end-[15] h-full py-8">

@@ -27,7 +27,6 @@ export type NewPlayer = {
 type Player = NewPlayer & {
   money: number;
   tilePos: number;
-  properties: number[];
 };
 
 export default Player;

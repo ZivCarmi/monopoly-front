@@ -10,7 +10,9 @@ export const cycleNextItem = (currentIndex: number | string, array: any[]) => {
     currentIndex = array.indexOf(currentIndex);
   }
 
-  return array[++currentIndex % array.length];
+  const nextItem = array[++currentIndex % array.length];
+
+  return nextItem;
 };
 
 export const cyclicRangeNumber = (incrementor: number, maxNumber: number) => {

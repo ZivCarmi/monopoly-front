@@ -15,12 +15,38 @@ export enum TileTypes {
   GO_TO_JAIL = "GO_TO_JAIL",
 }
 
+export enum CountryIds {
+  EGYPT = "EGYPT",
+  ISRAEL = "ISRAEL",
+  AUSTRALIA = "AUSTRALIA",
+  RUSSIA = "RUSSIA",
+  CHINA = "CHINA",
+  ITALY = "ITALY",
+  UK = "UK",
+  USA = "USA",
+}
+
+export enum RentIndexes {
+  BLANK,
+  ONE_HOUSE,
+  TWO_HOUSES,
+  THREE_HOUSES,
+  FOUR_HOUSES,
+  HOTEL,
+}
+
+export interface ICountry {
+  name: string;
+  id: CountryIds;
+}
+
 export interface IProperty extends ITile {
   type: TileTypes.PROPERTY;
+  country: ICountry;
   cost: number;
   color: string;
   rent: number[];
-  rentIndex: number;
+  rentIndex: RentIndexes;
   houseCost: number;
   hotelCost: number;
   owner: string | null;

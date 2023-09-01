@@ -1,9 +1,11 @@
 import {
+  ICountry,
   IIndustry,
   IProperty,
   ISuspension,
   ITax,
   ITile,
+  RentIndexes,
   TileTypes,
 } from "../types/Board";
 
@@ -30,10 +32,11 @@ export class Tile extends BasicTile implements ITile {
 
 class PropertyTile extends BasicTile implements IProperty {
   type: TileTypes.PROPERTY;
+  country: ICountry;
   cost: number;
   color: string;
   rent: number[];
-  rentIndex: number;
+  rentIndex: RentIndexes;
   owner: string | null;
   houseCost: number;
   hotelCost: number;
@@ -43,10 +46,11 @@ class PropertyTile extends BasicTile implements IProperty {
       name: props.name,
     });
     this.type = TileTypes.PROPERTY;
+    this.country = props.country;
     this.cost = props.cost;
     this.color = props.color;
     this.rent = props.rent;
-    this.rentIndex = 0;
+    this.rentIndex = RentIndexes.BLANK;
     this.owner = null;
     this.houseCost = props.houseCost;
     this.hotelCost = props.hotelCost;
@@ -105,6 +109,7 @@ type TileProps = BasicTileProps & {
 };
 
 type PropertyTileProps = BasicTileProps & {
+  country: ICountry;
   cost: number;
   color: string;
   rent: number[];

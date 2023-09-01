@@ -1,15 +1,29 @@
 import { Server, Socket } from "socket.io";
 import Player, { NewPlayer } from "../api/types/Player";
 import Room from "../api/types/Room";
-import { IJail, ITax, PurchasableTile, TileTypes } from "../api/types/Board";
+import {
+  CountryIds,
+  IJail,
+  ITax,
+  PurchasableTile,
+  TileTypes,
+} from "../api/types/Board";
 import {
   AIRPORT_RENTS,
   COMPANY_RENTS,
   DICE_OPTIONS,
   PAY_OUT_FROM_JAIL_AMOUNT,
 } from "../api/constants";
-import { getJailTileIndex } from "../api/helpers";
+import {
+  advanceToTileChanceCard,
+  advanceToTileTypeChanceCard,
+  getJailTileIndex,
+  hasBuildings,
+  hasMonopoly,
+  paymentChanceCard,
+} from "../api/helpers";
 import { shuffleArray, cycleNextItem, cyclicRangeNumber } from "../api/utils";
+import { ChanceCardTypes, GameChanceCard } from "../api/types/Cards";
 
 class GameController {
   public rooms: { [roomId: string]: Room } = {};
@@ -80,6 +94,23 @@ class GameController {
     } else {
       // Set new room
       this.rooms[roomId] = room;
+
+      // TESTING
+      const testMap = room.map.board.map((tile) => {
+        if (tile.type === TileTypes.PROPERTY) {
+          if (tile.country.id === CountryIds.EGYPT) {
+            tile.owner = socket.id;
+          }
+
+          if (tile.country.id === CountryIds.ISRAEL && tile.name === "חיפה") {
+            tile.owner = socket.id;
+          }
+        }
+
+        return tile;
+      });
+
+      this.rooms[roomId].map.board = testMap;
     }
 
     await socket.join(roomId);
@@ -101,7 +132,6 @@ class GameController {
       ...player,
       money: 1000,
       tilePos: 0,
-      properties: [],
     };
 
     // add the player
@@ -163,10 +193,10 @@ class GameController {
 
     const players = Object.values(this.rooms[gameRoom].players);
 
-    if (players.length < 2) return;
+    if (socket.id !== this.rooms[gameRoom].hostId || players.length < 2) return;
 
     // randomize the players array
-    shuffleArray(players);
+    // shuffleArray(players); // TEMP COMMENTED
 
     const startingPlayer = players[0].id;
     const gameStartMessage = "המשחק התחיל!";
@@ -184,6 +214,7 @@ class GameController {
   }
 
   private payRent(roomId: string, payerId: string, tile: PurchasableTile) {
+    const board = this.rooms[roomId].map.board;
     const payingPlayer = this.rooms[roomId].players[payerId];
     const owner = tile.owner && this.rooms[roomId].players[tile.owner];
     let rentAmount: number = 0;
@@ -191,15 +222,19 @@ class GameController {
     if (!owner) return;
 
     if (tile.type === TileTypes.PROPERTY) {
-      rentAmount = tile.rent[tile.rentIndex];
+      const doubleRent =
+        !hasBuildings(board, tile.country.id) &&
+        hasMonopoly(board, tile.country.id);
+
+      rentAmount = doubleRent ? tile.rent[0] * 2 : tile.rent[tile.rentIndex];
     } else if (tile.type === TileTypes.AIRPORT) {
-      const ownedAirportsCount = this.rooms[roomId].map.board.filter(
+      const ownedAirportsCount = board.filter(
         (_tile) => _tile.type === TileTypes.AIRPORT && _tile.owner === owner.id
       ).length;
 
       rentAmount = AIRPORT_RENTS[ownedAirportsCount - 1];
     } else if (tile.type === TileTypes.COMPANY) {
-      const ownedCompaniesCount = this.rooms[roomId].map.board.filter(
+      const ownedCompaniesCount = board.filter(
         (_tile) => _tile.type === TileTypes.COMPANY && _tile.owner === owner.id
       ).length;
       const rentIndexAmount = COMPANY_RENTS[ownedCompaniesCount - 1];
@@ -207,33 +242,20 @@ class GameController {
       rentAmount = Math.ceil((payingPlayer.money * rentIndexAmount) / 100);
     }
 
-    const moneyAfterDeduction =
-      this.rooms[roomId].players[payerId].money - rentAmount;
-
-    this.rooms[roomId].players[payerId].money = moneyAfterDeduction;
+    this.rooms[roomId].players[payerId].money = payingPlayer.money - rentAmount;
     this.rooms[roomId].players[owner.id].money += rentAmount;
 
     this.writeLogToRoom(
       roomId,
       `${payingPlayer.name} שילם שכירות בסך $${rentAmount} לידי ${owner.name}`
     );
-
-    if (moneyAfterDeduction < 0) {
-      // budget overrun
-    }
   }
 
   private payTax(roomId: string, payerId: string, tile: ITax) {
     const payingPlayer = this.rooms[roomId].players[payerId];
     const taxAmount = Math.ceil((payingPlayer.money * tile.taxRate) / 100);
 
-    const moneyAfterDeduction =
-      this.rooms[roomId].players[payerId].money - taxAmount;
     this.rooms[roomId].players[payerId].money -= taxAmount;
-
-    if (moneyAfterDeduction < 0) {
-      // budget overrun
-    }
   }
 
   private onPlayerLanding(roomId: string, playerId: string) {
@@ -258,9 +280,8 @@ class GameController {
         this.payRent(roomId, playerId, landedTile);
       }
     } else if (landedTile.type === TileTypes.CHANCE) {
-      // TO-DO
-
-      this.rooms[roomId].map.chances.currentIndex++;
+      this.handleChanceCard(roomId, playerId);
+      this.rooms[roomId].map.chances.currentIndex += 1;
     } else if (landedTile.type === TileTypes.TAX) {
       this.payTax(roomId, playerId, landedTile);
     } else if (landedTile.type === TileTypes.SURPRISE) {
@@ -275,36 +296,105 @@ class GameController {
 
       this.writeLogToRoom(roomId, `${playerName} יצא לחופשה`);
     } else if (landedTile.type === TileTypes.GO_TO_JAIL) {
-      const jailTileIndex = getJailTileIndex(this.rooms[roomId].map.board);
-      const jailTile = this.rooms[roomId].map.board[jailTileIndex] as IJail;
-
-      if (!jailTile) return;
-
-      this.rooms[roomId].players[playerId].tilePos = jailTileIndex;
-      this.rooms[roomId].suspendedPlayers[playerId] = {
-        reason: TileTypes.JAIL,
-        left: jailTile.suspensionAmount,
-      };
+      this.sendPlayerToJail(roomId, playerId);
     }
 
-    console.log("suspended players state", this.rooms[roomId].suspendedPlayers);
+    console.log(
+      "Player state after landing",
+      this.rooms[roomId].players[playerId]
+    );
   }
 
-  public purchaseProperty(io: Server, socket: Socket) {
+  public sendPlayerToJail(roomId: string, playerId: string) {
+    const room = this.rooms[roomId];
+
+    if (!room) {
+      console.log("Room not found in sendPlayerToJail");
+      return;
+    }
+
+    const jailTileIndex = getJailTileIndex(room.map.board);
+    const jailTile = room.map.board[jailTileIndex] as IJail;
+
+    if (!jailTile) return;
+
+    this.rooms[roomId].players[playerId].tilePos = jailTileIndex;
+    this.rooms[roomId].suspendedPlayers[playerId] = {
+      reason: TileTypes.JAIL,
+      left: jailTile.suspensionAmount,
+    };
+  }
+
+  private handleChanceCard = (roomId: string, playerId: string) => {
+    const room = this.rooms[roomId];
+    const player = this.rooms[roomId].players[playerId];
+    const chanceCards = room.map.chances;
+    const drawnChanceCard: GameChanceCard = cycleNextItem(
+      chanceCards.currentIndex,
+      chanceCards.cards
+    );
+
+    if (!room || !player) {
+      console.log("Player not found on handleChanceCard");
+      return;
+    }
+
+    switch (drawnChanceCard.type) {
+      case ChanceCardTypes.PAYMENT:
+      case ChanceCardTypes.GROUP_PAYMENT:
+        this.rooms[roomId].players = paymentChanceCard(
+          player.id,
+          drawnChanceCard,
+          room
+        );
+        return;
+      case ChanceCardTypes.ADVANCE_TO_TILE:
+        this.rooms[roomId].players[playerId] = advanceToTileChanceCard(
+          player.id,
+          drawnChanceCard,
+          room
+        );
+
+        return this.onPlayerLanding(roomId, playerId);
+      case ChanceCardTypes.ADVANCE_TO_TILE_TYPE:
+        this.rooms[roomId].players[playerId] = advanceToTileTypeChanceCard(
+          player.id,
+          drawnChanceCard,
+          room
+        );
+
+        return this.onPlayerLanding(roomId, playerId);
+      case ChanceCardTypes.WALK:
+        return this.walkPlayer(roomId, playerId, drawnChanceCard.event.steps);
+      case ChanceCardTypes.GO_TO_JAIL:
+        return this.sendPlayerToJail(roomId, playerId);
+      default:
+        return;
+    }
+  };
+
+  public purchaseProperty(io: Server, socket: Socket, propertyIndex: number) {
     const gameRoom = this.getSocketGameRoom(socket);
 
     console.log("--------------------------------------");
-    console.log("Player attempting to purchase");
+    console.log("Player attempting to purchase...");
 
     if (!gameRoom) return;
 
-    const player = this.rooms[gameRoom].players[socket.id];
-    const playerTileIndex = player.tilePos;
-    const tile = this.rooms[gameRoom].map.board[playerTileIndex];
+    const room = this.rooms[gameRoom];
+    const player = room.players[socket.id];
+    const tile = room.map.board[propertyIndex];
 
-    console.log("Attempted player:", player);
-    console.log("Player position:", playerTileIndex);
-    console.log("Tile", tile);
+    console.log("Attempted player:", player, "Attempted Tile:", tile);
+
+    if (propertyIndex !== player.tilePos) {
+      console.log(
+        "propertyIndex from client is not in sync with player position on server."
+      );
+      return;
+    }
+
+    if (room.currentPlayerTurnId !== socket.id) return;
 
     if (
       tile.type !== TileTypes.PROPERTY &&
@@ -318,27 +408,66 @@ class GameController {
     const purchaseMessage = `${player.name} רכש את ${tile.name}`;
 
     // update player
-    this.rooms[gameRoom].players[socket.id].properties.push(playerTileIndex);
     this.rooms[gameRoom].players[socket.id].money -= tile.cost;
 
     // update board
-    this.rooms[gameRoom].map.board[playerTileIndex] = {
-      ...this.rooms[gameRoom].map.board[playerTileIndex],
-      owner: player.id,
-    } as PurchasableTile;
+    tile.owner = player.id;
+    this.rooms[gameRoom].map.board[propertyIndex] = tile;
 
-    console.log(this.rooms[gameRoom].map.board[playerTileIndex]);
+    console.log(this.rooms[gameRoom].map.board[propertyIndex]);
     console.log(this.rooms[gameRoom].players[socket.id]);
 
     io.in(gameRoom).emit("purchased_property", {
-      playerId: player.id,
-      tileIndex: playerTileIndex,
+      propertyIndex,
       message: purchaseMessage,
     });
 
     this.writeLogToRoom(gameRoom, purchaseMessage);
+  }
+
+  public sellProperty(io: Server, socket: Socket, propertyIndex: number) {
+    const gameRoom = this.getSocketGameRoom(socket);
 
     console.log("--------------------------------------");
+    console.log("Player attempting to sell property...");
+
+    if (!gameRoom) return;
+
+    const room = this.rooms[gameRoom];
+    const player = room.players[socket.id];
+    const tile = room.map.board[propertyIndex];
+
+    console.log("Attempted player:", player, "Attempted Tile:", tile);
+
+    if (room.currentPlayerTurnId !== socket.id) return;
+
+    if (
+      tile.type !== TileTypes.PROPERTY &&
+      tile.type !== TileTypes.AIRPORT &&
+      tile.type !== TileTypes.COMPANY
+    )
+      return;
+
+    if (tile.owner !== socket.id) return;
+
+    const purchaseMessage = `${player.name} מכר את ${tile.name}`;
+
+    // update player
+    this.rooms[gameRoom].players[socket.id].money += tile.cost / 2;
+
+    // update board
+    tile.owner = null;
+    this.rooms[gameRoom].map.board[propertyIndex] = tile;
+
+    console.log(this.rooms[gameRoom].map.board[propertyIndex]);
+    console.log(this.rooms[gameRoom].players[socket.id]);
+
+    io.in(gameRoom).emit("sold_property", {
+      propertyIndex,
+      message: purchaseMessage,
+    });
+
+    this.writeLogToRoom(gameRoom, purchaseMessage);
   }
 
   public rollDice(io: Server, socket: Socket) {
@@ -362,13 +491,13 @@ class GameController {
     //   DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
     //   DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
     // ];
-    let randomizeDices = [1, 1];
+    let randomizeDices = [2, 1];
 
     const allPlayers = this.rooms[gameRoom].players;
 
     // test dices for first player
     if (Object.keys(allPlayers)[0] === currentPlayerTurnId) {
-      // randomizeDices = [1, 5];
+      // randomizeDices = [6, 6];
     }
 
     const isDouble = randomizeDices[0] === randomizeDices[1];
@@ -406,18 +535,34 @@ class GameController {
       return this.switchTurn(io, socket);
     }
 
-    const tileToWalk = currentPlayer.tilePos + dicesSum;
+    this.walkPlayer(gameRoom, socket.id, dicesSum);
+  }
+
+  public walkPlayer(roomId: string, playerId: string, steps: number) {
+    const room = this.rooms[roomId];
+    const player = room?.players[playerId];
+    const { board, goRewards } = room?.map;
+
+    if (!room) {
+      console.log("Room not found on walkPlayer");
+      return;
+    }
+
+    if (!player) {
+      console.log("Player not found on walkPlayer");
+      return;
+    }
+
+    const tileToWalk = player.tilePos + steps;
     const newPlayerPosition = cyclicRangeNumber(tileToWalk, board.length);
     const passedGo = tileToWalk > board.length && newPlayerPosition !== 0;
 
-    this.rooms[gameRoom].players[socket.id].tilePos = newPlayerPosition;
-    this.rooms[gameRoom].players[socket.id].money = passedGo
-      ? currentPlayer.money + this.rooms[gameRoom].map.goRewards.pass
-      : currentPlayer.money;
+    this.rooms[roomId].players[playerId].tilePos = newPlayerPosition;
+    this.rooms[roomId].players[playerId].money = passedGo
+      ? player.money + goRewards.pass
+      : player.money;
 
-    this.onPlayerLanding(gameRoom, socket.id);
-
-    console.log("--------------------------------------");
+    this.onPlayerLanding(roomId, playerId);
   }
 
   public switchTurn(io: Server, socket: Socket) {
@@ -433,7 +578,10 @@ class GameController {
 
     const playerIds = Object.keys(this.rooms[gameRoom].players);
 
-    const nextPlayerTurnId = cycleNextItem(currentPlayerTurnId, playerIds);
+    const nextPlayerTurnId: string = cycleNextItem(
+      currentPlayerTurnId,
+      playerIds
+    );
 
     console.log(`Current player`, currentPlayerTurnId);
     console.log(`Maybe next player id`, nextPlayerTurnId);
@@ -475,8 +623,6 @@ class GameController {
     io.in(gameRoom).emit("switched_turn", {
       nextPlayerId: nextPlayerTurnId,
     });
-
-    console.log("--------------------------------------");
   }
 
   public payOutOfJail(io: Server, socket: Socket) {
@@ -503,6 +649,31 @@ class GameController {
 
       return this.switchTurn(io, socket);
     }
+  }
+
+  public upgradeCity(io: Server, socket: Socket, tileIndex: number) {
+    const gameRoom = this.getSocketGameRoom(socket);
+
+    console.log("--------------------------------------");
+
+    if (!gameRoom) return;
+
+    const {
+      currentPlayerTurnId,
+      suspendedPlayers,
+      map: { board },
+    } = this.rooms[gameRoom];
+    const tile = board[tileIndex];
+
+    if (tile.type !== TileTypes.PROPERTY || tile.owner !== socket.id) return;
+
+    const isMonopoly = hasMonopoly(board, tile.country.id);
+    const selfPlayerHasTurn = currentPlayerTurnId !== socket.id;
+    const selfPlayerIsSuspended = suspendedPlayers[socket.id];
+
+    if (!isMonopoly || !selfPlayerHasTurn || !selfPlayerIsSuspended) return;
+
+    const player = this.rooms[gameRoom].players[socket.id];
   }
 }
 

@@ -69,7 +69,7 @@ const initialState: GameState = {
   counter: TURN_TIMES.rollDices,
 };
 
-type TransferMoneyArgs = {
+export type TransferMoneyArgs = {
   amount: number;
   payerId?: string;
   recieverId?: string;
@@ -122,17 +122,17 @@ export const gameSlice = createSlice({
     },
     incrementPlayerPosition: (
       state,
-      action: PayloadAction<{ playerId: string }>
+      action: PayloadAction<{ playerId: string; incrementor: number }>
     ) => {
       const boardLength = state.map.board.length;
-      const { playerId } = action.payload;
+      const { playerId, incrementor } = action.payload;
       const playerIndex = state.players.findIndex(
         (player) => player.id === playerId
       );
 
       if (playerIndex >= 0) {
         state.players[playerIndex].tilePos = cyclicRangeNumber(
-          state.players[playerIndex].tilePos + 1,
+          state.players[playerIndex].tilePos + incrementor,
           boardLength
         );
       }
@@ -159,10 +159,10 @@ export const gameSlice = createSlice({
     transferMoney: (state, action: PayloadAction<TransferMoneyArgs>) => {
       const { payerId, recieverId, amount } = action.payload;
       const payerIndex = state.players.findIndex(
-        (player) => player.id === payerId
+        (player) => payerId && player.id === payerId
       );
       const recieverIndex = state.players.findIndex(
-        (player) => player.id === recieverId
+        (player) => recieverId && player.id === recieverId
       );
 
       if (payerIndex >= 0) {
@@ -175,27 +175,42 @@ export const gameSlice = createSlice({
     },
     purchaseProperty: (
       state,
-      action: PayloadAction<{
-        playerId: string;
-        tileIndex: number;
-      }>
+      action: PayloadAction<{ propertyIndex: number }>
     ) => {
-      const { playerId, tileIndex } = action.payload;
-      const tile = state.map.board[tileIndex] as PurchasableTile;
+      const { currentPlayerTurnId } = state;
+      const { propertyIndex } = action.payload;
+      const tile = state.map.board[propertyIndex] as PurchasableTile;
       const playerIndex = state.players.findIndex(
-        (player) => player.id === playerId
+        (player) => player.id === currentPlayerTurnId
       );
 
       // update player
       if (playerIndex >= 0) {
         state.players[playerIndex].money -= tile.cost;
-        state.players[playerIndex].properties.push(tileIndex);
       }
 
       // update board
       if (tile) {
-        tile.owner = playerId;
-        state.map.board[tileIndex] = tile;
+        tile.owner = currentPlayerTurnId;
+        state.map.board[propertyIndex] = tile;
+      }
+    },
+    sellProperty: (state, action: PayloadAction<{ propertyIndex: number }>) => {
+      const { propertyIndex } = action.payload;
+      const tile = state.map.board[propertyIndex] as PurchasableTile;
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === state.currentPlayerTurnId
+      );
+
+      // update player
+      if (playerIndex >= 0) {
+        state.players[playerIndex].money += tile.cost / 2;
+      }
+
+      // update board
+      if (tile) {
+        tile.owner = null;
+        state.map.board[propertyIndex] = tile;
       }
     },
     suspendPlayer: (
@@ -244,8 +259,6 @@ export const gameSlice = createSlice({
     drawChanceCard: (state) => {
       const { cards: chanceCards, currentIndex } = state.map.chances;
 
-      console.log(chanceCards);
-
       state.drawnChanceCard = cycleNextItem(currentIndex, chanceCards);
       state.map.chances.currentIndex += 1;
     },
@@ -273,6 +286,7 @@ export const {
   allowTurnActions,
   transferMoney,
   purchaseProperty,
+  sellProperty,
   suspendPlayer,
   staySuspendedTurn,
   endPlayerTurn,

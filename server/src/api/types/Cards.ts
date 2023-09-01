@@ -5,141 +5,147 @@ export enum ChanceCardTypes {
   GROUP_PAYMENT = "GROUP_PAYMENT",
   ADVANCE_TO_TILE = "ADVANCE_TO_TILE",
   ADVANCE_TO_TILE_TYPE = "ADVANCE_TO_TILE_TYPE",
+  WALK = "WALK",
+  GO_TO_JAIL = "GO_TO_JAIL",
 }
-
-type GameChanceTileType =
-  | ChanceCardTypes.PAYMENT
-  | ChanceCardTypes.GROUP_PAYMENT
-  | ChanceCardTypes.ADVANCE_TO_TILE
-  | ChanceCardTypes.ADVANCE_TO_TILE_TYPE;
 
 export enum PaymentTypes {
   EARN = "EARN",
   PAY = "PAY",
 }
 
-class ChanceCard {
+class ChanceCard implements BasicChanceCard {
   message: string;
-  type: GameChanceTileType;
 
-  constructor(props: ChanceCardProps) {
+  constructor(props: BasicChanceCard) {
     this.message = props.message;
-    this.type = props.type;
   }
 }
 
-class Payment extends ChanceCard {
+export class PaymentCard extends ChanceCard implements IPaymentChanceCard {
+  type: ChanceCardTypes.PAYMENT | ChanceCardTypes.GROUP_PAYMENT;
   event: {
     paymentType: PaymentTypes;
     amount: number;
   };
 
   constructor(props: PaymentChanceCardProps) {
-    super({ type: props.type, message: props.message });
+    super({ message: props.message });
+    this.type = props.type;
     this.event = props.event;
   }
 }
 
-class AdvancedToTile extends ChanceCard {
+export class AdvancedToTileCard
+  extends ChanceCard
+  implements IAdvancedToTileChanceCard
+{
+  type: ChanceCardTypes.ADVANCE_TO_TILE;
   event: {
     tileIndex: number;
     shouldGetGoReward: boolean;
   };
 
-  constructor(props: AdvancedToTileChanceCardProps) {
-    super({ type: ChanceCardTypes.ADVANCE_TO_TILE, message: props.message });
+  constructor(props: AdvancedToTileProps) {
+    super({ message: props.message });
+    this.type = ChanceCardTypes.ADVANCE_TO_TILE;
     this.event = props.event;
   }
 }
 
-class AdvancedToTileType extends ChanceCard {
+export class AdvancedToTileTypeCard
+  extends ChanceCard
+  implements IAdvancedToTileTypeChanceCard
+{
+  type: ChanceCardTypes.ADVANCE_TO_TILE_TYPE;
   event: {
-    tileType: TileTypes;
+    tileType: TileTypes.AIRPORT | TileTypes.COMPANY;
   };
 
-  constructor(props: AdvancedToTileTypeChanceCardProps) {
+  constructor(props: AdvancedToTileTypeProps) {
     super({
-      type: ChanceCardTypes.ADVANCE_TO_TILE_TYPE,
       message: props.message,
     });
+    this.type = ChanceCardTypes.ADVANCE_TO_TILE_TYPE;
     this.event = props.event;
   }
 }
+
+export class WalkCard extends ChanceCard implements IWalkChanceCard {
+  type: ChanceCardTypes.WALK;
+  event: {
+    steps: number;
+  };
+
+  constructor(props: WalkProps) {
+    super({
+      message: props.message,
+    });
+    this.type = ChanceCardTypes.WALK;
+    this.event = props.event;
+  }
+}
+
+export class GoToJail extends ChanceCard {
+  type: ChanceCardTypes.GO_TO_JAIL;
+
+  constructor(props: GoToJailProps) {
+    super({
+      message: props.message,
+    });
+    this.type = ChanceCardTypes.GO_TO_JAIL;
+  }
+}
+
+export type GameChanceCard =
+  | PaymentCard
+  | AdvancedToTileCard
+  | AdvancedToTileTypeCard
+  | WalkCard
+  | GoToJail;
 
 type BasicChanceCard = {
   message: string;
 };
 
-type ChanceCardProps = BasicChanceCard & {
-  type: ChanceCardTypes;
-};
-
-type PaymentChanceCardProps = BasicChanceCard & {
+export interface IPaymentEvent {
+  paymentType: PaymentTypes;
+  amount: number;
+}
+interface IPaymentChanceCard {
   type: ChanceCardTypes.PAYMENT | ChanceCardTypes.GROUP_PAYMENT;
-  event: {
-    paymentType: PaymentTypes;
-    amount: number;
-  };
-};
+  event: IPaymentEvent;
+}
+type PaymentChanceCardProps = BasicChanceCard & IPaymentChanceCard;
 
-type AdvancedToTileChanceCardProps = BasicChanceCard & {
+interface IAdvancedToTileChanceCard {
   event: {
     tileIndex: number;
     shouldGetGoReward: boolean;
   };
-};
+}
+type AdvancedToTileProps = BasicChanceCard & IAdvancedToTileChanceCard;
 
-type AdvancedToTileTypeChanceCardProps = BasicChanceCard & {
+interface IAdvancedToTileTypeChanceCard {
   event: {
     tileType: TileTypes.AIRPORT | TileTypes.COMPANY;
   };
-};
+}
+type AdvancedToTileTypeProps = BasicChanceCard & IAdvancedToTileTypeChanceCard;
 
-export type GameChanceCard = Payment | AdvancedToTile | AdvancedToTileType;
+interface IWalkChanceCard {
+  event: {
+    steps: number;
+  };
+}
+type WalkProps = BasicChanceCard & IWalkChanceCard;
+
+type GoToJailProps = BasicChanceCard;
 
 export default {
-  Payment,
-  AdvancedToTile,
-  AdvancedToTileType,
+  PaymentCard,
+  AdvancedToTileCard,
+  AdvancedToTileTypeCard,
+  WalkCard,
+  GoToJail,
 };
-
-// type ChanceCard = {
-//   message: string;
-// };
-
-// type PaymentChanceCard = ChanceCard & {
-//   event: {
-//     type: ChanceCardType.PAYMENT;
-//     paymentType: PaymentTypes;
-//     amount: number;
-//   };
-// };
-
-// type GroupPaymentChanceCard = ChanceCard & {
-//   event: {
-//     type: ChanceCardType.GROUP_PAYMENT;
-//     paymentType: PaymentTypes;
-//     amount: number;
-//   };
-// };
-
-// type AdvancedToTileChanceCard = ChanceCard & {
-//   event: {
-//     type: ChanceCardType.ADVANCE_TO_TILE;
-//     tileIndex: number;
-//     shouldGetGoReward: boolean;
-//   };
-// };
-
-// type AdvancedToTileTypeChanceCard = ChanceCard & {
-//   event: {
-//     type: ChanceCardType.ADVANCE_TO_TILE_TYPE;
-//     tileType: TileTypes.AIRPORT | TileTypes.COMPANY;
-//   };
-// };
-
-// type GameChanceCard =
-//   | PaymentChanceCard
-//   | GroupPaymentChanceCard
-//   | AdvancedToTileChanceCard
-//   | AdvancedToTileTypeChanceCard;

@@ -1,10 +1,6 @@
-import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { useAppSelector } from "@/app/hooks";
 import { ButtonWithIcon } from "./ui/button";
 import { isProperty } from "@/helpers/tiles";
-import {
-  handlePayOutOfJail,
-  handlePurchaseProperty,
-} from "@/actions/game-actions";
 import RollDices from "./RollDices";
 import { ShoppingCart } from "lucide-react";
 import { useSocket } from "@/app/socket-context";
@@ -16,37 +12,42 @@ const CenterAction = () => {
   const { socket } = useSocket();
   const { canPerformTurnActions, cubesRolledInTurn, suspendedPlayers } =
     useAppSelector((state) => state.game);
-  const currentPlayerTurn = useAppSelector(selectCurrentPlayerTurn);
+  const selfPlayer = useAppSelector(selectCurrentPlayerTurn);
   const board = useAppSelector(selectGameBoard);
-  const dispatch = useAppDispatch();
 
-  if (!socket || !currentPlayerTurn || !canPerformTurnActions) {
+  if (!socket || !selfPlayer || !canPerformTurnActions) {
     return null;
   }
 
   const selfPlayerSuspended = suspendedPlayers[socket.id];
-  const landedTile = board[currentPlayerTurn.tilePos] as PurchasableTile;
-  const ableToPurchase =
-    cubesRolledInTurn && isProperty(landedTile) && !landedTile.owner;
+  const tile = board[selfPlayer.tilePos] as PurchasableTile;
+  const canPurchase = cubesRolledInTurn && isProperty(tile) && !tile.owner;
+
+  const purchasePropertyHandler = () => {
+    socket.emit("purchase_property", {
+      propertyIndex: selfPlayer.tilePos,
+    });
+  };
+
+  const payOutOfJailHandler = () => {
+    socket.emit("pay_out_of_jail");
+  };
 
   return (
     <>
-      {ableToPurchase && (
+      {canPurchase && (
         <p className="bg-white dark:bg-neutral-800 rounded-md p-4 text-center">
-          האם אתה מעוניין לרכוש את {landedTile.name}?
+          האם אתה מעוניין לרכוש את {tile.name}?
         </p>
       )}
       <div className="flex items-center justify-center gap-2">
-        {ableToPurchase && (
+        {canPurchase && (
           <ButtonWithIcon
             icon={ShoppingCart}
-            children={`רכוש עבור $${landedTile.cost}`}
+            children={`רכוש עבור $${tile.cost}`}
             variant="outline"
-            onClick={() =>
-              dispatch(
-                handlePurchaseProperty(socket, currentPlayerTurn.tilePos)
-              )
-            }
+            disabled={selfPlayer.money < tile.cost}
+            onClick={purchasePropertyHandler}
           />
         )}
         {selfPlayerSuspended &&
@@ -56,7 +57,8 @@ const CenterAction = () => {
               icon={ShoppingCart}
               children={`שלם $${PAY_OUT_FROM_JAIL_AMOUNT} להשתחרר מהכלא`}
               variant="outline"
-              onClick={() => dispatch(handlePayOutOfJail(socket))}
+              disabled={selfPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
+              onClick={payOutOfJailHandler}
             />
           )}
         <RollDices />
