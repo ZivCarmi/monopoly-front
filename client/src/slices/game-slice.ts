@@ -1,12 +1,20 @@
 import { RootState } from "@/app/store";
 import Player from "@backend/types/Player";
-import Room from "@backend/types/Room";
+import Room from "@backend/classes/Room";
 import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
-import { TURN_TIMES } from "@/lib/constants";
-import Board, { PurchasableTile } from "@backend/types/Board";
-import { SuspensionReasons } from "@backend/types/Game";
-import { GameChanceCard } from "@backend/types/Cards";
+import { TURN_TIMES } from "@/utils/constants";
+import {
+  Board,
+  IProperty,
+  PurchasableTile,
+  RentIndexes,
+  SuspensionTileTypes,
+  TileTypes,
+} from "@backend/types/Board";
+import { GameCard } from "@backend/types/Cards";
+import { SuspensionProps } from "@backend/types/Game";
 import { cycleNextItem, cyclicRangeNumber } from "@backend/utils";
+import { RoomGameCards } from "@backend/types/Room";
 
 export interface GameState {
   isInRoom: boolean;
@@ -15,10 +23,8 @@ export interface GameState {
   players: Player[];
   map: {
     board: Board;
-    chances: {
-      cards: GameChanceCard[];
-      currentIndex: number;
-    };
+    chances: RoomGameCards;
+    surprises: RoomGameCards;
     goRewards: {
       pass: number;
       land: number;
@@ -28,16 +34,14 @@ export interface GameState {
   dices: number[];
   cubesRolledInTurn: boolean;
   currentPlayerTurnId: string | null;
+  landedTileIndexInTurn: number | null;
   canPerformTurnActions: boolean;
   doublesInARow: number;
   forceEndTurn: boolean;
   suspendedPlayers: {
-    [playerId: string]: {
-      reason: SuspensionReasons;
-      left: number;
-    };
+    [playerId: string]: SuspensionProps;
   };
-  drawnChanceCard: GameChanceCard | null;
+  drawnGameCard: GameCard | null;
   counter: number;
 }
 
@@ -52,6 +56,10 @@ const initialState: GameState = {
       cards: [],
       currentIndex: 0,
     },
+    surprises: {
+      cards: [],
+      currentIndex: 0,
+    },
     goRewards: {
       pass: 200,
       land: 300,
@@ -61,11 +69,12 @@ const initialState: GameState = {
   dices: [],
   cubesRolledInTurn: false,
   currentPlayerTurnId: null,
+  landedTileIndexInTurn: null,
   canPerformTurnActions: true,
   doublesInARow: 0,
   forceEndTurn: false,
   suspendedPlayers: {},
-  drawnChanceCard: null,
+  drawnGameCard: null,
   counter: TURN_TIMES.rollDices,
 };
 
@@ -119,6 +128,17 @@ export const gameSlice = createSlice({
       state.canPerformTurnActions = false;
       state.cubesRolledInTurn = true;
       state.doublesInARow = isDouble ? ++state.doublesInARow : 0;
+    },
+    setLandedTileIndex: (
+      state,
+      action: PayloadAction<{
+        currentPlayerPosition: number;
+        dicesSum: number;
+      }>
+    ) => {
+      const { currentPlayerPosition, dicesSum } = action.payload;
+
+      state.landedTileIndexInTurn = currentPlayerPosition + dicesSum;
     },
     incrementPlayerPosition: (
       state,
@@ -213,11 +233,44 @@ export const gameSlice = createSlice({
         state.map.board[propertyIndex] = tile;
       }
     },
+    setCityLevel: (
+      state,
+      action: PayloadAction<{
+        propertyIndex: number;
+        changeType: "upgrade" | "downgrade";
+      }>
+    ) => {
+      const { propertyIndex, changeType } = action.payload;
+      const tile = state.map.board[propertyIndex] as IProperty;
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === state.currentPlayerTurnId
+      );
+
+      // update board
+      if (tile) {
+        tile.rentIndex =
+          changeType === "upgrade" ? tile.rentIndex + 1 : tile.rentIndex - 1;
+        state.map.board[propertyIndex] = tile;
+      }
+
+      // update player
+      if (playerIndex >= 0) {
+        const transactionAmount =
+          tile.rentIndex === RentIndexes.HOTEL
+            ? tile.hotelCost
+            : tile.houseCost;
+        if (changeType === "upgrade") {
+          state.players[playerIndex].money -= transactionAmount;
+        } else {
+          state.players[playerIndex].money += transactionAmount;
+        }
+      }
+    },
     suspendPlayer: (
       state,
       action: PayloadAction<{
         playerId: string;
-        suspensionReason: SuspensionReasons;
+        suspensionReason: SuspensionTileTypes;
         suspensionLeft: number;
       }>
     ) => {
@@ -254,13 +307,32 @@ export const gameSlice = createSlice({
       delete state.suspendedPlayers[playerId];
     },
     resetCards: (state) => {
-      state.drawnChanceCard = null;
+      state.drawnGameCard = null;
     },
-    drawChanceCard: (state) => {
-      const { cards: chanceCards, currentIndex } = state.map.chances;
+    drawGameCard: (
+      state,
+      action: PayloadAction<{ type: TileTypes.CHANCE | TileTypes.SURPRISE }>
+    ) => {
+      const { chances, surprises } = state.map;
 
-      state.drawnChanceCard = cycleNextItem(currentIndex, chanceCards);
-      state.map.chances.currentIndex += 1;
+      switch (action.payload.type) {
+        case TileTypes.CHANCE:
+          state.drawnGameCard = cycleNextItem(
+            chances.currentIndex,
+            chances.cards
+          );
+          state.map.chances.currentIndex += 1;
+          break;
+        case TileTypes.SURPRISE:
+          state.drawnGameCard = cycleNextItem(
+            surprises.currentIndex,
+            surprises.cards
+          );
+          state.map.surprises.currentIndex += 1;
+          break;
+        default:
+          break;
+      }
     },
     switchTurn: (state, action: PayloadAction<{ nextPlayerId: string }>) => {
       const { nextPlayerId } = action.payload;
@@ -281,18 +353,20 @@ export const {
   setPlayers,
   startGame,
   setDices,
+  setLandedTileIndex,
   incrementPlayerPosition,
   movePlayer,
   allowTurnActions,
   transferMoney,
   purchaseProperty,
   sellProperty,
+  setCityLevel,
   suspendPlayer,
   staySuspendedTurn,
   endPlayerTurn,
   freePlayer,
   resetCards,
-  drawChanceCard,
+  drawGameCard,
   switchTurn,
 } = gameSlice.actions;
 

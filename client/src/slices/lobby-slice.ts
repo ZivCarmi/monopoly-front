@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Room } from "@backend/types/Room";
+import Room from "@backend/classes/Room";
 
 export interface LobbyState {
   lobbyRooms: Room[];

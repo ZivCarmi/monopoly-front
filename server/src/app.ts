@@ -74,4 +74,8 @@ io.on("connection", (socket) => {
   socket.on("upgrade_city", ({ tileIndex }: { tileIndex: number }) => {
     gameController.upgradeCity(io, socket, tileIndex);
   });
+
+  socket.on("downgrade_city", ({ tileIndex }: { tileIndex: number }) => {
+    gameController.downgradeCity(io, socket, tileIndex);
+  });
 });

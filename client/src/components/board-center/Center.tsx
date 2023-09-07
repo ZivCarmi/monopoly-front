@@ -1,11 +1,11 @@
 import { useAppSelector } from "@/app/hooks";
 import { selectCurrentPlayerTurn } from "@/slices/game-slice";
-import Countdown from "./Countdown";
+import Countdown from "../Countdown";
 import CenterAction from "./CenterAction";
 import GameLog from "./GameLog";
 import { useSocket } from "@/app/socket-context";
-import StartGameButton from "./StartGameButton";
-import Dices from "./Dices";
+import StartGameButton from "../StartGameButton";
+import Dices from "../Dices";
 
 const Center = () => {
   const { socket } = useSocket();

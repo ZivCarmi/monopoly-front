@@ -1,17 +1,18 @@
 import { useAppSelector } from "@/app/hooks";
-import { ButtonWithIcon } from "./ui/button";
-import { isProperty } from "@/helpers/tiles";
-import RollDices from "./RollDices";
+import { ButtonWithIcon } from "../ui/button";
+import RollDices from "../RollDices";
 import { ShoppingCart } from "lucide-react";
 import { useSocket } from "@/app/socket-context";
-import { PurchasableTile, TileTypes } from "@backend/types/Board";
+import { PurchasableTile, isPurchasable } from "@backend/types/Board";
 import { selectCurrentPlayerTurn, selectGameBoard } from "@/slices/game-slice";
 import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constants";
+import { isPlayerInJail } from "../../utils";
 
 const CenterAction = () => {
   const { socket } = useSocket();
-  const { canPerformTurnActions, cubesRolledInTurn, suspendedPlayers } =
-    useAppSelector((state) => state.game);
+  const { canPerformTurnActions, cubesRolledInTurn } = useAppSelector(
+    (state) => state.game
+  );
   const selfPlayer = useAppSelector(selectCurrentPlayerTurn);
   const board = useAppSelector(selectGameBoard);
 
@@ -19,9 +20,8 @@ const CenterAction = () => {
     return null;
   }
 
-  const selfPlayerSuspended = suspendedPlayers[socket.id];
   const tile = board[selfPlayer.tilePos] as PurchasableTile;
-  const canPurchase = cubesRolledInTurn && isProperty(tile) && !tile.owner;
+  const canPurchase = cubesRolledInTurn && isPurchasable(tile) && !tile.owner;
 
   const purchasePropertyHandler = () => {
     socket.emit("purchase_property", {
@@ -50,17 +50,15 @@ const CenterAction = () => {
             onClick={purchasePropertyHandler}
           />
         )}
-        {selfPlayerSuspended &&
-          selfPlayerSuspended.reason === TileTypes.JAIL &&
-          !cubesRolledInTurn && (
-            <ButtonWithIcon
-              icon={ShoppingCart}
-              children={`שלם $${PAY_OUT_FROM_JAIL_AMOUNT} להשתחרר מהכלא`}
-              variant="outline"
-              disabled={selfPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
-              onClick={payOutOfJailHandler}
-            />
-          )}
+        {isPlayerInJail(socket.id) && !cubesRolledInTurn && (
+          <ButtonWithIcon
+            icon={ShoppingCart}
+            children={`שלם $${PAY_OUT_FROM_JAIL_AMOUNT} להשתחרר מהכלא`}
+            variant="outline"
+            disabled={selfPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
+            onClick={payOutOfJailHandler}
+          />
+        )}
         <RollDices />
       </div>
     </>

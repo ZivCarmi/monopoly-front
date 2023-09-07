@@ -1,6 +1,13 @@
-import { TileTypes } from "./Board";
+import {
+  AdvancedToTileCard,
+  AdvancedToTileTypeCard,
+  GoToJailCard,
+  PaymentCard,
+  WalkCard,
+} from "../classes/Cards";
+import { IndustryTileTypes } from "./Board";
 
-export enum ChanceCardTypes {
+export enum GameCardTypes {
   PAYMENT = "PAYMENT",
   GROUP_PAYMENT = "GROUP_PAYMENT",
   ADVANCE_TO_TILE = "ADVANCE_TO_TILE",
@@ -14,97 +21,14 @@ export enum PaymentTypes {
   PAY = "PAY",
 }
 
-class ChanceCard implements BasicChanceCard {
-  message: string;
-
-  constructor(props: BasicChanceCard) {
-    this.message = props.message;
-  }
-}
-
-export class PaymentCard extends ChanceCard implements IPaymentChanceCard {
-  type: ChanceCardTypes.PAYMENT | ChanceCardTypes.GROUP_PAYMENT;
-  event: {
-    paymentType: PaymentTypes;
-    amount: number;
-  };
-
-  constructor(props: PaymentChanceCardProps) {
-    super({ message: props.message });
-    this.type = props.type;
-    this.event = props.event;
-  }
-}
-
-export class AdvancedToTileCard
-  extends ChanceCard
-  implements IAdvancedToTileChanceCard
-{
-  type: ChanceCardTypes.ADVANCE_TO_TILE;
-  event: {
-    tileIndex: number;
-    shouldGetGoReward: boolean;
-  };
-
-  constructor(props: AdvancedToTileProps) {
-    super({ message: props.message });
-    this.type = ChanceCardTypes.ADVANCE_TO_TILE;
-    this.event = props.event;
-  }
-}
-
-export class AdvancedToTileTypeCard
-  extends ChanceCard
-  implements IAdvancedToTileTypeChanceCard
-{
-  type: ChanceCardTypes.ADVANCE_TO_TILE_TYPE;
-  event: {
-    tileType: TileTypes.AIRPORT | TileTypes.COMPANY;
-  };
-
-  constructor(props: AdvancedToTileTypeProps) {
-    super({
-      message: props.message,
-    });
-    this.type = ChanceCardTypes.ADVANCE_TO_TILE_TYPE;
-    this.event = props.event;
-  }
-}
-
-export class WalkCard extends ChanceCard implements IWalkChanceCard {
-  type: ChanceCardTypes.WALK;
-  event: {
-    steps: number;
-  };
-
-  constructor(props: WalkProps) {
-    super({
-      message: props.message,
-    });
-    this.type = ChanceCardTypes.WALK;
-    this.event = props.event;
-  }
-}
-
-export class GoToJail extends ChanceCard {
-  type: ChanceCardTypes.GO_TO_JAIL;
-
-  constructor(props: GoToJailProps) {
-    super({
-      message: props.message,
-    });
-    this.type = ChanceCardTypes.GO_TO_JAIL;
-  }
-}
-
-export type GameChanceCard =
+export type GameCard =
   | PaymentCard
   | AdvancedToTileCard
   | AdvancedToTileTypeCard
   | WalkCard
-  | GoToJail;
+  | GoToJailCard;
 
-type BasicChanceCard = {
+export type BasicGameCard = {
   message: string;
 };
 
@@ -112,40 +36,33 @@ export interface IPaymentEvent {
   paymentType: PaymentTypes;
   amount: number;
 }
-interface IPaymentChanceCard {
-  type: ChanceCardTypes.PAYMENT | ChanceCardTypes.GROUP_PAYMENT;
+export interface IPaymentGameCard {
+  type: GameCardTypes.PAYMENT | GameCardTypes.GROUP_PAYMENT;
   event: IPaymentEvent;
 }
-type PaymentChanceCardProps = BasicChanceCard & IPaymentChanceCard;
+export type PaymentGameCardProps = BasicGameCard & IPaymentGameCard;
 
-interface IAdvancedToTileChanceCard {
+export interface IAdvancedToTileGameCard {
   event: {
     tileIndex: number;
     shouldGetGoReward: boolean;
   };
 }
-type AdvancedToTileProps = BasicChanceCard & IAdvancedToTileChanceCard;
+export type AdvancedToTileProps = BasicGameCard & IAdvancedToTileGameCard;
 
-interface IAdvancedToTileTypeChanceCard {
+export interface IAdvancedToTileTypeGameCard {
   event: {
-    tileType: TileTypes.AIRPORT | TileTypes.COMPANY;
+    tileType: IndustryTileTypes;
   };
 }
-type AdvancedToTileTypeProps = BasicChanceCard & IAdvancedToTileTypeChanceCard;
+export type AdvancedToTileTypeProps = BasicGameCard &
+  IAdvancedToTileTypeGameCard;
 
-interface IWalkChanceCard {
+export interface IWalkGameCard {
   event: {
     steps: number;
   };
 }
-type WalkProps = BasicChanceCard & IWalkChanceCard;
+export type WalkProps = BasicGameCard & IWalkGameCard;
 
-type GoToJailProps = BasicChanceCard;
-
-export default {
-  PaymentCard,
-  AdvancedToTileCard,
-  AdvancedToTileTypeCard,
-  WalkCard,
-  GoToJail,
-};
+export type GoToJailProps = BasicGameCard;

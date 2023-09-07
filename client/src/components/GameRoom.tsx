@@ -1,23 +1,19 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import Board from "./Board";
+import Board from "./board/Board";
 import Scoreboard from "./Scoreboard";
-import TileCard from "./TileCard";
 import { Button } from "./ui/button";
 import PlayersForm from "./PlayersForm";
 import { useEffect } from "react";
 import { useSocket } from "@/app/socket-context";
-import {
-  purchaseProperty,
-  startGame,
-  switchTurn,
-  transferMoney,
-  freePlayer,
-  setPlayers,
-  sellProperty,
-} from "@/slices/game-slice";
+import { startGame, switchTurn } from "@/slices/game-slice";
 import Player from "@backend/types/Player";
 import { writeLog } from "@/slices/ui-slice";
-import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constants";
+import {
+  soldPropertyThunk,
+  purchasedPropertyThunk,
+  cityLevelChangedThunk,
+  paidOutOfJailThunk,
+} from "@/actions/socket-actions";
 
 const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
   const { isReady, started } = useAppSelector((state) => state.game);
@@ -42,71 +38,45 @@ const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
     dispatch(switchTurn({ nextPlayerId }));
   };
 
-  const onPurchasedProperty = ({
-    propertyIndex,
-    message,
-  }: {
+  const onPurchasedProperty = (data: {
     propertyIndex: number;
     message: string;
   }) => {
-    dispatch(purchaseProperty({ propertyIndex }));
-
-    dispatch(writeLog(message));
+    dispatch(purchasedPropertyThunk(data));
   };
 
-  const onSoldProperty = ({
-    propertyIndex,
-    message,
-  }: {
+  const onSoldProperty = (data: { propertyIndex: number; message: string }) => {
+    dispatch(soldPropertyThunk(data));
+  };
+
+  const onCityLevelChange = (data: {
     propertyIndex: number;
+    changeType: "upgrade" | "downgrade";
     message: string;
   }) => {
-    dispatch(sellProperty({ propertyIndex }));
-
-    dispatch(writeLog(message));
+    dispatch(cityLevelChangedThunk(data));
   };
 
-  const onPaidOutOfJail = ({ player }: { player: Player }) => {
-    dispatch(
-      transferMoney({ payerId: player.id, amount: PAY_OUT_FROM_JAIL_AMOUNT })
-    );
-
-    dispatch(freePlayer({ playerId: player.id }));
-
-    dispatch(
-      writeLog(
-        `${player.name} שילם $${PAY_OUT_FROM_JAIL_AMOUNT} בשביל להשתחרר מהכלא`
-      )
-    );
-  };
-
-  const onCreatedPlayer = ({
-    players,
-    message,
-  }: {
-    players: Player[];
-    message: string;
-  }) => {
-    dispatch(setPlayers(players));
-    dispatch(writeLog(message));
+  const onPaidOutOfJail = (data: { message: string }) => {
+    dispatch(paidOutOfJailThunk(data));
   };
 
   useEffect(() => {
     if (!socket) return;
 
-    socket.on("player_created", onCreatedPlayer);
     socket.on("game_started", onGameStarted);
     socket.on("switched_turn", onSwitchedTurn);
     socket.on("purchased_property", onPurchasedProperty);
     socket.on("sold_property", onSoldProperty);
+    socket.on("city_level_change", onCityLevelChange);
     socket.on("paid_out_of_jail", onPaidOutOfJail);
 
     return () => {
-      socket.off("player_created");
       socket.off("game_started");
       socket.off("switched_turn");
       socket.off("purchased_property");
       socket.off("sold_property");
+      socket.off("city_level_change");
       socket.off("paid_out_of_jail");
     };
   }, []);
@@ -117,7 +87,6 @@ const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
       <div className="grid items-center justify-center min-h-screen grid-cols-[repeat(15,_1fr)]">
         <div className="flex flex-col col-start-2 col-end-7 h-full py-8">
           <Scoreboard />
-          <TileCard />
         </div>
         <Board />
         <div className="flex flex-col col-start-10 col-end-[15] h-full py-8">

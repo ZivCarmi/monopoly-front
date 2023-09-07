@@ -1,17 +1,20 @@
-import Board, {
+import {
+  Board,
   CountryIds,
   IGo,
   IProperty,
   RentIndexes,
   TileTypes,
+  isGo,
+  isJail,
+  isProperty,
 } from "./types/Board";
-import ChanceCards, {
+import { GameCardTypes, PaymentTypes } from "./types/Cards";
+import GameCards, {
   AdvancedToTileCard,
   AdvancedToTileTypeCard,
-  ChanceCardTypes,
   PaymentCard,
-  PaymentTypes,
-} from "./types/Cards";
+} from "./classes/Cards";
 import TileBuilder from "./classes/Board";
 import {
   AIRPORT_NAMES,
@@ -21,17 +24,17 @@ import {
   COUNTRIES,
 } from "./constants";
 import { shuffleArray } from "./utils";
-import Room from "./types/Room";
+import Room from "./classes/Room";
 
 export const getGoTile = (board: Board) =>
-  board.find((tile) => tile.type === TileTypes.GO) as IGo;
+  board.find((tile) => isGo(tile)) as IGo;
 
 export const getJailTileIndex = (board: Board) =>
-  board.findIndex((tile) => tile.type === TileTypes.JAIL);
+  board.findIndex((tile) => isJail(tile));
 
 export const getCities = (board: Board, countryId: CountryIds) =>
   board.filter(
-    (tile) => tile.type === TileTypes.PROPERTY && tile.country.id === countryId
+    (tile) => isProperty(tile) && tile.country.id === countryId
   ) as IProperty[];
 
 export const hasBuildings = (board: Board, countryId: CountryIds) => {
@@ -44,6 +47,25 @@ export const hasMonopoly = (board: Board, countryId: CountryIds) => {
   const cities = getCities(board, countryId);
 
   return cities.every((city) => city.owner === cities[0].owner);
+};
+
+export const getCityLevelText = (rentIndex: RentIndexes) => {
+  switch (rentIndex) {
+    case RentIndexes.BLANK:
+      return "שכירות";
+    case RentIndexes.ONE_HOUSE:
+      return "בית אחד";
+    case RentIndexes.TWO_HOUSES:
+      return "שני בתים";
+    case RentIndexes.THREE_HOUSES:
+      return "שלושה בתים";
+    case RentIndexes.FOUR_HOUSES:
+      return "ארבעה בתים";
+    case RentIndexes.HOTEL:
+      return "מלון";
+    default:
+      return "שכירות";
+  }
 };
 
 export const initializeMap = () => {
@@ -62,7 +84,7 @@ export const initializeMap = () => {
       name: "חופשה",
       suspensionAmount: 1,
     }),
-    goToJail: new TileBuilder.Tile({
+    GoToJailCard: new TileBuilder.Tile({
       type: TileTypes.GO_TO_JAIL,
       name: "הכנס לכלא",
     }),
@@ -287,24 +309,30 @@ export const initializeMap = () => {
       })
   );
 
+  const taxTile = new TileBuilder.TaxTile({
+    name: "מס הכנסה",
+    taxRate: 10,
+  });
+
+  const chanceTile = new TileBuilder.Tile({
+    type: TileTypes.CHANCE,
+    name: "צ'אנסה",
+  });
+
+  const surpriseTile = new TileBuilder.Tile({
+    type: TileTypes.SURPRISE,
+    name: "הפתעה",
+  });
+
   const board: Board = [
     cornerTiles.go,
     cities[0],
-    new TileBuilder.Tile({
-      type: TileTypes.CHANCE,
-      name: "צ'אנסה",
-    }),
+    chanceTile,
     cities[1],
-    new TileBuilder.TaxTile({
-      name: "מס הכנסה",
-      taxRate: 10,
-    }),
+    taxTile,
     airports[0],
     cities[2],
-    new TileBuilder.Tile({
-      type: TileTypes.SURPRISE,
-      name: "הפתעה",
-    }),
+    surpriseTile,
     cities[3],
     cities[4],
     cornerTiles.jail,
@@ -314,18 +342,12 @@ export const initializeMap = () => {
     cities[7],
     airports[1],
     cities[8],
-    new TileBuilder.Tile({
-      type: TileTypes.CHANCE,
-      name: "צ'אנסה",
-    }),
+    chanceTile,
     cities[9],
     cities[10],
     cornerTiles.vacation,
     cities[11],
-    new TileBuilder.Tile({
-      type: TileTypes.SURPRISE,
-      name: "הפתעה",
-    }),
+    surpriseTile,
     cities[12],
     cities[13],
     airports[2],
@@ -333,124 +355,180 @@ export const initializeMap = () => {
     cities[15],
     companies[1],
     cities[16],
-    cornerTiles.goToJail,
+    cornerTiles.GoToJailCard,
     cities[17],
     cities[18],
-    new TileBuilder.Tile({
-      type: TileTypes.CHANCE,
-      name: "צ'אנסה",
-    }),
+    chanceTile,
     cities[19],
     airports[3],
-    new TileBuilder.Tile({
-      type: TileTypes.SURPRISE,
-      name: "הפתעה",
-    }),
+    surpriseTile,
     cities[20],
     companies[2],
     cities[21],
   ];
 
   const chanceCards = [
-    new ChanceCards.PaymentCard({
+    new GameCards.PaymentCard({
       message: "מצאת ארנק עם כסף. הרווחת $200.",
-      type: ChanceCardTypes.PAYMENT,
+      type: GameCardTypes.PAYMENT,
       event: {
         amount: 200,
         paymentType: PaymentTypes.EARN,
       },
     }),
-    new ChanceCards.PaymentCard({
+    new GameCards.PaymentCard({
       message: "חנוכה הגיע וסבתא החליטה לפנק אותך ב $30.",
-      type: ChanceCardTypes.PAYMENT,
+      type: GameCardTypes.PAYMENT,
       event: {
         amount: 30,
         paymentType: PaymentTypes.EARN,
       },
     }),
-    new ChanceCards.PaymentCard({
+    new GameCards.PaymentCard({
       message: "הטלפון שלך הלך קפוט. שלם $200 לתיקון.",
-      type: ChanceCardTypes.PAYMENT,
+      type: GameCardTypes.PAYMENT,
       event: {
         amount: 200,
         paymentType: PaymentTypes.PAY,
       },
     }),
-    new ChanceCards.PaymentCard({
+    new GameCards.PaymentCard({
       message: "נתקעת עם הרכב. שלם $50 לגרר.",
-      type: ChanceCardTypes.PAYMENT,
+      type: GameCardTypes.PAYMENT,
       event: {
         amount: 50,
         paymentType: PaymentTypes.PAY,
       },
     }),
-    new ChanceCards.PaymentCard({
+    new GameCards.PaymentCard({
       message: "הרמת חפלה בבית. גבה מכל משתמש $50.",
-      type: ChanceCardTypes.GROUP_PAYMENT,
+      type: GameCardTypes.GROUP_PAYMENT,
       event: {
         amount: 50,
         paymentType: PaymentTypes.EARN,
       },
     }),
-    new ChanceCards.PaymentCard({
+    new GameCards.PaymentCard({
       message: "הפסדת בהתערבות עם החבר'ה. שלם לכל אחד $50.",
-      type: ChanceCardTypes.GROUP_PAYMENT,
+      type: GameCardTypes.GROUP_PAYMENT,
       event: {
         amount: 50,
         paymentType: PaymentTypes.PAY,
       },
     }),
-    new ChanceCards.AdvancedToTileCard({
+    new GameCards.AdvancedToTileCard({
       message: `התקדם ל${board[0].name}`,
       event: {
         tileIndex: 0,
         shouldGetGoReward: true,
       },
     }),
-    new ChanceCards.AdvancedToTileCard({
+    new GameCards.AdvancedToTileCard({
       message: `התקדם ל${board[11].name}`,
       event: {
         tileIndex: 11,
         shouldGetGoReward: true,
       },
     }),
-    new ChanceCards.AdvancedToTileCard({
+    new GameCards.AdvancedToTileCard({
       message: `התקדם ל${board[3].name}`,
       event: {
         tileIndex: 3,
         shouldGetGoReward: true,
       },
     }),
-    new ChanceCards.AdvancedToTileTypeCard({
+    new GameCards.AdvancedToTileTypeCard({
       message: "התקדם לשדה התעופה הקרוב",
       event: {
         tileType: TileTypes.AIRPORT,
       },
     }),
-    new ChanceCards.AdvancedToTileTypeCard({
+    new GameCards.AdvancedToTileTypeCard({
       message: "התקדם לחברה הקרובה",
       event: {
         tileType: TileTypes.COMPANY,
       },
     }),
-    new ChanceCards.WalkCard({
+    new GameCards.WalkCard({
       message: "חזור 3 צעדים",
       event: {
         steps: -3,
       },
     }),
-    new ChanceCards.WalkCard({
+    new GameCards.WalkCard({
       message: "התקדם 3 צעדים",
       event: {
         steps: 3,
       },
     }),
-    new ChanceCards.GoToJail({
+    new GameCards.GoToJailCard({
+      message: "הכנס לכלא!",
+    }),
+  ];
+
+  const surpriseCards = [
+    new GameCards.PaymentCard({
+      message: "מצאת ארנק עם כסף. הרווחת $200.",
+      type: GameCardTypes.PAYMENT,
+      event: {
+        amount: 200,
+        paymentType: PaymentTypes.EARN,
+      },
+    }),
+    new GameCards.PaymentCard({
+      message: "חנוכה הגיע וסבתא החליטה לפנק אותך ב $30.",
+      type: GameCardTypes.PAYMENT,
+      event: {
+        amount: 30,
+        paymentType: PaymentTypes.EARN,
+      },
+    }),
+    new GameCards.PaymentCard({
+      message: "הטלפון שלך הלך קפוט. שלם $200 לתיקון.",
+      type: GameCardTypes.PAYMENT,
+      event: {
+        amount: 200,
+        paymentType: PaymentTypes.PAY,
+      },
+    }),
+    new GameCards.PaymentCard({
+      message: "נתקעת עם הרכב. שלם $50 לגרר.",
+      type: GameCardTypes.PAYMENT,
+      event: {
+        amount: 50,
+        paymentType: PaymentTypes.PAY,
+      },
+    }),
+    new GameCards.PaymentCard({
+      message: "הרמת חפלה בבית. גבה מכל משתמש $50.",
+      type: GameCardTypes.GROUP_PAYMENT,
+      event: {
+        amount: 50,
+        paymentType: PaymentTypes.EARN,
+      },
+    }),
+    new GameCards.PaymentCard({
+      message: "הפסדת בהתערבות עם החבר'ה. שלם לכל אחד $50.",
+      type: GameCardTypes.GROUP_PAYMENT,
+      event: {
+        amount: 50,
+        paymentType: PaymentTypes.PAY,
+      },
+    }),
+    new GameCards.AdvancedToTileCard({
+      message: `התקדם ל${board[0].name}`,
+      event: {
+        tileIndex: 0,
+        shouldGetGoReward: true,
+      },
+    }),
+    new GameCards.GoToJailCard({
       message: "הכנס לכלא!",
     }),
   ];
 
   shuffleArray(chanceCards);
+  shuffleArray(surpriseCards);
 
   return {
     board,
@@ -462,10 +540,14 @@ export const initializeMap = () => {
       cards: chanceCards,
       currentIndex: 0,
     },
+    surprises: {
+      cards: surpriseCards,
+      currentIndex: 0,
+    },
   };
 };
 
-export const paymentChanceCard = (
+export const paymentGameCard = (
   playerId: string,
   card: PaymentCard,
   room: Room
@@ -475,7 +557,7 @@ export const paymentChanceCard = (
   let updatedPlayers = players;
 
   switch (type) {
-    case ChanceCardTypes.PAYMENT:
+    case GameCardTypes.PAYMENT:
       switch (event.paymentType) {
         case PaymentTypes.PAY:
           updatedPlayers[playerId].money -= event.amount;
@@ -484,7 +566,7 @@ export const paymentChanceCard = (
           updatedPlayers[playerId].money += event.amount;
           return updatedPlayers;
       }
-    case ChanceCardTypes.GROUP_PAYMENT:
+    case GameCardTypes.GROUP_PAYMENT:
       switch (event.paymentType) {
         case PaymentTypes.PAY:
           for (const player in players) {
@@ -510,7 +592,7 @@ export const paymentChanceCard = (
   }
 };
 
-export const advanceToTileChanceCard = (
+export const advanceToTileGameCard = (
   playerId: string,
   card: AdvancedToTileCard,
   room: Room
@@ -543,7 +625,7 @@ export const advanceToTileChanceCard = (
   return player;
 };
 
-export const advanceToTileTypeChanceCard = (
+export const advanceToTileTypeGameCard = (
   playerId: string,
   card: AdvancedToTileTypeCard,
   room: Room
@@ -556,7 +638,7 @@ export const advanceToTileTypeChanceCard = (
   const player = players[playerId];
   let closestTileTypeIndex: number | null = null;
 
-  // get closest tile that match the event type
+  // get closest tile to the player that match the tile type
   for (let [tileIndex, tile] of board.entries()) {
     if (tile.type === event.tileType && player.tilePos < tileIndex) {
       closestTileTypeIndex = tileIndex;

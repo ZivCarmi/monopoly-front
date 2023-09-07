@@ -1,3 +1,6 @@
-import { TileTypes } from "./Board";
+import { SuspensionTileTypes, TileTypes } from "./Board";
 
-export type SuspensionReasons = TileTypes.VACATION | TileTypes.JAIL;
+export type SuspensionProps = {
+  reason: SuspensionTileTypes;
+  left: number;
+};

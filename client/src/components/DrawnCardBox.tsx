@@ -1,13 +1,28 @@
-import { cn } from "@/lib/utils";
+import { cn } from "@/utils";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAppDispatch } from "@/app/hooks";
 import { resetCards } from "@/slices/game-slice";
+import styles from "./DrawnCardBox.module.css";
 
-const DrawnCardBox: React.FC<{
+const cardClasses = {
+  top: styles.top,
+  right: styles.right,
+  bottom: styles.bottom,
+  left: styles.left,
+};
+
+type DrawnCardBoxProps = {
+  row: "top" | "right" | "bottom" | "left";
   className?: string;
   children: React.ReactNode;
-}> = ({ children, className }) => {
+};
+
+const DrawnCardBox: React.FC<DrawnCardBoxProps> = ({
+  children,
+  className,
+  row,
+}) => {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -24,8 +39,9 @@ const DrawnCardBox: React.FC<{
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className={cn(
-        "w-40 absolute top-full left-[50%] translate-x-[-50%] rounded-md bg-violet-600 py-2 px-4 text-sm",
-        className
+        "w-40 absolute rounded-md bg-violet-600 py-2 px-4 text-sm",
+        className,
+        cardClasses[row]
       )}
     >
       {children}

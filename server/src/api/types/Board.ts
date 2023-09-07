@@ -26,6 +26,11 @@ export enum CountryIds {
   USA = "USA",
 }
 
+export interface ICountry {
+  name: string;
+  id: CountryIds;
+}
+
 export enum RentIndexes {
   BLANK,
   ONE_HOUSE,
@@ -35,17 +40,21 @@ export enum RentIndexes {
   HOTEL,
 }
 
-export interface ICountry {
-  name: string;
-  id: CountryIds;
-}
+export type PropertyPayments = {
+  [RentIndexes.BLANK]: number;
+  [RentIndexes.ONE_HOUSE]: number;
+  [RentIndexes.TWO_HOUSES]: number;
+  [RentIndexes.THREE_HOUSES]: number;
+  [RentIndexes.FOUR_HOUSES]: number;
+  [RentIndexes.HOTEL]: number;
+};
 
 export interface IProperty extends ITile {
   type: TileTypes.PROPERTY;
   country: ICountry;
   cost: number;
   color: string;
-  rent: number[];
+  rent: PropertyPayments;
   rentIndex: RentIndexes;
   houseCost: number;
   hotelCost: number;
@@ -53,7 +62,7 @@ export interface IProperty extends ITile {
 }
 
 export interface IIndustry extends ITile {
-  type: TileTypes.AIRPORT | TileTypes.COMPANY;
+  type: IndustryTileTypes;
   cost: number;
   owner: string | null;
 }
@@ -102,11 +111,9 @@ export interface IGoToJail extends ITile {
 }
 
 export interface ISuspension extends ITile {
-  type: TileTypes.JAIL | TileTypes.VACATION;
+  type: SuspensionTileTypes;
   suspensionAmount: number;
 }
-
-type Board = GameTile[];
 
 export type GameTile =
   | IProperty
@@ -120,18 +127,58 @@ export type GameTile =
   | IVacation
   | IGoToJail;
 
-export type GameTileType =
-  | TileTypes.PROPERTY
-  | TileTypes.AIRPORT
-  | TileTypes.COMPANY
-  | TileTypes.TAX
-  | TileTypes.CHANCE
-  | TileTypes.SURPRISE
-  | TileTypes.GO
-  | TileTypes.JAIL
-  | TileTypes.VACATION
-  | TileTypes.GO_TO_JAIL;
+export type Board = GameTile[];
+
+export type CornerTile = IGo | IJail | IVacation | IGoToJail;
 
 export type PurchasableTile = IProperty | IAirport | ICompany;
 
-export default Board;
+export type IndustryTileTypes = TileTypes.AIRPORT | TileTypes.COMPANY;
+
+export type SuspensionTileTypes = TileTypes.JAIL | TileTypes.VACATION;
+
+export function isProperty(object: any): object is IProperty {
+  return object.type === TileTypes.PROPERTY;
+}
+
+export function isAirport(object: any): object is IAirport {
+  return object.type === TileTypes.AIRPORT;
+}
+
+export function isCompany(object: any): object is ICompany {
+  return object.type === TileTypes.COMPANY;
+}
+
+export function isPurchasable(object: any): object is PurchasableTile {
+  return isProperty(object) || isAirport(object) || isCompany(object);
+}
+
+export function isCard(object: any): object is IChance | ISurprise {
+  return object.type === TileTypes.CHANCE || object.type === TileTypes.SURPRISE;
+}
+
+export function isTax(object: any): object is ITax {
+  return object.type === TileTypes.TAX;
+}
+
+export function isGo(object: any): object is IGo {
+  return object.type === TileTypes.GO;
+}
+
+export function isJail(object: any): object is IJail {
+  return object.type === TileTypes.JAIL;
+}
+
+export function isVacation(object: any): object is IVacation {
+  return object.type === TileTypes.VACATION;
+}
+
+export function isGoToJail(object: any): object is IGoToJail {
+  return object.type === TileTypes.GO_TO_JAIL;
+}
+
+export function isCorner(object: any): object is CornerTile {
+  return (
+    isGo(object) || isJail(object) || isVacation(object) || isGoToJail(object)
+  );
+}

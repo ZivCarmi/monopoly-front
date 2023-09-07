@@ -1,3 +1,5 @@
+import { RootState } from "@/app/store";
+import { PurchasableTile } from "@backend/types/Board";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface UiState {
@@ -6,13 +8,13 @@ export interface UiState {
     title: string;
   } | null;
   gameLog: { id: number; message: string }[];
-  selectedTileIndex: number | null;
+  selectedTile: PurchasableTile | null;
 }
 
 const initialState: UiState = {
   toast: null,
   gameLog: [],
-  selectedTileIndex: null,
+  selectedTile: null,
 };
 
 export const gameSlice = createSlice({
@@ -37,13 +39,18 @@ export const gameSlice = createSlice({
         message: action.payload,
       });
     },
-    setSelectedTile: (state, action: PayloadAction<number>) => {
-      state.selectedTileIndex = action.payload;
+    setSelectedTile: (state, action: PayloadAction<PurchasableTile>) => {
+      state.selectedTile = action.payload;
     },
   },
 });
 
 export const { resetUi, showToast, setRoomUi, writeLog, setSelectedTile } =
   gameSlice.actions;
+
+export const selectPurchasableTileIndex = (state: RootState) =>
+  state.game.map.board.findIndex(
+    (tile) => tile.name === state.ui.selectedTile?.name
+  );
 
 export default gameSlice.reducer;

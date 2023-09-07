@@ -5,7 +5,10 @@ import {
   ISuspension,
   ITax,
   ITile,
+  IndustryTileTypes,
+  PropertyPayments,
   RentIndexes,
+  SuspensionTileTypes,
   TileTypes,
 } from "../types/Board";
 
@@ -35,7 +38,7 @@ class PropertyTile extends BasicTile implements IProperty {
   country: ICountry;
   cost: number;
   color: string;
-  rent: number[];
+  rent: PropertyPayments;
   rentIndex: RentIndexes;
   owner: string | null;
   houseCost: number;
@@ -49,7 +52,14 @@ class PropertyTile extends BasicTile implements IProperty {
     this.country = props.country;
     this.cost = props.cost;
     this.color = props.color;
-    this.rent = props.rent;
+    this.rent = {
+      [RentIndexes.BLANK]: props.rent[0],
+      [RentIndexes.ONE_HOUSE]: props.rent[1],
+      [RentIndexes.TWO_HOUSES]: props.rent[2],
+      [RentIndexes.THREE_HOUSES]: props.rent[3],
+      [RentIndexes.FOUR_HOUSES]: props.rent[4],
+      [RentIndexes.HOTEL]: props.rent[5],
+    };
     this.rentIndex = RentIndexes.BLANK;
     this.owner = null;
     this.houseCost = props.houseCost;
@@ -69,7 +79,7 @@ class TaxTile extends BasicTile implements ITax {
 }
 
 export class IndustryTile extends BasicTile implements IIndustry {
-  type: TileTypes.AIRPORT | TileTypes.COMPANY;
+  type: IndustryTileTypes;
   cost: number;
   owner: string | null;
 
@@ -84,7 +94,7 @@ export class IndustryTile extends BasicTile implements IIndustry {
 }
 
 export class SuspensionTile extends BasicTile implements ISuspension {
-  type: TileTypes.JAIL | TileTypes.VACATION;
+  type: SuspensionTileTypes;
   suspensionAmount: number;
 
   constructor(props: SuspensionTileProps) {
@@ -112,7 +122,7 @@ type PropertyTileProps = BasicTileProps & {
   country: ICountry;
   cost: number;
   color: string;
-  rent: number[];
+  rent: [number, number, number, number, number, number];
   houseCost: number;
   hotelCost: number;
 };
@@ -122,12 +132,12 @@ type TaxTileProps = BasicTileProps & {
 };
 
 type IndustryTileProps = BasicTileProps & {
-  type: TileTypes.AIRPORT | TileTypes.COMPANY;
+  type: IndustryTileTypes;
   cost: number;
 };
 
 type SuspensionTileProps = BasicTileProps & {
-  type: TileTypes.JAIL | TileTypes.VACATION;
+  type: SuspensionTileTypes;
   suspensionAmount: number;
 };
 

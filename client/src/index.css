@@ -100,3 +100,33 @@
     background-position: 100% 50%;
   }
 }
+
+.row_top,
+.row_bottom {
+  grid-template-columns: var(--board-corner-size) repeat(9, 80px);
+}
+
+.tileBody:not(.cornerBody) {
+  flex-direction: column;
+}
+
+.row_top .tileBody:not(.cornerBody) {
+  flex-direction: column-reverse;
+}
+
+.row_right .tileBody:not(.cornerBody),
+.row_left .tileBody:not(.cornerBody) {
+  writing-mode: vertical-rl;
+}
+
+.row_right .tileBody:not(.cornerBody) {
+  transform: rotate(-180deg);
+}
+
+.row:not(.row_top) .ownerColor {
+  margin-block-start: auto;
+}
+
+.row_top .ownerColor {
+  margin-block-end: auto;
+}

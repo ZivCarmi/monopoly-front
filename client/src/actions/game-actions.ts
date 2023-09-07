@@ -7,7 +7,7 @@ import {
   transferMoney,
   setRoom,
   suspendPlayer,
-  drawChanceCard,
+  drawGameCard,
   movePlayer,
   staySuspendedTurn,
   freePlayer,
@@ -16,10 +16,11 @@ import {
   allowTurnActions,
   endPlayerTurn,
   setSelfPlayerReady,
+  setLandedTileIndex,
 } from "@/slices/game-slice";
 import { resetUi, setRoomUi, showToast, writeLog } from "@/slices/ui-slice";
 import Player, { NewPlayer } from "@backend/types/Player";
-import Room from "@backend/types/Room";
+import Room from "@backend/classes/Room";
 import {
   getGoTile,
   getJailTileIndex,
@@ -27,14 +28,29 @@ import {
   hasMonopoly,
 } from "@backend/helpers";
 import { Socket } from "socket.io-client";
-import { IJail, ITax, PurchasableTile, TileTypes } from "@backend/types/Board";
-import { MS_TO_MOVE_ON_TILES } from "@/lib/constants";
-import { ChanceCardTypes } from "@backend/types/Cards";
 import {
-  advanceToTileChanceCard,
-  advanceToTileTypeChanceCard,
-  paymentChanceCard,
-} from "./chances-actions";
+  IJail,
+  ITax,
+  PurchasableTile,
+  TileTypes,
+  isAirport,
+  isCard,
+  isCompany,
+  isGo,
+  isGoToJail,
+  isProperty,
+  isPurchasable,
+  isTax,
+  isVacation,
+} from "@backend/types/Board";
+import { MS_TO_MOVE_ON_TILES } from "@/utils/constants";
+import { GameCardTypes } from "@backend/types/Cards";
+import {
+  advanceToTileGameCard,
+  advanceToTileTypeGameCard,
+  paymentGameCard,
+} from "./card-actions";
+import { isPlayerInJail } from "../utils";
 
 export const getRoomsHandler = (socket: Socket): AppThunk => {
   socket.emit("get_rooms");
@@ -72,11 +88,15 @@ export const handleCreatedPlayer = (
 ): AppThunk => {
   socket.emit("create_player", { player });
 
-  return (dispatch) => {
-    socket.on("player_created", ({ players }: { players: Player[] }) => {
-      dispatch(setSelfPlayerReady());
-      dispatch(setPlayers(players));
-    });
+  return (dispatch, getState) => {
+    socket.on(
+      "player_created",
+      ({ player, message }: { player: Player; message: string }) => {
+        dispatch(setPlayers([...getState().game.players, player]));
+        dispatch(setSelfPlayerReady());
+        dispatch(writeLog(message));
+      }
+    );
 
     socket.on("player_create_error", ({ error }) => {
       dispatch(
@@ -164,61 +184,42 @@ export const handleDices = (dices: number[], socket: Socket): AppThunk => {
   return (dispatch, getState) => {
     dispatch(setDices({ dices }));
 
-    const {
-      players,
-      currentPlayerTurnId,
-      suspendedPlayers,
-      doublesInARow,
-      map: { board },
-    } = getState().game;
-    const player = players.find((player) => player.id === socket.id);
+    const { players, currentPlayerTurnId, doublesInARow } = getState().game;
+    const player = players.find((player) => player.id === currentPlayerTurnId);
     const isDouble = dices[0] === dices[1];
-    const jailTileIndex = getJailTileIndex(board);
+    const dicesSum = dices.reduce((acc, dice) => acc + dice, 0);
 
     if (!player) throw new Error(`Player was not found`);
 
     if (!currentPlayerTurnId)
       throw new Error(`Current turn is not belong to ${currentPlayerTurnId}`);
 
+    dispatch(
+      setLandedTileIndex({
+        currentPlayerPosition: player.tilePos,
+        dicesSum: dicesSum,
+      })
+    );
+
     // update suspended player
-    if (
-      suspendedPlayers[currentPlayerTurnId] !== undefined &&
-      suspendedPlayers[currentPlayerTurnId].reason === TileTypes.JAIL
-    ) {
+    if (isPlayerInJail(currentPlayerTurnId)) {
       return !isDouble
         ? dispatch(handleStaySuspendedPlayer(currentPlayerTurnId))
         : dispatch(freePlayer({ playerId: currentPlayerTurnId }));
     }
 
-    if (jailTileIndex !== -1 && doublesInARow === 3) {
-      const jailTile = board[jailTileIndex] as IJail;
-
+    if (doublesInARow === 3) {
       dispatch(
-        suspendPlayer({
-          playerId: currentPlayerTurnId,
-          suspensionLeft: jailTile.suspensionAmount,
-          suspensionReason: TileTypes.JAIL,
-        })
+        sendPlayerToJail(
+          player,
+          `${player.name} נשלח לכלא לאחר 3 דאבלים רצופים`
+        )
       );
-
-      dispatch(
-        movePlayer({
-          playerId: currentPlayerTurnId,
-          tilePosition: jailTileIndex,
-        })
-      );
-
-      dispatch(writeLog(`${player.name} נשלח לכלא לאחר 3 דאבלים רצופים`));
 
       return socket.emit("switch_turn");
     }
 
-    dispatch(
-      walkPlayer(
-        currentPlayerTurnId,
-        dices.reduce((acc, dice) => acc + dice, 0)
-      )
-    );
+    dispatch(walkPlayer(currentPlayerTurnId, dicesSum));
   };
 };
 
@@ -251,57 +252,50 @@ export const handlePlayerLanding = (playerId: string): AppThunk => {
     const landedTile = map.board[player.tilePos];
     const goRewardOnLand = map.goRewards.land;
 
-    switch (landedTile.type) {
-      case TileTypes.GO:
-        const goTile = getGoTile(map.board);
+    if (isGo(landedTile)) {
+      const goTile = getGoTile(map.board);
 
-        dispatch(
-          writeLog(
-            `${player.name} נחת על ${goTile.name} והרוויח $${goRewardOnLand}`
-          )
-        );
+      dispatch(
+        writeLog(
+          `${player.name} נחת על ${goTile.name} והרוויח $${goRewardOnLand}`
+        )
+      );
 
-        return dispatch(
-          transferMoney({
-            recieverId: playerId,
-            amount: goRewardOnLand,
-          })
-        );
-      case TileTypes.PROPERTY:
-      case TileTypes.AIRPORT:
-      case TileTypes.COMPANY:
-        if (!landedTile.owner || landedTile.owner === playerId) return;
+      dispatch(
+        transferMoney({
+          recieverId: playerId,
+          amount: goRewardOnLand,
+        })
+      );
+    } else if (isPurchasable(landedTile)) {
+      if (!landedTile.owner || landedTile.owner === playerId) return;
 
-        return dispatch(handleRentPayment(player, landedTile));
-      case TileTypes.CHANCE:
-        dispatch(drawChanceCard());
+      dispatch(handleRentPayment(player, landedTile));
+    } else if (isCard(landedTile)) {
+      dispatch(drawGameCard({ type: landedTile.type }));
 
-        return dispatch(handleChanceCard(player));
-      case TileTypes.TAX:
-        return dispatch(handleTaxPayment(player, landedTile));
-      case TileTypes.SURPRISE:
-        return;
-      case TileTypes.JAIL:
-        return;
-      case TileTypes.VACATION:
-        dispatch(endPlayerTurn());
+      dispatch(handleGameCard(player));
+    } else if (isTax(landedTile)) {
+      dispatch(handleTaxPayment(player, landedTile));
+    } else if (isVacation(landedTile)) {
+      dispatch(endPlayerTurn());
 
-        dispatch(writeLog(`${player.name} יצא לחופשה`));
+      dispatch(writeLog(`${player.name} יצא לחופשה`));
 
-        return dispatch(
-          suspendPlayer({
-            playerId,
-            suspensionReason: TileTypes.VACATION,
-            suspensionLeft: landedTile.suspensionAmount,
-          })
-        );
-      case TileTypes.GO_TO_JAIL:
-        dispatch(sendPlayerToJail(player));
+      return dispatch(
+        suspendPlayer({
+          playerId,
+          suspensionReason: TileTypes.VACATION,
+          suspensionLeft: landedTile.suspensionAmount,
+        })
+      );
+    } else if (isGoToJail(landedTile)) {
+      dispatch(sendPlayerToJail(player));
     }
   };
 };
 
-export const sendPlayerToJail = (player: Player): AppThunk => {
+export const sendPlayerToJail = (player: Player, log?: string): AppThunk => {
   return (dispatch, getState) => {
     const { map } = getState().game;
 
@@ -316,7 +310,7 @@ export const sendPlayerToJail = (player: Player): AppThunk => {
 
     dispatch(endPlayerTurn());
 
-    dispatch(writeLog(`${player.name} נשלח לכלא`));
+    dispatch(writeLog(log ?? `${player.name} נשלח לכלא`));
 
     return dispatch(
       suspendPlayer({
@@ -328,25 +322,25 @@ export const sendPlayerToJail = (player: Player): AppThunk => {
   };
 };
 
-export const handleChanceCard = (player: Player): AppThunk => {
+export const handleGameCard = (player: Player): AppThunk => {
   return (dispatch, getState) => {
-    const { drawnChanceCard } = getState().game;
+    const { drawnGameCard } = getState().game;
 
-    if (!drawnChanceCard) throw new Error("No chance card was found.");
+    if (!drawnGameCard) throw new Error("No chance card was found.");
 
-    switch (drawnChanceCard.type) {
-      case ChanceCardTypes.PAYMENT:
-      case ChanceCardTypes.GROUP_PAYMENT:
-        return dispatch(paymentChanceCard(player.id, drawnChanceCard));
-      case ChanceCardTypes.ADVANCE_TO_TILE:
-        dispatch(advanceToTileChanceCard(player.id, drawnChanceCard));
+    switch (drawnGameCard.type) {
+      case GameCardTypes.PAYMENT:
+      case GameCardTypes.GROUP_PAYMENT:
+        return dispatch(paymentGameCard(player.id, drawnGameCard));
+      case GameCardTypes.ADVANCE_TO_TILE:
+        dispatch(advanceToTileGameCard(player.id, drawnGameCard));
         return dispatch(handlePlayerLanding(player.id));
-      case ChanceCardTypes.ADVANCE_TO_TILE_TYPE:
-        dispatch(advanceToTileTypeChanceCard(player.id, drawnChanceCard));
+      case GameCardTypes.ADVANCE_TO_TILE_TYPE:
+        dispatch(advanceToTileTypeGameCard(player.id, drawnGameCard));
         return dispatch(handlePlayerLanding(player.id));
-      case ChanceCardTypes.WALK:
-        return dispatch(walkPlayer(player.id, drawnChanceCard.event.steps));
-      case ChanceCardTypes.GO_TO_JAIL:
+      case GameCardTypes.WALK:
+        return dispatch(walkPlayer(player.id, drawnGameCard.event.steps));
+      case GameCardTypes.GO_TO_JAIL:
         return dispatch(sendPlayerToJail(player));
     }
   };
@@ -383,21 +377,21 @@ export const handleRentPayment = (
       throw new Error("Owner was not found in handleRentPayment");
     }
 
-    if (tile.type === TileTypes.PROPERTY) {
+    if (isProperty(tile)) {
       const doubleRent =
         !hasBuildings(board, tile.country.id) &&
         hasMonopoly(board, tile.country.id);
 
       rentAmount = doubleRent ? tile.rent[0] * 2 : tile.rent[tile.rentIndex];
-    } else if (tile.type === TileTypes.AIRPORT) {
+    } else if (isAirport(tile)) {
       const ownedAirportsCount = board.filter(
-        (_tile) => _tile.type === TileTypes.AIRPORT && _tile.owner === owner.id
+        (_tile) => isAirport(_tile) && _tile.owner === owner.id
       ).length;
 
       rentAmount = AIRPORT_RENTS[ownedAirportsCount - 1];
-    } else if (tile.type === TileTypes.COMPANY) {
+    } else if (isCompany(tile)) {
       const ownedCompaniesCount = board.filter(
-        (_tile) => _tile.type === TileTypes.COMPANY && _tile.owner === owner.id
+        (_tile) => isCompany(_tile) && _tile.owner === owner.id
       ).length;
       const rentIndexAmount = COMPANY_RENTS[ownedCompaniesCount - 1];
 

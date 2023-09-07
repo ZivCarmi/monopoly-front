@@ -5,7 +5,7 @@ import { Button } from "./ui/button";
 import { useSocket } from "@/app/socket-context";
 import { ArrowLeft, PlusSquare, RefreshCcw, User } from "lucide-react";
 import CreateRoom from "./CreateRoom";
-import Room from "@backend/types/Room";
+import Room from "@backend/classes/Room";
 
 const LobbyGameRooms = ({ onGoBack }: { onGoBack: () => void }) => {
   const dispatch = useAppDispatch();

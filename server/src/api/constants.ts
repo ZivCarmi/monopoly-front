@@ -1,4 +1,4 @@
-import { CountryIds, RentIndexes } from "./types/Board";
+import { CountryIds } from "./types/Board";
 
 export const DICE_OPTIONS = [1, 2, 3, 4, 5, 6] as const;
 

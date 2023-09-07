@@ -1,23 +1,22 @@
 import { AppThunk } from "@/app/store";
 import { movePlayer, transferMoney } from "@/slices/game-slice";
+import { GameCardTypes, PaymentTypes } from "@backend/types/Cards";
 import {
   AdvancedToTileCard,
   AdvancedToTileTypeCard,
-  ChanceCardTypes,
   PaymentCard,
-  PaymentTypes,
-} from "@backend/types/Cards";
+} from "@backend/classes/Cards";
 
-export const paymentChanceCard = (
+export const paymentGameCard = (
   playerId: string,
-  drawnChanceCard: PaymentCard
+  drawnGameCard: PaymentCard
 ): AppThunk => {
   return (dispatch, getState) => {
     const players = getState().game.players;
-    const { event, type } = drawnChanceCard;
+    const { event, type } = drawnGameCard;
 
     switch (type) {
-      case ChanceCardTypes.PAYMENT:
+      case GameCardTypes.PAYMENT:
         return dispatch(
           transferMoney({
             payerId: event.paymentType === PaymentTypes.PAY ? playerId : "",
@@ -25,7 +24,7 @@ export const paymentChanceCard = (
             amount: event.amount,
           })
         );
-      case ChanceCardTypes.GROUP_PAYMENT:
+      case GameCardTypes.GROUP_PAYMENT:
         for (const player of players) {
           if (player.id === playerId) continue;
 
@@ -43,16 +42,16 @@ export const paymentChanceCard = (
   };
 };
 
-export const advanceToTileChanceCard = (
+export const advanceToTileGameCard = (
   playerId: string,
-  drawnChanceCard: AdvancedToTileCard
+  drawnGameCard: AdvancedToTileCard
 ): AppThunk => {
   return (dispatch, getState) => {
     const {
       players,
       map: { goRewards },
     } = getState().game;
-    const { event } = drawnChanceCard;
+    const { event } = drawnGameCard;
     const player = players.find((player) => player.id === playerId);
 
     if (!player) throw new Error("Player not found before advancing to tile");
@@ -82,16 +81,16 @@ export const advanceToTileChanceCard = (
   };
 };
 
-export const advanceToTileTypeChanceCard = (
+export const advanceToTileTypeGameCard = (
   playerId: string,
-  drawnChanceCard: AdvancedToTileTypeCard
+  drawnGameCard: AdvancedToTileTypeCard
 ): AppThunk => {
   return (dispatch, getState) => {
     const {
       players,
       map: { board },
     } = getState().game;
-    const { event } = drawnChanceCard;
+    const { event } = drawnGameCard;
     const player = players.find((player) => player.id === playerId);
     let closestTileTypeIndex: number | null = null;
 

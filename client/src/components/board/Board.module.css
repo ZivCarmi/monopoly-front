@@ -10,16 +10,8 @@
   @apply border border-neutral-600;
 }
 
-.centerBox {
-  direction: rtl;
-}
-
 .row {
   display: grid;
-}
-
-.row.horizontal {
-  grid-template-columns: var(--board-corner-size) repeat(9, 80px);
 }
 
 .row:nth-child(2) {
@@ -78,35 +70,6 @@
 
 .row:nth-child(5) li:nth-child(10) {
   grid-row: 1;
-}
-
-.row li:first-of-type .tileBody {
-  align-items: center;
-}
-
-.row:nth-child(2) li:not(:first-child) button {
-  flex-direction: column-reverse;
-}
-
-.row:nth-child(2) li:not(:first-child) .tileBody {
-  align-items: flex-end;
-}
-
-.row:nth-child(3) li:not(:first-child) button {
-  flex-direction: row-reverse;
-}
-
-.row:nth-child(3) li:not(:first-child) button .tileBody {
-  writing-mode: vertical-rl;
-  transform: rotate(-180deg);
-}
-
-.row:nth-child(4) li:not(:first-child) button {
-  flex-direction: column;
-}
-
-.row:nth-child(5) li:not(:first-child) button .tileBody {
-  writing-mode: vertical-rl;
 }
 
 .row:nth-child(2) li {
