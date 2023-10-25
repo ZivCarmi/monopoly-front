@@ -17,6 +17,8 @@ To run the app:
 ```
 cd client;
 
+npm install;
+
 npm run dev
 ```
 
@@ -24,6 +26,8 @@ To run the server:
 
 ```
 cd server;
+
+npm install;
 
 npm run dev
 ```
