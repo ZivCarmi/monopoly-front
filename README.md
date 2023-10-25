@@ -9,3 +9,21 @@ The game includes features such as:
 - Rolling dices & moving the player on the board
 - Properties purchase & house buildings
 - Chance & Surprise cards
+
+# Getting Started
+
+To run the app:
+
+```
+cd client;
+
+npm run dev
+```
+
+To run the server:
+
+```
+cd server;
+
+npm run dev
+```
