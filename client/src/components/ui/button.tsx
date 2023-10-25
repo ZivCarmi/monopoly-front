@@ -16,10 +16,10 @@ const buttonVariants = cva(
           "border border-input bg-background hover:bg-accent hover:text-accent-foreground",
         secondary:
           "bg-secondary text-secondary-foreground hover:bg-secondary/80",
+        warning: "bg-warning text-warning-foreground hover:bg-warning/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        primary: "bg-sky-600 hover:bg-sky-600/80",
-        info: "bg-yellow-600 hover:bg-yellow-600/80",
+        primary: "bg-sky-600 hover:bg-sky-600/80", // NEED TO CHANGE IT LIKE 'warning' TYPE
         rollAgain:
           "bg-gradient-to-tl from-green-500 to-blue-600 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-500",
       },

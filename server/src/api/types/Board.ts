@@ -16,14 +16,14 @@ export enum TileTypes {
 }
 
 export enum CountryIds {
-  EGYPT = "EGYPT",
-  ISRAEL = "ISRAEL",
-  AUSTRALIA = "AUSTRALIA",
-  RUSSIA = "RUSSIA",
-  CHINA = "CHINA",
-  ITALY = "ITALY",
-  UK = "UK",
-  USA = "USA",
+  EGYPT = "egypt",
+  ISRAEL = "israel",
+  AUSTRALIA = "australia",
+  RUSSIA = "russia",
+  CHINA = "china",
+  ITALY = "italy",
+  UK = "uk",
+  USA = "usa",
 }
 
 export interface ICountry {
@@ -53,7 +53,6 @@ export interface IProperty extends ITile {
   type: TileTypes.PROPERTY;
   country: ICountry;
   cost: number;
-  color: string;
   rent: PropertyPayments;
   rentIndex: RentIndexes;
   houseCost: number;

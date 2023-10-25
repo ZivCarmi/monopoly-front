@@ -1,4 +1,4 @@
-import { useSocket } from "@/app/socket-context";
+import { useSocket } from "@/app/socket-context2";
 import { Button } from "../ui/button";
 import PropertyActions from "./PropertyActions";
 import { useAppSelector } from "@/app/hooks";
@@ -12,11 +12,9 @@ type TileCardActionsProps = {
 };
 
 const TileCardActions: React.FC<TileCardActionsProps> = ({ tile }) => {
-  const { socket } = useSocket();
+  const socket = useSocket();
   const selectedTileIndex = useAppSelector(selectPurchasableTileIndex);
   const { currentPlayerTurnId } = useAppSelector((state) => state.game);
-
-  if (!socket) return null;
 
   const canSellProperty =
     currentPlayerTurnId === socket.id && !isPlayerSuspended(socket.id);

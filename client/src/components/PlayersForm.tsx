@@ -23,7 +23,7 @@ import {
 } from "./ui/alert-dialog";
 import { handleCreatedPlayer } from "@/actions/game-actions";
 import { NewPlayer, Characters, Colors } from "@backend/types/Player";
-import { useSocket } from "@/app/socket-context";
+import { useSocket } from "@/app/socket-context2";
 
 const formSchema = z.object({
   name: z
@@ -41,7 +41,7 @@ const formSchema = z.object({
 });
 
 export function PlayersForm() {
-  const { socket } = useSocket();
+  const socket = useSocket();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -59,8 +59,6 @@ export function PlayersForm() {
     const existUsername = players.find(
       (existPlayer) => existPlayer.name === player.name
     );
-
-    if (!socket) return;
 
     if (existUsername) {
       return form.setError("name", {

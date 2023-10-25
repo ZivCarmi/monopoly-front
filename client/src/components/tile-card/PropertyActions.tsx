@@ -3,28 +3,28 @@ import { getCityLevelText } from "@backend/helpers";
 import { hasMonopoly } from "@backend/helpers";
 import { Button } from "../ui/button";
 import { useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context";
+import { useSocket } from "@/app/socket-context2";
 import { selectPurchasableTileIndex } from "@/slices/ui-slice";
 import { isPlayerSuspended } from "@/utils";
+import { selectGameBoard } from "@/slices/game-slice";
 
 type PropertyActionsProps = {
   property: IProperty;
 };
 
 const PropertyActions: React.FC<PropertyActionsProps> = ({ property }) => {
-  const { socket } = useSocket();
-  const {
-    currentPlayerTurnId,
-    players,
-    map: { board },
-  } = useAppSelector((state) => state.game);
+  const socket = useSocket();
+  const { currentPlayerTurnId, players } = useAppSelector(
+    (state) => state.game
+  );
+  const board = useAppSelector(selectGameBoard);
   const selectedTileIndex = useAppSelector(selectPurchasableTileIndex);
-  const selfPlayer = players.find((player) => player.id === socket?.id);
-
-  if (!socket || !selfPlayer) return null;
-
+  const selfPlayer = players.find((player) => player.id === socket.id);
   const selfPlayerHasTurn = currentPlayerTurnId === socket.id;
   const isSuspended = isPlayerSuspended(socket.id);
+
+  if (!selfPlayer) return null;
+
   const canAffordUpgrade =
     property.rentIndex + 1 === RentIndexes.HOTEL
       ? selfPlayer.money >= property.hotelCost
@@ -64,7 +64,7 @@ const PropertyActions: React.FC<PropertyActionsProps> = ({ property }) => {
         )}
         {property.rentIndex !== RentIndexes.BLANK && (
           <Button
-            variant="info"
+            variant="warning"
             disabled={!canDowngrade}
             onClick={downgradeCityHandler}
             className="flex-1"

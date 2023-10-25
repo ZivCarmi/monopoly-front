@@ -16,7 +16,7 @@ import {
   allowTurnActions,
   endPlayerTurn,
   setSelfPlayerReady,
-  setLandedTileIndex,
+  setIsLanded,
 } from "@/slices/game-slice";
 import { resetUi, setRoomUi, showToast, writeLog } from "@/slices/ui-slice";
 import Player, { NewPlayer } from "@backend/types/Player";
@@ -174,6 +174,7 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
         setTimeout(() => {
           dispatch(allowTurnActions(true));
           dispatch(handlePlayerLanding(playerId));
+          dispatch(setIsLanded(true));
         }, MS_TO_MOVE_ON_TILES);
       }
     }, MS_TO_MOVE_ON_TILES);
@@ -193,13 +194,6 @@ export const handleDices = (dices: number[], socket: Socket): AppThunk => {
 
     if (!currentPlayerTurnId)
       throw new Error(`Current turn is not belong to ${currentPlayerTurnId}`);
-
-    dispatch(
-      setLandedTileIndex({
-        currentPlayerPosition: player.tilePos,
-        dicesSum: dicesSum,
-      })
-    );
 
     // update suspended player
     if (isPlayerInJail(currentPlayerTurnId)) {
@@ -232,6 +226,8 @@ export const handleStaySuspendedPlayer = (playerId: string): AppThunk => {
     }
 
     const decreasedSuspensionLeft = suspendedPlayers[playerId].left - 1;
+
+    console.log("stay as suspended fn, left:", decreasedSuspensionLeft);
 
     decreasedSuspensionLeft > 0
       ? dispatch(staySuspendedTurn({ playerId }))

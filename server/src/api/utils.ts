@@ -5,12 +5,18 @@ export const shuffleArray = (array: any[]) => {
   }
 };
 
-export const cycleNextItem = (currentIndex: number | string, array: any[]) => {
-  if (typeof currentIndex === "string") {
-    currentIndex = array.indexOf(currentIndex);
-  }
+type CycleNextItemsArgs<T> = {
+  array: T[];
+  currentIndex?: number;
+  currentValue?: T;
+} & ({ currentIndex: number } | { currentValue: T });
 
-  const nextItem = array[++currentIndex % array.length];
+export const cycleNextItem = <T>(args: CycleNextItemsArgs<T>) => {
+  const index =
+    args.currentIndex ??
+    args.array.findIndex((item) => item === args.currentValue);
+
+  const nextItem = args.array[(index + 1) % args.array.length];
 
   return nextItem;
 };

@@ -1,14 +1,14 @@
 import { useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context";
+import { useSocket } from "@/app/socket-context2";
 import TileCardActions from "./TileCardActions";
 import { Separator } from "../ui/separator";
 
 const TileCardFooter = () => {
-  const { socket } = useSocket();
+  const socket = useSocket();
   const { players } = useAppSelector((state) => state.game);
   const { selectedTile } = useAppSelector((state) => state.ui);
 
-  if (!socket || !selectedTile) return null;
+  if (!selectedTile) return null;
 
   const selfPlayerIsOwner = socket.id === selectedTile.owner;
   const tileOwnerName = players.find(

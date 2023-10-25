@@ -37,7 +37,6 @@ class PropertyTile extends BasicTile implements IProperty {
   type: TileTypes.PROPERTY;
   country: ICountry;
   cost: number;
-  color: string;
   rent: PropertyPayments;
   rentIndex: RentIndexes;
   owner: string | null;
@@ -51,7 +50,6 @@ class PropertyTile extends BasicTile implements IProperty {
     this.type = TileTypes.PROPERTY;
     this.country = props.country;
     this.cost = props.cost;
-    this.color = props.color;
     this.rent = {
       [RentIndexes.BLANK]: props.rent[0],
       [RentIndexes.ONE_HOUSE]: props.rent[1],
@@ -121,7 +119,6 @@ type TileProps = BasicTileProps & {
 type PropertyTileProps = BasicTileProps & {
   country: ICountry;
   cost: number;
-  color: string;
   rent: [number, number, number, number, number, number];
   houseCost: number;
   hotelCost: number;

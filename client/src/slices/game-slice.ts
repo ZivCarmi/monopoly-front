@@ -6,17 +6,19 @@ import { TURN_TIMES } from "@/utils/constants";
 import {
   Board,
   IProperty,
+  isPurchasable,
   PurchasableTile,
   RentIndexes,
   SuspensionTileTypes,
   TileTypes,
 } from "@backend/types/Board";
 import { GameCard } from "@backend/types/Cards";
-import { SuspensionProps } from "@backend/types/Game";
+import { SuspensionProps, TradeType } from "@backend/types/Game";
 import { cycleNextItem, cyclicRangeNumber } from "@backend/utils";
-import { RoomGameCards } from "@backend/types/Room";
+import { RoomGameCards } from "@backend/types/Game";
 
 export interface GameState {
+  socketId: string | null;
   isInRoom: boolean;
   isReady: boolean;
   roomHostId: string | null;
@@ -34,7 +36,7 @@ export interface GameState {
   dices: number[];
   cubesRolledInTurn: boolean;
   currentPlayerTurnId: string | null;
-  landedTileIndexInTurn: number | null;
+  isLanded: boolean;
   canPerformTurnActions: boolean;
   doublesInARow: number;
   forceEndTurn: boolean;
@@ -46,6 +48,7 @@ export interface GameState {
 }
 
 const initialState: GameState = {
+  socketId: null,
   isInRoom: false,
   isReady: false,
   roomHostId: null,
@@ -69,7 +72,7 @@ const initialState: GameState = {
   dices: [],
   cubesRolledInTurn: false,
   currentPlayerTurnId: null,
-  landedTileIndexInTurn: null,
+  isLanded: false,
   canPerformTurnActions: true,
   doublesInARow: 0,
   forceEndTurn: false,
@@ -129,16 +132,8 @@ export const gameSlice = createSlice({
       state.cubesRolledInTurn = true;
       state.doublesInARow = isDouble ? ++state.doublesInARow : 0;
     },
-    setLandedTileIndex: (
-      state,
-      action: PayloadAction<{
-        currentPlayerPosition: number;
-        dicesSum: number;
-      }>
-    ) => {
-      const { currentPlayerPosition, dicesSum } = action.payload;
-
-      state.landedTileIndexInTurn = currentPlayerPosition + dicesSum;
+    setIsLanded: (state, action: PayloadAction<boolean>) => {
+      state.isLanded = action.payload;
     },
     incrementPlayerPosition: (
       state,
@@ -193,6 +188,39 @@ export const gameSlice = createSlice({
         state.players[recieverIndex].money += amount;
       }
     },
+    completeTrade: (state, action: PayloadAction<TradeType>) => {
+      const { offeror, offeree } = action.payload;
+      const offerorIndex = state.players.findIndex(
+        (player) => player.id === offeror.id
+      );
+      const offereeIndex = state.players.findIndex(
+        (player) => player.id === offeree.id
+      );
+
+      const offerorProfit = -offeror.money + offeree.money;
+      const offereeProfit = -offeree.money + offeror.money;
+
+      // update traded players
+      state.players[offerorIndex].money += offerorProfit;
+      state.players[offereeIndex].money += offereeProfit;
+
+      // update board
+      state.map.board = state.map.board.map((tile, tileIndex) => {
+        if (isPurchasable(tile) && tile.owner) {
+          // check if from player is owner & tile is on his offer
+          if (offeror.properties.includes(tileIndex)) {
+            tile.owner = offeree.id;
+          }
+
+          // check if to player is owner & tile is on his offer
+          if (offeree.properties.includes(tileIndex)) {
+            tile.owner = offeror.id;
+          }
+        }
+
+        return tile;
+      });
+    },
     purchaseProperty: (
       state,
       action: PayloadAction<{ propertyIndex: number }>
@@ -207,6 +235,7 @@ export const gameSlice = createSlice({
       // update player
       if (playerIndex >= 0) {
         state.players[playerIndex].money -= tile.cost;
+        state.players[playerIndex].properties.push(propertyIndex);
       }
 
       // update board
@@ -221,10 +250,14 @@ export const gameSlice = createSlice({
       const playerIndex = state.players.findIndex(
         (player) => player.id === state.currentPlayerTurnId
       );
+      const playerProperties = state.players[playerIndex].properties;
 
       // update player
       if (playerIndex >= 0) {
         state.players[playerIndex].money += tile.cost / 2;
+        state.players[playerIndex].properties = playerProperties.filter(
+          (tileIndex) => tileIndex !== propertyIndex
+        );
       }
 
       // update board
@@ -262,7 +295,7 @@ export const gameSlice = createSlice({
         if (changeType === "upgrade") {
           state.players[playerIndex].money -= transactionAmount;
         } else {
-          state.players[playerIndex].money += transactionAmount;
+          state.players[playerIndex].money += transactionAmount / 2;
         }
       }
     },
@@ -304,6 +337,11 @@ export const gameSlice = createSlice({
     freePlayer: (state, action: PayloadAction<{ playerId: string }>) => {
       const { playerId } = action.payload;
 
+      console.log(
+        "freeing from suspension",
+        current(state.suspendedPlayers[playerId])
+      );
+
       delete state.suspendedPlayers[playerId];
     },
     resetCards: (state) => {
@@ -317,17 +355,17 @@ export const gameSlice = createSlice({
 
       switch (action.payload.type) {
         case TileTypes.CHANCE:
-          state.drawnGameCard = cycleNextItem(
-            chances.currentIndex,
-            chances.cards
-          );
+          state.drawnGameCard = cycleNextItem({
+            currentIndex: chances.currentIndex,
+            array: chances.cards,
+          });
           state.map.chances.currentIndex += 1;
           break;
         case TileTypes.SURPRISE:
-          state.drawnGameCard = cycleNextItem(
-            surprises.currentIndex,
-            surprises.cards
-          );
+          state.drawnGameCard = cycleNextItem({
+            currentIndex: surprises.currentIndex,
+            array: surprises.cards,
+          });
           state.map.surprises.currentIndex += 1;
           break;
         default:
@@ -338,6 +376,7 @@ export const gameSlice = createSlice({
       const { nextPlayerId } = action.payload;
 
       state.currentPlayerTurnId = nextPlayerId;
+      state.isLanded = false;
       state.canPerformTurnActions = true;
       state.forceEndTurn = false;
       state.cubesRolledInTurn = false;
@@ -353,11 +392,12 @@ export const {
   setPlayers,
   startGame,
   setDices,
-  setLandedTileIndex,
+  setIsLanded,
   incrementPlayerPosition,
   movePlayer,
   allowTurnActions,
   transferMoney,
+  completeTrade,
   purchaseProperty,
   sellProperty,
   setCityLevel,

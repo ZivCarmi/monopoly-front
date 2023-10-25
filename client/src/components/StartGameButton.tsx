@@ -1,15 +1,11 @@
 import { useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context";
+import { useSocket } from "@/app/socket-context2";
 import { Button } from "./ui/button";
 import { selectPlayers } from "@/slices/game-slice";
 
 const StartGameButton = () => {
   const players = useAppSelector(selectPlayers);
-  const { socket } = useSocket();
-
-  if (!socket) {
-    return null;
-  }
+  const socket = useSocket();
 
   const startGameHandler = () => {
     socket.emit("start_game");

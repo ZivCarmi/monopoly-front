@@ -1,16 +1,14 @@
 import { Button } from "./ui/button";
 import { useAppDispatch } from "@/app/hooks";
 import { handleRoomJoin } from "@/actions/game-actions";
-import { useSocket } from "@/app/socket-context";
+import { useSocket } from "@/app/socket-context2";
 import { v4 as uuidv4 } from "uuid";
 
 const CreateRoom = ({ children }: { children: React.ReactNode }) => {
-  const { socket } = useSocket();
+  const socket = useSocket();
   const dispatch = useAppDispatch();
 
   const createRoomHandler = (roomId: string) => {
-    if (!socket) return;
-
     dispatch(handleRoomJoin(socket, roomId));
   };
 

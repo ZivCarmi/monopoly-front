@@ -56,28 +56,21 @@ export const advanceToTileGameCard = (
 
     if (!player) throw new Error("Player not found before advancing to tile");
 
-    dispatch(movePlayer({ playerId, tilePosition: event.tileIndex }));
-
     if (event.shouldGetGoReward) {
-      const shouldGetLandReward = event.tileIndex === 0;
-      const shouldGetPassReward = player.tilePos > event.tileIndex;
-      let rewardAmount: number = 0;
+      const shouldGetPassReward =
+        event.tileIndex !== 0 && player.tilePos > event.tileIndex;
 
-      if (shouldGetLandReward) {
-        rewardAmount = goRewards.land;
-      } else if (shouldGetPassReward) {
-        rewardAmount = goRewards.pass;
-      }
-
-      if (rewardAmount) {
+      if (shouldGetPassReward) {
         dispatch(
           transferMoney({
             recieverId: playerId,
-            amount: rewardAmount,
+            amount: goRewards.pass,
           })
         );
       }
     }
+
+    dispatch(movePlayer({ playerId, tilePosition: event.tileIndex }));
   };
 };
 

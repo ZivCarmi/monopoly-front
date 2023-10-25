@@ -3,26 +3,27 @@ import { selectCurrentPlayerTurn } from "@/slices/game-slice";
 import Countdown from "../Countdown";
 import CenterAction from "./CenterAction";
 import GameLog from "./GameLog";
-import { useSocket } from "@/app/socket-context";
+import { useSocket } from "@/app/socket-context2";
 import StartGameButton from "../StartGameButton";
 import Dices from "../Dices";
+import BoardCenter from "./BoardCenter";
 
-const Center = () => {
-  const { socket } = useSocket();
+const CenterContent = () => {
+  const socket = useSocket();
   const currentPlayerTurn = useAppSelector(selectCurrentPlayerTurn);
   const { currentPlayerTurnId, started, roomHostId } = useAppSelector(
     (state) => state.game
   );
 
   return (
-    <div className="col-start-2 col-end-11 row-start-2 row-end-[11] border border-neutral-600 px-8 py-4 rtl flex flex-col">
+    <BoardCenter>
       {started && (
         <div className="space-y-4">
           <div className="flex justify-between items-center gap-8">
             {/* <Countdown /> */}
           </div>
           <Dices />
-          {currentPlayerTurnId === socket?.id ? (
+          {currentPlayerTurnId === socket.id ? (
             <CenterAction />
           ) : (
             <div className="flex items-center justify-center gap-2">
@@ -35,9 +36,10 @@ const Center = () => {
           )}
         </div>
       )}
-      {!started && roomHostId === socket?.id && <StartGameButton />}
+      {!started && roomHostId === socket.id && <StartGameButton />}
       <GameLog />
-    </div>
+    </BoardCenter>
   );
 };
-export default Center;
+
+export default CenterContent;

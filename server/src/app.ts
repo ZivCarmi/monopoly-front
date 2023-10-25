@@ -3,6 +3,7 @@ import http from "http";
 import { Server } from "socket.io";
 import cors from "cors";
 import gameController from "./controllers/gameController";
+import { TradeType } from "./api/types/Game";
 
 const app = express();
 const server = http.createServer(app);
@@ -77,5 +78,21 @@ io.on("connection", (socket) => {
 
   socket.on("downgrade_city", ({ tileIndex }: { tileIndex: number }) => {
     gameController.downgradeCity(io, socket, tileIndex);
+  });
+
+  socket.on("create_trade", ({ trade }: { trade: TradeType }) => {
+    gameController.createTrade(io, socket, trade);
+  });
+
+  socket.on("trade_accepted", ({ tradeId }: { tradeId: string }) => {
+    gameController.acceptTrade(io, socket, tradeId);
+  });
+
+  socket.on("trade_declined", ({ tradeId }: { tradeId: string }) => {
+    gameController.declineTrade(io, socket, tradeId);
+  });
+
+  socket.on("trade_updated", ({ trade }: { trade: TradeType }) => {
+    gameController.updateTrade(io, socket, trade);
   });
 });

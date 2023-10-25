@@ -8,7 +8,7 @@ const TileCard = () => {
   if (!selectedTile) return null;
 
   return (
-    <div className="rtl">
+    <div className="rtl text-right">
       <div className="flex flex-col text-center">
         <h2 className="text-lg font-medium">{selectedTile.name}</h2>
         <div className="grow flex flex-col">

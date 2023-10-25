@@ -1,7 +1,7 @@
 import Player from "../types/Player";
 import { Board, SuspensionTileTypes } from "../types/Board";
 import { initializeMap } from "../helpers";
-import { RoomGameCards } from "../types/Room";
+import { RoomGameCards, TradeType } from "../types/Game";
 
 class Room {
   id: string;
@@ -27,6 +27,7 @@ class Room {
       left: number;
     };
   };
+  trades: TradeType[];
   logs: string[];
 
   constructor(roomId: string, socketId: string) {
@@ -40,6 +41,7 @@ class Room {
     this.currentPlayerTurnId = null;
     this.doublesInARow = 0;
     this.suspendedPlayers = {};
+    this.trades = [];
     this.logs = [];
   }
 }

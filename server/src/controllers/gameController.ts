@@ -2,6 +2,7 @@ import { Server, Socket } from "socket.io";
 import Player, { NewPlayer } from "../api/types/Player";
 import Room from "../api/classes/Room";
 import {
+  CountryIds,
   IJail,
   ITax,
   PurchasableTile,
@@ -30,22 +31,23 @@ import {
   getJailTileIndex,
   hasBuildings,
   hasMonopoly,
+  isValidTrade,
   paymentGameCard,
 } from "../api/helpers";
 import { shuffleArray, cycleNextItem, cyclicRangeNumber } from "../api/utils";
 import { GameCardTypes, GameCard } from "../api/types/Cards";
-import { RoomGameCards } from "../api/types/Room";
+import { RoomGameCards, TradeType } from "../api/types/Game";
 
 class GameController {
   public rooms: { [roomId: string]: Room } = {};
 
-  private getSocketGameRoom(socket: Socket): string {
+  private getSocketRoomId(socket: Socket): string {
     const socketRooms = Array.from(socket.rooms.values()).filter(
       (r) => r !== socket.id
     );
-    const gameRoom = socketRooms && socketRooms[0];
+    const roomId = socketRooms && socketRooms[0];
 
-    return gameRoom;
+    return roomId;
   }
 
   private writeLogToRoom(roomId: string, message: string) {
@@ -57,16 +59,16 @@ class GameController {
   }
 
   public async backToLobby(io: Server, socket: Socket) {
-    const gameRoom = this.getSocketGameRoom(socket);
+    const roomId = this.getSocketRoomId(socket);
 
-    if (!gameRoom) return;
+    if (!roomId) return;
 
     console.log("-----------------------------\nBacking up to lobby...");
 
     this.playerLeaving(io, socket);
 
     console.log(
-      `Left room - ${gameRoom} and now on lobby\n-----------------------------`
+      `Left room - ${roomId} and now on lobby\n-----------------------------`
     );
 
     socket.emit("on_lobby");
@@ -80,11 +82,11 @@ class GameController {
 
   public async joinRoom(io: Server, socket: Socket, roomId: string) {
     const connectedSockets = io.sockets.adapter.rooms.get(roomId);
-    const gameRoom = this.getSocketGameRoom(socket);
+    const existRoomId = this.getSocketRoomId(socket);
 
     console.log("New User joining room:", roomId);
 
-    if (gameRoom) {
+    if (existRoomId) {
       return socket.emit("room_join_error", {
         error: "Cannot join a room while on another room",
       });
@@ -102,6 +104,32 @@ class GameController {
       // Update room
       room = this.rooms[roomId];
       this.rooms[roomId].participantsCount++;
+
+      // FOR TESTING
+      // const testMap = room.map.board.map((tile) => {
+      //   if (isProperty(tile)) {
+      //     // tile.owner = socket.id;
+
+      //     if (tile.country.id === CountryIds.UK) {
+      //       tile.owner = socket.id;
+      //     }
+      //     if (tile.country.id === CountryIds.ISRAEL) {
+      //       tile.owner = socket.id;
+      //     }
+      //     if (tile.country.id === CountryIds.ITALY) {
+      //       tile.owner = socket.id;
+      //     }
+
+      //     if (tile.country.id === CountryIds.AUSTRALIA) {
+      //       tile.rentIndex = RentIndexes.HOTEL;
+      //       tile.owner = socket.id;
+      //     }
+      //   }
+
+      //   return tile;
+      // });
+
+      // this.rooms[roomId].map.board = testMap;
     } else {
       // Set new room
       this.rooms[roomId] = room;
@@ -109,7 +137,24 @@ class GameController {
       // FOR TESTING
       // const testMap = room.map.board.map((tile) => {
       //   if (isProperty(tile)) {
-      //     tile.owner = socket.id;
+      //     // tile.owner = socket.id;
+
+      //     if (tile.country.id === CountryIds.USA) {
+      //       tile.owner = socket.id;
+      //     }
+      //     if (tile.country.id === CountryIds.RUSSIA) {
+      //       tile.owner = socket.id;
+      //     }
+      //     if (tile.country.id === CountryIds.CHINA) {
+      //       tile.owner = socket.id;
+      //     }
+
+      //     if (tile.country.id === CountryIds.EGYPT) {
+      //       tile.rentIndex = RentIndexes.HOTEL;
+      //       tile.owner = socket.id;
+      //     } else {
+      //       tile.rentIndex = RentIndexes.ONE_HOUSE;
+      //     }
       //   }
 
       //   return tile;
@@ -124,9 +169,9 @@ class GameController {
   }
 
   public addPlayer(io: Server, socket: Socket, player: NewPlayer) {
-    const gameRoom = this.getSocketGameRoom(socket);
+    const roomId = this.getSocketRoomId(socket);
 
-    if (!gameRoom) {
+    if (!roomId) {
       return socket.emit("player_create_error", {
         error: "Could not create player",
       });
@@ -135,87 +180,88 @@ class GameController {
     const joinedMessage = `${player.name} נכנס למשחק`;
     const newPlayer: Player = {
       ...player,
-      money: 1000,
+      money: 1500,
       tilePos: 0,
+      properties: [],
     };
 
     // add the player
-    this.rooms[gameRoom].players[newPlayer.id] = newPlayer;
+    this.rooms[roomId].players[newPlayer.id] = newPlayer;
 
-    io.in(gameRoom).emit("player_created", {
+    io.in(roomId).emit("player_created", {
       player: newPlayer,
       message: joinedMessage,
     });
 
-    this.writeLogToRoom(gameRoom, joinedMessage);
+    this.writeLogToRoom(roomId, joinedMessage);
   }
 
   public playerLeaving(io: Server, socket: Socket) {
-    const gameRoom = this.getSocketGameRoom(socket);
+    const roomId = this.getSocketRoomId(socket);
 
     // To update the socket client
     socket.emit("left_room");
 
-    if (!gameRoom) return;
+    if (!roomId) return;
 
     let leaveMessage = "";
 
-    if (this.rooms[gameRoom].players[socket.id] !== undefined) {
+    if (this.rooms[roomId].players[socket.id] !== undefined) {
       leaveMessage = `${
-        this.rooms[gameRoom].players[socket.id].name
+        this.rooms[roomId].players[socket.id].name
       } עזב את המשחק`;
     } else {
       leaveMessage = "צופה עזב את המשחק";
     }
 
     // Notify to room that the user is leaving
-    socket.to(gameRoom).emit("player_left", {
+    socket.to(roomId).emit("player_left", {
       playerId: socket.id,
       message: leaveMessage,
     });
 
-    this.writeLogToRoom(gameRoom, leaveMessage);
+    this.writeLogToRoom(roomId, leaveMessage);
 
-    if (this.rooms[gameRoom].participantsCount === 1) {
+    if (this.rooms[roomId].participantsCount === 1) {
       // Delete room
-      io.in(gameRoom).socketsLeave(gameRoom);
+      io.in(roomId).socketsLeave(roomId);
 
-      delete this.rooms[gameRoom];
+      delete this.rooms[roomId];
     } else {
       // Decrease room participants count by 1
-      socket.leave(gameRoom);
+      socket.leave(roomId);
 
-      delete this.rooms[gameRoom].players[socket.id];
+      delete this.rooms[roomId].players[socket.id];
 
-      this.rooms[gameRoom].participantsCount--;
+      this.rooms[roomId].participantsCount--;
     }
   }
 
   public startGame(io: Server, socket: Socket) {
-    const gameRoom = this.getSocketGameRoom(socket);
+    const roomId = this.getSocketRoomId(socket);
 
-    if (!gameRoom) return;
+    if (!roomId) return;
 
-    const players = Object.values(this.rooms[gameRoom].players);
+    const players = Object.values(this.rooms[roomId].players);
 
-    if (socket.id !== this.rooms[gameRoom].hostId || players.length < 2) return;
+    if (socket.id !== this.rooms[roomId].hostId || players.length < 2) return;
 
     // randomize the players array (IF COMMENTED IT'S FOR TESTING)
-    // shuffleArray(players);
+    shuffleArray(players);
 
     const startingPlayer = players[0].id;
     const gameStartMessage = "המשחק התחיל!";
 
-    this.rooms[gameRoom].gameStarted = true;
-    this.rooms[gameRoom].currentPlayerTurnId = startingPlayer;
+    this.rooms[roomId].gameStarted = true;
+    this.rooms[roomId].currentPlayerTurnId = startingPlayer;
 
-    io.in(gameRoom).emit("game_started", {
+    io.in(roomId).emit("game_started", {
       generatedPlayers: players,
       currentPlayerTurn: startingPlayer,
       message: gameStartMessage,
     });
 
-    this.writeLogToRoom(gameRoom, gameStartMessage);
+    this.writeLogToRoom(roomId, gameStartMessage);
   }
 
   private payRent(roomId: string, payerId: string, tile: PurchasableTile) {
@@ -263,7 +309,12 @@ class GameController {
     this.rooms[roomId].players[payerId].money -= taxAmount;
   }
 
-  private onPlayerLanding(roomId: string, playerId: string) {
+  private onPlayerLanding(socket: Socket) {
+    const roomId = this.getSocketRoomId(socket);
+    const playerId = socket.id;
+
+    if (!roomId) return;
+
     const room = this.rooms[roomId];
     const currentPlayerPosition = room.players[playerId].tilePos;
     const landedTile = room.map.board[currentPlayerPosition];
@@ -282,12 +333,14 @@ class GameController {
         this.payRent(roomId, playerId, landedTile);
       }
     } else if (landedTile.type === TileTypes.CHANCE) {
-      this.handleGameCard(roomId, playerId, room.map.chances);
+      // this.handleGameCard(roomId, playerId, room.map.chances);
+      this.handleGameCard(socket, room.map.chances);
       this.rooms[roomId].map.chances.currentIndex += 1;
     } else if (isTax(landedTile)) {
       this.payTax(roomId, playerId, landedTile);
     } else if (landedTile.type === TileTypes.SURPRISE) {
-      this.handleGameCard(roomId, playerId, room.map.surprises);
+      // this.handleGameCard(roomId, playerId, room.map.surprises);
+      this.handleGameCard(socket, room.map.surprises);
       this.rooms[roomId].map.surprises.currentIndex += 1;
     } else if (isJail(landedTile)) {
       // Maybe do here something? not sure
@@ -306,6 +359,10 @@ class GameController {
       "Player state after landing",
       this.rooms[roomId].players[playerId]
     );
+
+    if (this.rooms[roomId].players[playerId].money < 0) {
+      socket.emit("overcharged");
+    }
   }
 
   public sendPlayerToJail(roomId: string, playerId: string) {
@@ -328,22 +385,18 @@ class GameController {
     };
   }
 
-  private handleGameCard = (
-    roomId: string,
-    playerId: string,
-    roomGameCards: RoomGameCards
-  ) => {
+  private handleGameCard = (socket: Socket, roomGameCards: RoomGameCards) => {
+    const roomId = this.getSocketRoomId(socket);
+    const playerId = socket.id;
+
+    if (!roomId) return;
+
     const room = this.rooms[roomId];
     const player = this.rooms[roomId].players[playerId];
-    const drawnGameCard: GameCard = cycleNextItem(
-      roomGameCards.currentIndex,
-      roomGameCards.cards
-    );
-
-    if (!room || !player) {
-      console.log("Player not found on handleGameCard");
-      return;
-    }
+    const drawnGameCard = cycleNextItem({
+      currentIndex: roomGameCards.currentIndex,
+      array: roomGameCards.cards,
+    });
 
     switch (drawnGameCard.type) {
       case GameCardTypes.PAYMENT:
@@ -362,7 +415,7 @@ class GameController {
           room
         );
 
-        return this.onPlayerLanding(roomId, playerId);
+        return this.onPlayerLanding(socket);
       case GameCardTypes.ADVANCE_TO_TILE_TYPE:
         this.rooms[roomId].players[playerId] = advanceToTileTypeGameCard(
           player.id,
@@ -370,9 +423,9 @@ class GameController {
           room
         );
 
-        return this.onPlayerLanding(roomId, playerId);
+        return this.onPlayerLanding(socket);
       case GameCardTypes.WALK:
-        return this.walkPlayer(roomId, playerId, drawnGameCard.event.steps);
+        return this.walkPlayer(socket, drawnGameCard.event.steps);
       case GameCardTypes.GO_TO_JAIL:
         return this.sendPlayerToJail(roomId, playerId);
       default:
@@ -381,14 +434,14 @@ class GameController {
   };
 
   public purchaseProperty(io: Server, socket: Socket, propertyIndex: number) {
-    const gameRoom = this.getSocketGameRoom(socket);
+    const roomId = this.getSocketRoomId(socket);
 
     console.log("--------------------------------------");
     console.log("Player attempting to purchase...");
 
-    if (!gameRoom) return;
+    if (!roomId) return;
 
-    const room = this.rooms[gameRoom];
+    const room = this.rooms[roomId];
     const player = room.players[socket.id];
     const tile = room.map.board[propertyIndex];
 
@@ -410,32 +463,33 @@ class GameController {
     const purchaseMessage = `${player.name} רכש את ${tile.name}`;
 
     // update player
-    this.rooms[gameRoom].players[socket.id].money -= tile.cost;
+    this.rooms[roomId].players[socket.id].properties.push(propertyIndex);
+    this.rooms[roomId].players[socket.id].money -= tile.cost;
 
     // update board
     tile.owner = player.id;
-    this.rooms[gameRoom].map.board[propertyIndex] = tile;
+    this.rooms[roomId].map.board[propertyIndex] = tile;
 
-    console.log(this.rooms[gameRoom].map.board[propertyIndex]);
-    console.log(this.rooms[gameRoom].players[socket.id]);
+    // console.log(this.rooms[roomId].map.board[propertyIndex]);
+    console.log(this.rooms[roomId].players[socket.id]);
 
-    io.in(gameRoom).emit("purchased_property", {
+    io.in(roomId).emit("purchased_property", {
       propertyIndex,
       message: purchaseMessage,
     });
 
-    this.writeLogToRoom(gameRoom, purchaseMessage);
+    this.writeLogToRoom(roomId, purchaseMessage);
   }
 
   public sellProperty(io: Server, socket: Socket, propertyIndex: number) {
-    const gameRoom = this.getSocketGameRoom(socket);
+    const roomId = this.getSocketRoomId(socket);
 
     console.log("--------------------------------------");
     console.log("Player attempting to sell property...");
 
-    if (!gameRoom) return;
+    if (!roomId) return;
 
-    const room = this.rooms[gameRoom];
+    const room = this.rooms[roomId];
     const player = room.players[socket.id];
     const tile = room.map.board[propertyIndex];
 
@@ -450,95 +504,99 @@ class GameController {
     const purchaseMessage = `${player.name} מכר את ${tile.name}`;
 
     // update player
-    this.rooms[gameRoom].players[socket.id].money += tile.cost / 2;
+    this.rooms[roomId].players[socket.id].properties = player.properties.filter(
+      (tileIndex) => tileIndex !== propertyIndex
+    );
+    this.rooms[roomId].players[socket.id].money += tile.cost / 2;
 
     // update board
     tile.owner = null;
-    this.rooms[gameRoom].map.board[propertyIndex] = tile;
+    this.rooms[roomId].map.board[propertyIndex] = tile;
 
-    console.log(this.rooms[gameRoom].map.board[propertyIndex]);
-    console.log(this.rooms[gameRoom].players[socket.id]);
+    // console.log(this.rooms[roomId].map.board[propertyIndex]);
+    console.log(this.rooms[roomId].players[socket.id]);
 
-    io.in(gameRoom).emit("sold_property", {
+    io.in(roomId).emit("sold_property", {
       propertyIndex,
       message: purchaseMessage,
     });
 
-    this.writeLogToRoom(gameRoom, purchaseMessage);
+    this.writeLogToRoom(roomId, purchaseMessage);
   }
 
   public rollDice(io: Server, socket: Socket) {
-    const gameRoom = this.getSocketGameRoom(socket);
+    const roomId = this.getSocketRoomId(socket);
 
     console.log("--------------------------------------");
 
-    if (!gameRoom) return;
+    if (!roomId) return;
 
-    const currentPlayerTurnId = this.rooms[gameRoom].currentPlayerTurnId;
+    const currentPlayerTurnId = this.rooms[roomId].currentPlayerTurnId;
 
     if (currentPlayerTurnId !== socket.id) return;
 
     const suspendedPlayer =
-      this.rooms[gameRoom].suspendedPlayers[currentPlayerTurnId];
+      this.rooms[roomId].suspendedPlayers[currentPlayerTurnId];
     let randomizeDices = [
       DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
       DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
     ];
-    // let randomizeDices = [2, 1];
+    // let randomizeDices = [2, 5];
 
-    const allPlayers = this.rooms[gameRoom].players;
+    // const allPlayers = this.rooms[roomId].players;
+    // const firstPlayerId = Object.keys(allPlayers)[0];
 
     // test dices for first player
-    // if (Object.keys(allPlayers)[0] === currentPlayerTurnId) {
-    //   randomizeDices = [5, 5];
+    // if (firstPlayerId === currentPlayerTurnId) {
+    //   randomizeDices = [1, 1];
     // }
 
     const isDouble = randomizeDices[0] === randomizeDices[1];
     const dicesSum = randomizeDices[0] + randomizeDices[1];
 
     // update dices
-    this.rooms[gameRoom].dices = randomizeDices;
-    if (isDouble) this.rooms[gameRoom].doublesInARow++;
+    this.rooms[roomId].dices = randomizeDices;
+    if (isDouble) this.rooms[roomId].doublesInARow++;
 
-    io.in(gameRoom).emit("dice_rolled", {
+    io.in(roomId).emit("dice_rolled", {
       dices: randomizeDices,
     });
 
     if (suspendedPlayer && suspendedPlayer.reason === TileTypes.JAIL) {
-      if (!isDouble) {
-        this.rooms[gameRoom].suspendedPlayers[currentPlayerTurnId].left--;
+      if (suspendedPlayer.left <= 0) {
+        delete this.rooms[roomId].suspendedPlayers[currentPlayerTurnId];
       } else {
-        delete this.rooms[gameRoom].suspendedPlayers[currentPlayerTurnId];
+        if (!isDouble) {
+          this.rooms[roomId].suspendedPlayers[currentPlayerTurnId].left--;
+        } else {
+          delete this.rooms[roomId].suspendedPlayers[currentPlayerTurnId];
+        }
       }
 
       return this.switchTurn(io, socket);
     }
 
     // send player to jail
-    if (this.rooms[gameRoom].doublesInARow === 3) {
-      this.sendPlayerToJail(gameRoom, currentPlayerTurnId);
+    if (this.rooms[roomId].doublesInARow === 3) {
+      this.sendPlayerToJail(roomId, currentPlayerTurnId);
 
       return this.switchTurn(io, socket);
     }
 
-    this.walkPlayer(gameRoom, socket.id, dicesSum);
+    this.walkPlayer(socket, dicesSum);
   }
 
-  public walkPlayer(roomId: string, playerId: string, steps: number) {
+  public walkPlayer(socket: Socket, steps: number) {
+    const roomId = this.getSocketRoomId(socket);
+    const playerId = socket.id;
+
+    console.log("--------------------------------------");
+
+    if (!roomId) return;
+
     const room = this.rooms[roomId];
-    const player = room?.players[playerId];
+    const player = room.players[playerId];
     const { board, goRewards } = room?.map;
-
-    if (!room) {
-      console.log("Room not found on walkPlayer");
-      return;
-    }
-
-    if (!player) {
-      console.log("Player not found on walkPlayer");
-      return;
-    }
-
     const tileToWalk = player.tilePos + steps;
     const newPlayerPosition = cyclicRangeNumber(tileToWalk, board.length);
     const passedGo = tileToWalk > board.length && newPlayerPosition !== 0;
@@ -548,32 +606,32 @@ class GameController {
       ? player.money + goRewards.pass
       : player.money;
 
-    this.onPlayerLanding(roomId, playerId);
+    return this.onPlayerLanding(socket);
   }
 
   public switchTurn(io: Server, socket: Socket): void {
-    const gameRoom = this.getSocketGameRoom(socket);
+    const roomId = this.getSocketRoomId(socket);
 
     console.log("--------------------------------------");
 
-    if (!gameRoom) return;
+    if (!roomId) return;
 
-    const { currentPlayerTurnId, suspendedPlayers } = this.rooms[gameRoom];
+    const { currentPlayerTurnId, suspendedPlayers } = this.rooms[roomId];
 
     if (!currentPlayerTurnId) return;
 
-    const playerIds = Object.keys(this.rooms[gameRoom].players);
+    const playerIds = Object.keys(this.rooms[roomId].players);
 
-    const nextPlayerTurnId: string = cycleNextItem(
-      currentPlayerTurnId,
-      playerIds
-    );
+    const nextPlayerTurnId = cycleNextItem({
+      currentValue: currentPlayerTurnId,
+      array: playerIds,
+    });
 
     console.log(`Current player`, currentPlayerTurnId);
     console.log(`Maybe next player id`, nextPlayerTurnId);
 
     // update current player turn
-    this.rooms[gameRoom].currentPlayerTurnId = nextPlayerTurnId;
+    this.rooms[roomId].currentPlayerTurnId = nextPlayerTurnId;
 
     const nextSuspendedPlayer = suspendedPlayers[nextPlayerTurnId];
 
@@ -584,9 +642,9 @@ class GameController {
       if (nextSuspendedPlayer.reason === TileTypes.VACATION) {
         if (nextSuspendedPlayer.left === 0) {
           // can safely remove the player from suspension
-          delete this.rooms[gameRoom].suspendedPlayers[nextPlayerTurnId];
+          delete this.rooms[roomId].suspendedPlayers[nextPlayerTurnId];
         } else {
-          this.rooms[gameRoom].suspendedPlayers[nextPlayerTurnId].left--;
+          this.rooms[roomId].suspendedPlayers[nextPlayerTurnId].left--;
 
           console.log(
             `Switching turns because ${nextPlayerTurnId} is on vacation`
@@ -594,7 +652,7 @@ class GameController {
 
           console.log(
             "updated suspended state",
-            this.rooms[gameRoom].suspendedPlayers
+            this.rooms[roomId].suspendedPlayers
           );
 
           return this.switchTurn(io, socket);
@@ -603,55 +661,55 @@ class GameController {
     }
 
     // update room
-    this.rooms[gameRoom].doublesInARow = 0;
+    this.rooms[roomId].doublesInARow = 0;
 
-    io.in(gameRoom).emit("switched_turn", {
+    io.in(roomId).emit("switched_turn", {
       nextPlayerId: nextPlayerTurnId,
     });
   }
 
   public payOutOfJail(io: Server, socket: Socket) {
-    const gameRoom = this.getSocketGameRoom(socket);
+    const roomId = this.getSocketRoomId(socket);
 
     console.log("--------------------------------------");
 
-    if (!gameRoom) return;
+    if (!roomId) return;
 
-    const { currentPlayerTurnId, suspendedPlayers } = this.rooms[gameRoom];
+    const { currentPlayerTurnId, suspendedPlayers } = this.rooms[roomId];
 
     if (currentPlayerTurnId !== socket.id || !suspendedPlayers[socket.id])
       return;
 
-    const player = this.rooms[gameRoom].players[socket.id];
+    const player = this.rooms[roomId].players[socket.id];
 
     if (player.money >= PAY_OUT_FROM_JAIL_AMOUNT) {
       const message = `${player.name} שילם $${PAY_OUT_FROM_JAIL_AMOUNT} בשביל להשתחרר מהכלא`;
 
-      this.rooms[gameRoom].players[socket.id].money -= PAY_OUT_FROM_JAIL_AMOUNT;
+      this.rooms[roomId].players[socket.id].money -= PAY_OUT_FROM_JAIL_AMOUNT;
 
       // Remove player from suspension state
-      delete this.rooms[gameRoom].suspendedPlayers[currentPlayerTurnId];
+      delete this.rooms[roomId].suspendedPlayers[currentPlayerTurnId];
 
-      io.in(gameRoom).emit("paid_out_of_jail", { message });
+      io.in(roomId).emit("paid_out_of_jail", { message });
 
-      this.writeLogToRoom(gameRoom, message);
+      this.writeLogToRoom(roomId, message);
 
       return this.switchTurn(io, socket);
     }
   }
 
   public upgradeCity(io: Server, socket: Socket, tileIndex: number) {
-    const gameRoom = this.getSocketGameRoom(socket);
+    const roomId = this.getSocketRoomId(socket);
 
     console.log("--------------------------------------");
 
-    if (!gameRoom) return;
+    if (!roomId) return;
 
     const {
       currentPlayerTurnId,
       suspendedPlayers,
       map: { board },
-    } = this.rooms[gameRoom];
+    } = this.rooms[roomId];
     const tile = board[tileIndex];
 
     if (!isProperty(tile) || tile.owner !== socket.id) return;
@@ -665,37 +723,37 @@ class GameController {
       return;
 
     const cityLevelText = getCityLevelText(tile.rentIndex + 1);
-    const player = this.rooms[gameRoom].players[socket.id];
+    const player = this.rooms[roomId].players[socket.id];
     const message = `${player.name} שדרג ל${cityLevelText} ב${tile.name}`;
 
     tile.rentIndex += 1;
-    this.rooms[gameRoom].map.board[tileIndex] = tile;
-    this.rooms[gameRoom].players[socket.id].money -=
+    this.rooms[roomId].map.board[tileIndex] = tile;
+    this.rooms[roomId].players[socket.id].money -=
       tile.rentIndex === RentIndexes.FOUR_HOUSES
         ? tile.hotelCost
         : tile.houseCost;
 
-    io.in(gameRoom).emit("city_level_change", {
+    io.in(roomId).emit("city_level_change", {
       propertyIndex: tileIndex,
       changeType: "upgrade",
       message,
     });
 
-    this.writeLogToRoom(gameRoom, message);
+    this.writeLogToRoom(roomId, message);
   }
 
   public downgradeCity(io: Server, socket: Socket, tileIndex: number) {
-    const gameRoom = this.getSocketGameRoom(socket);
+    const roomId = this.getSocketRoomId(socket);
 
     console.log("--------------------------------------");
 
-    if (!gameRoom) return;
+    if (!roomId) return;
 
     const {
       currentPlayerTurnId,
       suspendedPlayers,
       map: { board },
-    } = this.rooms[gameRoom];
+    } = this.rooms[roomId];
     const tile = board[tileIndex];
 
     if (!isProperty(tile) || tile.owner !== socket.id) return;
@@ -712,21 +770,145 @@ class GameController {
       return;
 
     const cityLevelText = getCityLevelText(tile.rentIndex - 1);
-    const player = this.rooms[gameRoom].players[socket.id];
+    const player = this.rooms[roomId].players[socket.id];
     const message = `${player.name} שנמך ל${cityLevelText} ב${tile.name}`;
-
-    tile.rentIndex -= 1;
-    this.rooms[gameRoom].map.board[tileIndex] = tile;
-    this.rooms[gameRoom].players[socket.id].money +=
+    const transactionAmount =
       tile.rentIndex === RentIndexes.HOTEL ? tile.hotelCost : tile.houseCost;
 
-    io.in(gameRoom).emit("city_level_change", {
+    tile.rentIndex -= 1;
+    this.rooms[roomId].map.board[tileIndex] = tile;
+    this.rooms[roomId].players[socket.id].money += transactionAmount / 2;
+
+    io.in(roomId).emit("city_level_change", {
       propertyIndex: tileIndex,
       changeType: "downgrade",
       message,
     });
 
-    this.writeLogToRoom(gameRoom, message);
+    this.writeLogToRoom(roomId, message);
+  }
+
+  public createTrade(io: Server, socket: Socket, trade: TradeType) {
+    const roomId = this.getSocketRoomId(socket);
+
+    console.log("--------------------------------------");
+
+    if (!roomId || !isValidTrade(this.rooms[roomId], trade)) return;
+
+    // check if offeror is the socket
+    if (trade.offeror.id !== socket.id) return;
+
+    trade.turn = trade.offeree.id;
+
+    this.rooms[roomId].trades.push(trade);
+
+    io.in(roomId).emit("trade_created", trade);
+  }
+
+  public acceptTrade(io: Server, socket: Socket, tradeId: string) {
+    const roomId = this.getSocketRoomId(socket);
+
+    console.log("--------------------------------------");
+
+    console.log("sent tradeId", tradeId);
+
+    if (!roomId) return;
+
+    const room = this.rooms[roomId];
+    const trade = room.trades.find((trade) => trade.id === tradeId);
+
+    if (!trade) return null;
+
+    const message = `${room.players[trade.offeror.id].name} ביצע עסקה עם ${
+      room.players[trade.offeree.id].name
+    }`;
+    const fromPlayerProfit = -trade.offeror.money + trade.offeree.money;
+
+    // update trade creator player
+    this.rooms[roomId].players[trade.offeror.id].money += fromPlayerProfit;
+
+    const toPlayerProfit = -trade.offeree.money + trade.offeror.money;
+
+    // update trade recieved player
+    this.rooms[roomId].players[trade.offeree.id].money += toPlayerProfit;
+
+    this.rooms[roomId].map.board.map((tile, tileIndex) => {
+      if (isPurchasable(tile) && tile.owner) {
+        // check if from player is owner & tile is on his offer
+        if (
+          tile.owner === trade.offeror.id &&
+          trade.offeror.properties.includes(tileIndex)
+        ) {
+          tile.owner = trade.offeree.id;
+        }
+
+        // check if to player is owner & tile is on his offer
+        if (
+          tile.owner === trade.offeree.id &&
+          trade.offeree.properties.includes(tileIndex)
+        ) {
+          tile.owner = trade.offeror.id;
+        }
+      }
+
+      return tile;
+    });
+
+    // console.log(this.rooms[roomId].map.board);
+    console.log(this.rooms[roomId].players[trade.offeror.id].money);
+    console.log(this.rooms[roomId].players[trade.offeree.id].money);
+
+    io.in(roomId).emit("trade_accepted", {
+      tradeId,
+      message,
+    });
+
+    this.writeLogToRoom(roomId, message);
+  }
+
+  public declineTrade(io: Server, socket: Socket, tradeId: string) {
+    const roomId = this.getSocketRoomId(socket);
+
+    console.log("--------------------------------------");
+
+    if (!roomId) return;
+
+    this.rooms[roomId].trades = this.rooms[roomId].trades.filter(
+      (trade) => trade.id !== tradeId
+    );
+
+    io.in(roomId).emit("trade_declined", {
+      tradeId,
+    });
+  }
+
+  public updateTrade(io: Server, socket: Socket, trade: TradeType) {
+    const roomId = this.getSocketRoomId(socket);
+
+    console.log("--------------------------------------");
+
+    if (!roomId) return;
+
+    const room = this.rooms[roomId];
+    const tradeIndex = room.trades.findIndex(
+      (_trade) => _trade.id === trade.id
+    );
+    const playerTurnInTrade = room.trades[tradeIndex].turn;
+    const foundTrade = room.trades[tradeIndex];
+    const playerIds = [foundTrade.offeror.id, foundTrade.offeree.id];
+
+    if (playerTurnInTrade !== socket.id) return;
+
+    if (tradeIndex === -1 || !isValidTrade(this.rooms[roomId], trade)) return;
+
+    trade.turn = cycleNextItem({
+      currentValue: foundTrade.turn,
+      array: playerIds,
+    });
+
+    this.rooms[roomId].trades[tradeIndex] = trade;
+
+    io.in(roomId).emit("trade_updated", trade);
   }
 }
 

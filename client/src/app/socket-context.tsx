@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 import { Socket } from "socket.io-client";
 import socketService from "@/services/socket-service";
 
+// UNUSED
+
 type SocketContextType = {
   socket: Socket | null;
   socketErrorMsg: string;
@@ -49,6 +51,14 @@ const SocketProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 };
 
-export const useSocket = () => useContext(SocketContext);
+export const useSocket = () => {
+  const context = useContext(SocketContext);
+
+  if (!context) {
+    throw new Error("useSocket context must be used within SocketProvider");
+  }
+
+  return context;
+};
 
 export default SocketProvider;

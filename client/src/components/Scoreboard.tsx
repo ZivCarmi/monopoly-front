@@ -2,16 +2,16 @@ import { useAppSelector } from "@/app/hooks";
 import { selectPlayers } from "@/slices/game-slice";
 import { MoveLeft } from "lucide-react";
 import { Button } from "./ui/button";
-import { useSocket } from "@/app/socket-context";
+import { useSocket } from "@/app/socket-context2";
 
 const Scoreboard = () => {
-  const { socket } = useSocket();
+  const socket = useSocket();
   const players = useAppSelector(selectPlayers);
   const { started, currentPlayerTurnId } = useAppSelector(
     (state) => state.game
   );
 
-  if (!socket || players.length === 0) {
+  if (players.length === 0) {
     return null;
   }
 

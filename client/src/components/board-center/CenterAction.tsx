@@ -2,21 +2,21 @@ import { useAppSelector } from "@/app/hooks";
 import { ButtonWithIcon } from "../ui/button";
 import RollDices from "../RollDices";
 import { ShoppingCart } from "lucide-react";
-import { useSocket } from "@/app/socket-context";
+import { useSocket } from "@/app/socket-context2";
 import { PurchasableTile, isPurchasable } from "@backend/types/Board";
 import { selectCurrentPlayerTurn, selectGameBoard } from "@/slices/game-slice";
 import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constants";
 import { isPlayerInJail } from "../../utils";
 
 const CenterAction = () => {
-  const { socket } = useSocket();
+  const socket = useSocket();
   const { canPerformTurnActions, cubesRolledInTurn } = useAppSelector(
     (state) => state.game
   );
   const selfPlayer = useAppSelector(selectCurrentPlayerTurn);
   const board = useAppSelector(selectGameBoard);
 
-  if (!socket || !selfPlayer || !canPerformTurnActions) {
+  if (!selfPlayer || !canPerformTurnActions) {
     return null;
   }
 

@@ -2,7 +2,7 @@ import { getRoomsHandler, handleRoomJoin } from "@/actions/game-actions";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useEffect } from "react";
 import { Button } from "./ui/button";
-import { useSocket } from "@/app/socket-context";
+import { useSocket } from "@/app/socket-context2";
 import { ArrowLeft, PlusSquare, RefreshCcw, User } from "lucide-react";
 import CreateRoom from "./CreateRoom";
 import Room from "@backend/classes/Room";
@@ -10,11 +10,9 @@ import Room from "@backend/classes/Room";
 const LobbyGameRooms = ({ onGoBack }: { onGoBack: () => void }) => {
   const dispatch = useAppDispatch();
   const { lobbyRooms } = useAppSelector((state) => state.lobby);
-  const { socket } = useSocket();
+  const socket = useSocket();
 
   const fetchAllRooms = () => {
-    if (!socket) return;
-
     dispatch(getRoomsHandler(socket));
   };
 
@@ -29,10 +27,6 @@ const LobbyGameRooms = ({ onGoBack }: { onGoBack: () => void }) => {
       clearInterval(fetchRoomsInterval);
     };
   }, []);
-
-  if (!socket) {
-    return null;
-  }
 
   return (
     <div className="md:w-[500px] bg-card border p-6 rounded-lg overflow-hidden">

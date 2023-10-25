@@ -8,6 +8,7 @@ import {
   isGo,
   isJail,
   isProperty,
+  isPurchasable,
 } from "./types/Board";
 import { GameCardTypes, PaymentTypes } from "./types/Cards";
 import GameCards, {
@@ -25,6 +26,7 @@ import {
 } from "./constants";
 import { shuffleArray } from "./utils";
 import Room from "./classes/Room";
+import { TradeType } from "./types/Game";
 
 export const getGoTile = (board: Board) =>
   board.find((tile) => isGo(tile)) as IGo;
@@ -47,6 +49,61 @@ export const hasMonopoly = (board: Board, countryId: CountryIds) => {
   const cities = getCities(board, countryId);
 
   return cities.every((city) => city.owner === cities[0].owner);
+};
+
+export const isOwner = (
+  board: Board,
+  playerId: string,
+  propertyIndex: number[] | number
+) => {
+  if (Array.isArray(propertyIndex)) {
+    return propertyIndex.every((propertyIdx) => {
+      const property = board[propertyIdx];
+
+      if (isPurchasable(property) && property.owner === playerId) {
+        return true;
+      }
+
+      return false;
+    });
+  }
+
+  const property = board[propertyIndex];
+
+  return isPurchasable(property) && property.owner === playerId;
+};
+
+export const isValidTrade = (room: Room, trade: TradeType) => {
+  const players = [trade.offeror, trade.offeree];
+
+  // check if at least one of the players made an offer
+  const isAnOffer = players.some((player) => {
+    if (player.money > 0) {
+      return true;
+    }
+
+    if (player.properties.length > 0) {
+      return true;
+    }
+
+    return false;
+  });
+
+  // check if both players can fulfill the offer
+  const IsValidPlayers = players.every((player) => {
+    // check if player exist
+    if (!room.players[player.id]) return false;
+
+    // check if player has enough money
+    if (room.players[player.id].money < player.money) return false;
+
+    // check if player has all the properties
+    if (!isOwner(room.map.board, player.id, player.properties)) return false;
+
+    return true;
+  });
+
+  return isAnOffer && IsValidPlayers;
 };
 
 export const getCityLevelText = (rentIndex: RentIndexes) => {
@@ -95,7 +152,6 @@ export const initializeMap = () => {
       country: COUNTRIES.egypt,
       name: "אלכסנדרייה",
       cost: 60,
-      color: "violet",
       rent: [2, 10, 30, 90, 160, 250],
       houseCost: 50,
       hotelCost: 50,
@@ -104,7 +160,6 @@ export const initializeMap = () => {
       country: COUNTRIES.egypt,
       name: "קהיר",
       cost: 60,
-      color: "violet",
       rent: [4, 20, 60, 180, 320, 450],
       houseCost: 50,
       hotelCost: 50,
@@ -113,7 +168,6 @@ export const initializeMap = () => {
       country: COUNTRIES.israel,
       name: "ירושלים",
       cost: 100,
-      color: "lightblue",
       rent: [6, 30, 90, 270, 400, 550],
       houseCost: 50,
       hotelCost: 50,
@@ -122,7 +176,6 @@ export const initializeMap = () => {
       country: COUNTRIES.israel,
       name: "חיפה",
       cost: 100,
-      color: "lightblue",
       rent: [6, 30, 90, 270, 400, 550],
       houseCost: 50,
       hotelCost: 50,
@@ -131,7 +184,6 @@ export const initializeMap = () => {
       country: COUNTRIES.israel,
       name: "תל-אביב",
       cost: 120,
-      color: "lightblue",
       rent: [8, 40, 100, 300, 450, 600],
       houseCost: 50,
       hotelCost: 50,
@@ -140,7 +192,6 @@ export const initializeMap = () => {
       country: COUNTRIES.australia,
       name: "מלבורן",
       cost: 140,
-      color: "purple",
       rent: [10, 50, 150, 450, 625, 750],
       houseCost: 100,
       hotelCost: 100,
@@ -149,7 +200,6 @@ export const initializeMap = () => {
       country: COUNTRIES.australia,
       name: "סידני",
       cost: 140,
-      color: "purple",
       rent: [10, 50, 150, 450, 625, 750],
       houseCost: 100,
       hotelCost: 100,
@@ -158,7 +208,6 @@ export const initializeMap = () => {
       country: COUNTRIES.australia,
       name: "פרת'",
       cost: 160,
-      color: "purple",
       rent: [12, 60, 180, 500, 700, 900],
       houseCost: 100,
       hotelCost: 100,
@@ -167,7 +216,6 @@ export const initializeMap = () => {
       country: COUNTRIES.russia,
       name: "קאזאן",
       cost: 180,
-      color: "orange",
       rent: [14, 70, 200, 550, 750, 950],
       houseCost: 100,
       hotelCost: 100,
@@ -176,7 +224,6 @@ export const initializeMap = () => {
       country: COUNTRIES.russia,
       name: "רוסטוב",
       cost: 180,
-      color: "orange",
       rent: [14, 70, 200, 550, 750, 950],
       houseCost: 100,
       hotelCost: 100,
@@ -185,7 +232,6 @@ export const initializeMap = () => {
       country: COUNTRIES.russia,
       name: "מוסקבה",
       cost: 200,
-      color: "orange",
       rent: [16, 80, 220, 600, 800, 1000],
       houseCost: 100,
       hotelCost: 100,
@@ -194,7 +240,6 @@ export const initializeMap = () => {
       country: COUNTRIES.china,
       name: "גואנזו",
       cost: 220,
-      color: "red",
       rent: [18, 90, 250, 700, 875, 1050],
       houseCost: 150,
       hotelCost: 150,
@@ -203,7 +248,6 @@ export const initializeMap = () => {
       country: COUNTRIES.china,
       name: "שנגחאי",
       cost: 220,
-      color: "red",
       rent: [18, 90, 250, 700, 875, 1050],
       houseCost: 150,
       hotelCost: 150,
@@ -212,7 +256,6 @@ export const initializeMap = () => {
       country: COUNTRIES.china,
       name: "בייג'ין",
       cost: 240,
-      color: "red",
       rent: [20, 100, 300, 750, 925, 1100],
       houseCost: 150,
       hotelCost: 150,
@@ -221,7 +264,6 @@ export const initializeMap = () => {
       country: COUNTRIES.italy,
       name: "מילאנו",
       cost: 260,
-      color: "yellow",
       rent: [22, 110, 330, 800, 975, 1150],
       houseCost: 150,
       hotelCost: 150,
@@ -230,7 +272,6 @@ export const initializeMap = () => {
       country: COUNTRIES.italy,
       name: "נאפולי",
       cost: 260,
-      color: "yellow",
       rent: [22, 110, 330, 800, 975, 1150],
       houseCost: 150,
       hotelCost: 150,
@@ -239,7 +280,6 @@ export const initializeMap = () => {
       country: COUNTRIES.italy,
       name: "רומא",
       cost: 280,
-      color: "yellow",
       rent: [24, 120, 360, 850, 1025, 1200],
       houseCost: 150,
       hotelCost: 150,
@@ -248,7 +288,6 @@ export const initializeMap = () => {
       country: COUNTRIES.uk,
       name: "ליברפול",
       cost: 300,
-      color: "green",
       rent: [26, 130, 390, 900, 1100, 1275],
       houseCost: 200,
       hotelCost: 200,
@@ -257,7 +296,6 @@ export const initializeMap = () => {
       country: COUNTRIES.uk,
       name: "מנצ'סטר",
       cost: 300,
-      color: "green",
       rent: [26, 130, 390, 900, 1100, 1275],
       houseCost: 200,
       hotelCost: 200,
@@ -266,7 +304,6 @@ export const initializeMap = () => {
       country: COUNTRIES.uk,
       name: "לונדון",
       cost: 320,
-      color: "green",
       rent: [28, 150, 450, 1000, 1200, 1400],
       houseCost: 200,
       hotelCost: 200,
@@ -275,7 +312,6 @@ export const initializeMap = () => {
       country: COUNTRIES.usa,
       name: "וושינגטון",
       cost: 350,
-      color: "blue",
       rent: [35, 175, 500, 1100, 1300, 1500],
       houseCost: 200,
       hotelCost: 200,
@@ -284,7 +320,6 @@ export const initializeMap = () => {
       country: COUNTRIES.usa,
       name: "ניו-יורק",
       cost: 400,
-      color: "blue",
       rent: [50, 200, 600, 1400, 1700, 2000],
       houseCost: 200,
       hotelCost: 200,
@@ -368,22 +403,22 @@ export const initializeMap = () => {
   ];
 
   const chanceCards = [
-    new GameCards.PaymentCard({
-      message: "מצאת ארנק עם כסף. הרווחת $200.",
-      type: GameCardTypes.PAYMENT,
-      event: {
-        amount: 200,
-        paymentType: PaymentTypes.EARN,
-      },
-    }),
-    new GameCards.PaymentCard({
-      message: "חנוכה הגיע וסבתא החליטה לפנק אותך ב $30.",
-      type: GameCardTypes.PAYMENT,
-      event: {
-        amount: 30,
-        paymentType: PaymentTypes.EARN,
-      },
-    }),
+    // new GameCards.PaymentCard({
+    //   message: "מצאת ארנק עם כסף. הרווחת $200.",
+    //   type: GameCardTypes.PAYMENT,
+    //   event: {
+    //     amount: 200,
+    //     paymentType: PaymentTypes.EARN,
+    //   },
+    // }),
+    // new GameCards.PaymentCard({
+    //   message: "חנוכה הגיע וסבתא החליטה לפנק אותך ב $30.",
+    //   type: GameCardTypes.PAYMENT,
+    //   event: {
+    //     amount: 30,
+    //     paymentType: PaymentTypes.EARN,
+    //   },
+    // }),
     new GameCards.PaymentCard({
       message: "הטלפון שלך הלך קפוט. שלם $200 לתיקון.",
       type: GameCardTypes.PAYMENT,
@@ -392,78 +427,78 @@ export const initializeMap = () => {
         paymentType: PaymentTypes.PAY,
       },
     }),
-    new GameCards.PaymentCard({
-      message: "נתקעת עם הרכב. שלם $50 לגרר.",
-      type: GameCardTypes.PAYMENT,
-      event: {
-        amount: 50,
-        paymentType: PaymentTypes.PAY,
-      },
-    }),
-    new GameCards.PaymentCard({
-      message: "הרמת חפלה בבית. גבה מכל משתמש $50.",
-      type: GameCardTypes.GROUP_PAYMENT,
-      event: {
-        amount: 50,
-        paymentType: PaymentTypes.EARN,
-      },
-    }),
-    new GameCards.PaymentCard({
-      message: "הפסדת בהתערבות עם החבר'ה. שלם לכל אחד $50.",
-      type: GameCardTypes.GROUP_PAYMENT,
-      event: {
-        amount: 50,
-        paymentType: PaymentTypes.PAY,
-      },
-    }),
-    new GameCards.AdvancedToTileCard({
-      message: `התקדם ל${board[0].name}`,
-      event: {
-        tileIndex: 0,
-        shouldGetGoReward: true,
-      },
-    }),
-    new GameCards.AdvancedToTileCard({
-      message: `התקדם ל${board[11].name}`,
-      event: {
-        tileIndex: 11,
-        shouldGetGoReward: true,
-      },
-    }),
-    new GameCards.AdvancedToTileCard({
-      message: `התקדם ל${board[3].name}`,
-      event: {
-        tileIndex: 3,
-        shouldGetGoReward: true,
-      },
-    }),
-    new GameCards.AdvancedToTileTypeCard({
-      message: "התקדם לשדה התעופה הקרוב",
-      event: {
-        tileType: TileTypes.AIRPORT,
-      },
-    }),
-    new GameCards.AdvancedToTileTypeCard({
-      message: "התקדם לחברה הקרובה",
-      event: {
-        tileType: TileTypes.COMPANY,
-      },
-    }),
-    new GameCards.WalkCard({
-      message: "חזור 3 צעדים",
-      event: {
-        steps: -3,
-      },
-    }),
-    new GameCards.WalkCard({
-      message: "התקדם 3 צעדים",
-      event: {
-        steps: 3,
-      },
-    }),
-    new GameCards.GoToJailCard({
-      message: "הכנס לכלא!",
-    }),
+    // new GameCards.PaymentCard({
+    //   message: "נתקעת עם הרכב. שלם $50 לגרר.",
+    //   type: GameCardTypes.PAYMENT,
+    //   event: {
+    //     amount: 50,
+    //     paymentType: PaymentTypes.PAY,
+    //   },
+    // }),
+    // new GameCards.PaymentCard({
+    //   message: "הרמת חפלה בבית. גבה מכל משתמש $50.",
+    //   type: GameCardTypes.GROUP_PAYMENT,
+    //   event: {
+    //     amount: 50,
+    //     paymentType: PaymentTypes.EARN,
+    //   },
+    // }),
+    // new GameCards.PaymentCard({
+    //   message: "הפסדת בהתערבות עם החבר'ה. שלם לכל אחד $50.",
+    //   type: GameCardTypes.GROUP_PAYMENT,
+    //   event: {
+    //     amount: 50,
+    //     paymentType: PaymentTypes.PAY,
+    //   },
+    // }),
+    // new GameCards.AdvancedToTileCard({
+    //   message: `התקדם ל${board[0].name}`,
+    //   event: {
+    //     tileIndex: 0,
+    //     shouldGetGoReward: true,
+    //   },
+    // }),
+    // new GameCards.AdvancedToTileCard({
+    //   message: `התקדם ל${board[11].name}`,
+    //   event: {
+    //     tileIndex: 11,
+    //     shouldGetGoReward: true,
+    //   },
+    // }),
+    // new GameCards.AdvancedToTileCard({
+    //   message: `התקדם ל${board[3].name}`,
+    //   event: {
+    //     tileIndex: 3,
+    //     shouldGetGoReward: true,
+    //   },
+    // }),
+    // new GameCards.AdvancedToTileTypeCard({
+    //   message: "התקדם לשדה התעופה הקרוב",
+    //   event: {
+    //     tileType: TileTypes.AIRPORT,
+    //   },
+    // }),
+    // new GameCards.AdvancedToTileTypeCard({
+    //   message: "התקדם לחברה הקרובה",
+    //   event: {
+    //     tileType: TileTypes.COMPANY,
+    //   },
+    // }),
+    // new GameCards.WalkCard({
+    //   message: "חזור 3 צעדים",
+    //   event: {
+    //     steps: -3,
+    //   },
+    // }),
+    // new GameCards.WalkCard({
+    //   message: "התקדם 3 צעדים",
+    //   event: {
+    //     steps: 3,
+    //   },
+    // }),
+    // new GameCards.GoToJailCard({
+    //   message: "הכנס לכלא!",
+    // }),
   ];
 
   const surpriseCards = [
@@ -519,6 +554,13 @@ export const initializeMap = () => {
       message: `התקדם ל${board[0].name}`,
       event: {
         tileIndex: 0,
+        shouldGetGoReward: true,
+      },
+    }),
+    new GameCards.AdvancedToTileCard({
+      message: `התקדם ל${board[1].name}`,
+      event: {
+        tileIndex: 1,
         shouldGetGoReward: true,
       },
     }),
@@ -605,18 +647,11 @@ export const advanceToTileGameCard = (
   const player = players[playerId];
 
   if (event.shouldGetGoReward) {
-    const shouldGetLandReward = event.tileIndex === 0;
-    const shouldGetPassReward = player.tilePos > event.tileIndex;
-    let rewardAmount: number = 0;
+    const shouldGetPassReward =
+      event.tileIndex !== 0 && player.tilePos > event.tileIndex;
 
-    if (shouldGetLandReward) {
-      rewardAmount = goRewards.land;
-    } else if (shouldGetPassReward) {
-      rewardAmount = goRewards.pass;
-    }
-
-    if (rewardAmount) {
-      player.money += rewardAmount;
+    if (shouldGetPassReward) {
+      player.money += goRewards.pass;
     }
   }
 

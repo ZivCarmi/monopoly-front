@@ -3,7 +3,7 @@ import { useEffect } from "react";
 import { useToast } from "./components/ui/use-toast";
 import { handlePlayerDisconnection } from "./actions/game-actions";
 import Lobby from "./components/Lobby";
-import { useSocket } from "./app/socket-context";
+import { useSocket } from "./app/socket-context2";
 import GameRoom from "./components/GameRoom";
 
 const App = () => {
@@ -11,11 +11,9 @@ const App = () => {
   const toastData = useAppSelector((state) => state.ui.toast);
   const dispatch = useAppDispatch();
   const { toast } = useToast();
-  const { socket } = useSocket();
+  const socket = useSocket();
 
   const disconnectClient = async () => {
-    if (!socket) return;
-
     dispatch(handlePlayerDisconnection(socket));
   };
 
@@ -23,9 +21,9 @@ const App = () => {
     disconnectClient();
 
     return () => {
-      socket?.off("player_left");
-      socket?.off("left_room");
-      socket?.off("on_lobby");
+      socket.off("player_left");
+      socket.off("left_room");
+      socket.off("on_lobby");
     };
   }, []);
 
