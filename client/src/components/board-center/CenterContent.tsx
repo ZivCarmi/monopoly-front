@@ -1,6 +1,5 @@
 import { useAppSelector } from "@/app/hooks";
 import { selectCurrentPlayerTurn } from "@/slices/game-slice";
-import Countdown from "../Countdown";
 import CenterAction from "./CenterAction";
 import GameLog from "./GameLog";
 import { useSocket } from "@/app/socket-context2";
@@ -19,9 +18,7 @@ const CenterContent = () => {
     <BoardCenter>
       {started && (
         <div className="space-y-4">
-          <div className="flex justify-between items-center gap-8">
-            {/* <Countdown /> */}
-          </div>
+          <div className="flex justify-between items-center gap-8"></div>
           <Dices />
           {currentPlayerTurnId === socket.id ? (
             <CenterAction />

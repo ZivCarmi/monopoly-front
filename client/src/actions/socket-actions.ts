@@ -10,7 +10,6 @@ import {
 import {
   resetTrade,
   setInTrade,
-  setNegotiation,
   setPublished,
   setTrade,
   setTradeStatus,

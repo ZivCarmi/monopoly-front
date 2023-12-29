@@ -21,7 +21,7 @@ export const gameSlice = createSlice({
   name: "ui",
   initialState,
   reducers: {
-    resetUi: (state) => {
+    resetUi: () => {
       return initialState;
     },
     showToast: (state, action: PayloadAction<UiState["toast"]>) => {
