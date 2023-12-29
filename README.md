@@ -10,6 +10,10 @@ The game includes features such as:
 - Properties purchase & house buildings
 - Chance & Surprise cards
 
+# Demo
+
+https://github.com/ZivCarmi/Socket.IO-Monopoly/assets/53994703/76096271-96f3-4b26-8755-9a585604b566
+
 # Getting Started
 
 To run the app:
