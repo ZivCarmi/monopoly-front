@@ -8,7 +8,7 @@ import CreateRoom from "../CreateRoom";
 import Room from "@backend/classes/Room";
 import { Link } from "react-router-dom";
 
-const LobbyGameRooms = ({ onGoBack }: { onGoBack?: () => void }) => {
+const LobbyGameRooms = () => {
   const dispatch = useAppDispatch();
   const { lobbyRooms } = useAppSelector((state) => state.lobby);
   const socket = useSocket();

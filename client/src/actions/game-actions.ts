@@ -2,8 +2,6 @@ import { AppThunk } from "@/app/store";
 import { AIRPORT_RENTS, COMPANY_RENTS } from "@backend/constants";
 import { setLobbyRooms } from "@/slices/lobby-slice";
 import {
-  setPlayers,
-  resetRoom,
   transferMoney,
   setRoom,
   suspendPlayer,
@@ -15,11 +13,10 @@ import {
   incrementPlayerPosition,
   allowTurnActions,
   endPlayerTurn,
-  setSelfPlayerReady,
   setIsLanded,
 } from "@/slices/game-slice";
-import { resetUi, setRoomUi, showToast, writeLog } from "@/slices/ui-slice";
-import Player, { NewPlayer } from "@backend/types/Player";
+import { setRoomUi, showToast, writeLog } from "@/slices/ui-slice";
+import Player from "@backend/types/Player";
 import Room from "@backend/classes/Room";
 import {
   getGoTile,
