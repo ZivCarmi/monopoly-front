@@ -10,21 +10,51 @@ import {
 } from "@/actions/socket-actions";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context2";
-import { startGame, switchTurn } from "@/slices/game-slice";
-import { writeLog } from "@/slices/ui-slice";
+import {
+  resetRoom,
+  setPlayers,
+  setSelfPlayerReady,
+  startGame,
+  switchTurn,
+} from "@/slices/game-slice";
+import { resetUi, writeLog } from "@/slices/ui-slice";
 import { TradeType } from "@backend/types/Game";
 import Player from "@backend/types/Player";
 import { useEffect } from "react";
 import PlayersForm from "./PlayersForm";
-import Scoreboard from "./Scoreboard";
+import GameScoreboard from "./game-scoreboard/GameScoreboard";
 import GameBoard from "./board/GameBoard";
-import Trade from "./trade/Trade";
-import { Button } from "./ui/button";
+import GameSidebar from "./game-sidebar/GameSidebar";
+import Room from "@backend/classes/Room";
+import { useNavigate } from "react-router-dom";
 
-const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
+const GameRoom = () => {
   const { isReady, started } = useAppSelector((state) => state.game);
   const dispatch = useAppDispatch();
   const socket = useSocket();
+  const navigate = useNavigate();
+
+  const onPlayerCreated = () => {
+    dispatch(setSelfPlayerReady());
+  };
+
+  const onReturnedToLobby = () => {
+    dispatch(resetRoom());
+    dispatch(resetUi());
+    navigate("/");
+  };
+
+  const onUpdatePlayers = ({
+    players,
+    message,
+  }: {
+    players: Room["players"];
+    message: string;
+  }) => {
+    const updatedPlayers = Object.values(players).map((player) => player);
+    dispatch(setPlayers(updatedPlayers));
+    dispatch(writeLog(message));
+  };
 
   const onGameStarted = ({
     generatedPlayers,
@@ -36,7 +66,6 @@ const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
     message: string;
   }) => {
     dispatch(startGame({ generatedPlayers, currentPlayerTurn }));
-
     dispatch(writeLog(message));
   };
 
@@ -86,6 +115,9 @@ const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
   // const onOvercharged = (data: { message: string }) => {};
 
   useEffect(() => {
+    socket.on("player_created", onPlayerCreated);
+    socket.on("on_lobby", onReturnedToLobby);
+    socket.on("update_players", onUpdatePlayers);
     socket.on("game_started", onGameStarted);
     socket.on("switched_turn", onSwitchedTurn);
     socket.on("purchased_property", onPurchasedProperty);
@@ -99,16 +131,19 @@ const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
     // socket.on("overcharged", onOvercharged);
 
     return () => {
-      socket.off("game_started");
-      socket.off("switched_turn");
-      socket.off("purchased_property");
-      socket.off("sold_property");
-      socket.off("city_level_change");
-      socket.off("paid_out_of_jail");
-      socket.off("trade_created");
-      socket.off("trade_accepted");
-      socket.off("trade_declined");
-      socket.off("trade_updated");
+      socket.off("player_created", onPlayerCreated);
+      socket.off("on_lobby", onReturnedToLobby);
+      socket.off("update_players", onUpdatePlayers);
+      socket.off("game_started", onGameStarted);
+      socket.off("switched_turn", onSwitchedTurn);
+      socket.off("purchased_property", onPurchasedProperty);
+      socket.off("sold_property", onSoldProperty);
+      socket.off("city_level_change", onCityLevelChange);
+      socket.off("paid_out_of_jail", onPaidOutOfJail);
+      socket.off("trade_created", onTradeCreated);
+      socket.off("trade_accepted", onTradeAccepted);
+      socket.off("trade_declined", onTradeDeclined);
+      socket.off("trade_updated", onTradeUpdated);
       // socket.off("overcharged");
     };
   }, []);
@@ -117,17 +152,9 @@ const GameRoom = ({ onDisconnection }: { onDisconnection: () => void }) => {
     <>
       {!started && !isReady && <PlayersForm />}
       <div className="grid items-center justify-center min-h-screen grid-cols-[repeat(15,_1fr)]">
-        <div className="flex flex-col col-start-2 col-end-7 h-full py-8">
-          <Scoreboard />
-        </div>
+        <GameScoreboard />
         <GameBoard />
-        <div className="flex flex-col col-start-10 col-end-[15] h-full py-8">
-          <div className="flex flex-col gap-2">
-            <Button onClick={onDisconnection}>חזרה ללובי</Button>
-            <Button variant="destructive">פשיטת רגל</Button>
-            <Trade />
-          </div>
-        </div>
+        <GameSidebar />
       </div>
     </>
   );

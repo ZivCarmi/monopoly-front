@@ -1,13 +1,14 @@
 import { getRoomsHandler, handleRoomJoin } from "@/actions/game-actions";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useEffect } from "react";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { useSocket } from "@/app/socket-context2";
 import { ArrowLeft, PlusSquare, RefreshCcw, User } from "lucide-react";
-import CreateRoom from "./CreateRoom";
+import CreateRoom from "../CreateRoom";
 import Room from "@backend/classes/Room";
+import { Link } from "react-router-dom";
 
-const LobbyGameRooms = ({ onGoBack }: { onGoBack: () => void }) => {
+const LobbyGameRooms = ({ onGoBack }: { onGoBack?: () => void }) => {
   const dispatch = useAppDispatch();
   const { lobbyRooms } = useAppSelector((state) => state.lobby);
   const socket = useSocket();
@@ -31,9 +32,11 @@ const LobbyGameRooms = ({ onGoBack }: { onGoBack: () => void }) => {
   return (
     <div className="md:w-[500px] bg-card border p-6 rounded-lg overflow-hidden">
       <div className="mb-8 flex items-center justify-between">
-        <Button variant="outline" onClick={onGoBack}>
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
+        <Button asChild variant="outline">
+          <Link to="/">
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            Back
+          </Link>
         </Button>
         <div className="space-x-2">
           <Button variant="outline" onClick={fetchAllRooms}>

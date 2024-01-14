@@ -9,6 +9,7 @@ import { Provider } from "react-redux";
 import { Toaster } from "./components/ui/toaster.tsx";
 import { SocketProvider } from "./app/socket-context2.tsx";
 import { DirectionProvider } from "@radix-ui/react-direction";
+import { BrowserRouter } from "react-router-dom";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <React.StrictMode>
@@ -17,8 +18,10 @@ ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
         <ToggleTheme />
         <Provider store={store}>
           <SocketProvider>
-            <App />
-            <Toaster />
+            <BrowserRouter>
+              <App />
+              <Toaster />
+            </BrowserRouter>
           </SocketProvider>
         </Provider>
       </ThemeProvider>

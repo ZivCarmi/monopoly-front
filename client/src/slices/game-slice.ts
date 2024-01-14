@@ -94,6 +94,9 @@ export const gameSlice = createSlice({
     setRoom: (state, action: PayloadAction<Room>) => {
       const room = action.payload;
 
+      console.log("here");
+      console.log(room);
+
       state.isInRoom = true;
       state.roomHostId = room.hostId;
       state.players = Object.values(room.players);

@@ -18,7 +18,7 @@ const CityFlagIcon: React.FC<CityFlagIconProps> = ({ countryId, size }) => {
   } as React.CSSProperties;
 
   return (
-    <img src={`./${countryId}-icon.png`} className="flagIcon" style={style} />
+    <img src={`/${countryId}-icon.png`} className="flagIcon" style={style} />
   );
 };
 

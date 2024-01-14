@@ -37,6 +37,7 @@ import {
 import { shuffleArray, cycleNextItem, cyclicRangeNumber } from "../api/utils";
 import { GameCardTypes, GameCard } from "../api/types/Cards";
 import { RoomGameCards, TradeType } from "../api/types/Game";
+import { PLAYER_MONEY } from "../config";
 
 class GameController {
   public rooms: { [roomId: string]: Room } = {};
@@ -180,7 +181,7 @@ class GameController {
     const joinedMessage = `${player.name} נכנס למשחק`;
     const newPlayer: Player = {
       ...player,
-      money: 1500,
+      money: PLAYER_MONEY,
       tilePos: 0,
       properties: [],
     };
@@ -188,8 +189,10 @@ class GameController {
     // add the player
     this.rooms[roomId].players[newPlayer.id] = newPlayer;
 
-    io.in(roomId).emit("player_created", {
-      player: newPlayer,
+    socket.emit("player_created");
+
+    io.in(roomId).emit("update_players", {
+      players: this.rooms[roomId].players,
       message: joinedMessage,
     });
 
@@ -198,9 +201,6 @@ class GameController {
 
   public playerLeaving(io: Server, socket: Socket) {
     const roomId = this.getSocketRoomId(socket);
-
-    // To update the socket client
-    socket.emit("left_room");
 
     if (!roomId) return;
 
@@ -214,12 +214,6 @@ class GameController {
       leaveMessage = "צופה עזב את המשחק";
     }
 
-    // Notify to room that the user is leaving
-    socket.to(roomId).emit("player_left", {
-      playerId: socket.id,
-      message: leaveMessage,
-    });
-
     this.writeLogToRoom(roomId, leaveMessage);
 
     if (this.rooms[roomId].participantsCount === 1) {
@@ -229,9 +223,14 @@ class GameController {
       delete this.rooms[roomId];
     } else {
       // Decrease room participants count by 1
-      socket.leave(roomId);
-
       delete this.rooms[roomId].players[socket.id];
+
+      socket.to(roomId).emit("update_players", {
+        players: this.rooms[roomId].players,
+        message: leaveMessage,
+      });
+
+      socket.leave(roomId);
 
       this.rooms[roomId].participantsCount--;
     }

@@ -12,7 +12,7 @@ import * as z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { useAppSelector } from "@/app/hooks";
 import { selectPlayers } from "@/slices/game-slice";
 import {
   AlertDialog,
@@ -21,7 +21,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
-import { handleCreatedPlayer } from "@/actions/game-actions";
 import { NewPlayer, Characters, Colors } from "@backend/types/Player";
 import { useSocket } from "@/app/socket-context2";
 
@@ -52,7 +51,6 @@ export function PlayersForm() {
   });
   const characterWatch = form.watch("character");
   const colorWatch = form.watch("color");
-  const dispatch = useAppDispatch();
   const players = useAppSelector(selectPlayers);
 
   const submitHandler = async (player: z.infer<typeof formSchema>) => {
@@ -71,7 +69,7 @@ export function PlayersForm() {
       ...player,
     };
 
-    dispatch(handleCreatedPlayer(socket, newPlayer));
+    socket.emit("create_player", { player: newPlayer });
   };
 
   return (

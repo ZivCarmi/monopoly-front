@@ -82,57 +82,6 @@ export const handleRoomJoin = (socket: Socket, roomId: string): AppThunk => {
   };
 };
 
-export const handleCreatedPlayer = (
-  socket: Socket,
-  player: NewPlayer
-): AppThunk => {
-  socket.emit("create_player", { player });
-
-  return (dispatch, getState) => {
-    socket.on(
-      "player_created",
-      ({ player, message }: { player: Player; message: string }) => {
-        dispatch(setPlayers([...getState().game.players, player]));
-        dispatch(setSelfPlayerReady());
-        dispatch(writeLog(message));
-      }
-    );
-
-    socket.on("player_create_error", ({ error }) => {
-      dispatch(
-        showToast({
-          variant: "destructive",
-          title: error,
-        })
-      );
-    });
-  };
-};
-
-export const handlePlayerDisconnection = (socket: Socket): AppThunk => {
-  socket.emit("back_to_lobby");
-
-  return (dispatch, getState) => {
-    socket.on("player_left", ({ playerId, message }) => {
-      const players = getState().game.players;
-
-      const remainingPlayers = players.filter(
-        (player) => player.id !== playerId
-      );
-
-      dispatch(setPlayers(remainingPlayers));
-      dispatch(writeLog(message));
-    });
-
-    ["left_room", "on_lobby"].forEach((event) => {
-      socket.on(event, () => {
-        dispatch(resetRoom());
-        dispatch(resetUi());
-      });
-    });
-  };
-};
-
 export const walkPlayer = (playerId: string, steps: number): AppThunk => {
   return (dispatch, getState) => {
     dispatch(allowTurnActions(false));
