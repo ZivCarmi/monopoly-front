@@ -1,23 +1,19 @@
-import { useAppSelector } from "@/app/hooks";
 import { useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { KeyRound, Users2 } from "lucide-react";
 import CreateRoom from "@/components/CreateRoom";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 
-const HomePage = () => {
-  const toastData = useAppSelector((state) => state.ui.toast);
+const LobbyMainMenu = () => {
   const { toast } = useToast();
+  const location = useLocation();
 
   useEffect(() => {
-    if (toastData) {
-      toast({
-        variant: toastData.variant,
-        title: toastData.title,
-      });
+    if (location.state?.toast) {
+      toast(location.state.toast);
     }
-  }, [toastData]);
+  }, [location.state?.toast]);
 
   return (
     <div className="flex items-center justify-center gap-2">
@@ -38,4 +34,4 @@ const HomePage = () => {
   );
 };
 
-export default HomePage;
+export default LobbyMainMenu;

@@ -18,7 +18,6 @@ import { cycleNextItem, cyclicRangeNumber } from "@backend/utils";
 import { RoomGameCards } from "@backend/types/Game";
 
 export interface GameState {
-  socketId: string | null;
   isInRoom: boolean;
   isReady: boolean;
   roomHostId: string | null;
@@ -48,7 +47,6 @@ export interface GameState {
 }
 
 const initialState: GameState = {
-  socketId: null,
   isInRoom: false,
   isReady: false,
   roomHostId: null,
@@ -94,9 +92,6 @@ export const gameSlice = createSlice({
     setRoom: (state, action: PayloadAction<Room>) => {
       const room = action.payload;
 
-      console.log("here");
-      console.log(room);
-
       state.isInRoom = true;
       state.roomHostId = room.hostId;
       state.players = Object.values(room.players);
@@ -108,6 +103,9 @@ export const gameSlice = createSlice({
     },
     resetRoom: () => {
       return initialState;
+    },
+    setRoomHostId: (state, action: PayloadAction<string>) => {
+      state.roomHostId = action.payload;
     },
     setSelfPlayerReady: (state) => {
       state.isReady = true;
@@ -391,6 +389,7 @@ export const gameSlice = createSlice({
 export const {
   setRoom,
   resetRoom,
+  setRoomHostId,
   setSelfPlayerReady,
   setPlayers,
   startGame,

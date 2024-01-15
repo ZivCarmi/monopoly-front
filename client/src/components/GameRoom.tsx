@@ -11,13 +11,13 @@ import {
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context2";
 import {
-  resetRoom,
   setPlayers,
+  setRoomHostId,
   setSelfPlayerReady,
   startGame,
   switchTurn,
 } from "@/slices/game-slice";
-import { resetUi, writeLog } from "@/slices/ui-slice";
+import { writeLog } from "@/slices/ui-slice";
 import { TradeType } from "@backend/types/Game";
 import Player from "@backend/types/Player";
 import { useEffect } from "react";
@@ -26,34 +26,39 @@ import GameScoreboard from "./game-scoreboard/GameScoreboard";
 import GameBoard from "./board/GameBoard";
 import GameSidebar from "./game-sidebar/GameSidebar";
 import Room from "@backend/classes/Room";
-import { useNavigate } from "react-router-dom";
 
 const GameRoom = () => {
   const { isReady, started } = useAppSelector((state) => state.game);
-  const dispatch = useAppDispatch();
   const socket = useSocket();
-  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
 
   const onPlayerCreated = () => {
     dispatch(setSelfPlayerReady());
   };
 
-  const onReturnedToLobby = () => {
-    dispatch(resetRoom());
-    dispatch(resetUi());
-    navigate("/");
-  };
-
   const onUpdatePlayers = ({
     players,
     message,
+    roomHostId,
   }: {
     players: Room["players"];
-    message: string;
+    message: string | string[];
+    roomHostId?: string;
   }) => {
     const updatedPlayers = Object.values(players).map((player) => player);
     dispatch(setPlayers(updatedPlayers));
-    dispatch(writeLog(message));
+
+    if (roomHostId) {
+      dispatch(setRoomHostId(roomHostId));
+    }
+
+    if (Array.isArray(message)) {
+      for (let i = 0; i < message.length; i++) {
+        dispatch(writeLog(message[i]));
+      }
+    } else {
+      dispatch(writeLog(message));
+    }
   };
 
   const onGameStarted = ({
@@ -116,7 +121,6 @@ const GameRoom = () => {
 
   useEffect(() => {
     socket.on("player_created", onPlayerCreated);
-    socket.on("on_lobby", onReturnedToLobby);
     socket.on("update_players", onUpdatePlayers);
     socket.on("game_started", onGameStarted);
     socket.on("switched_turn", onSwitchedTurn);
@@ -132,7 +136,6 @@ const GameRoom = () => {
 
     return () => {
       socket.off("player_created", onPlayerCreated);
-      socket.off("on_lobby", onReturnedToLobby);
       socket.off("update_players", onUpdatePlayers);
       socket.off("game_started", onGameStarted);
       socket.off("switched_turn", onSwitchedTurn);

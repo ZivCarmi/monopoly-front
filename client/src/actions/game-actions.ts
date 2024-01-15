@@ -1,9 +1,7 @@
 import { AppThunk } from "@/app/store";
 import { AIRPORT_RENTS, COMPANY_RENTS } from "@backend/constants";
-import { setLobbyRooms } from "@/slices/lobby-slice";
 import {
   transferMoney,
-  setRoom,
   suspendPlayer,
   drawGameCard,
   movePlayer,
@@ -15,9 +13,8 @@ import {
   endPlayerTurn,
   setIsLanded,
 } from "@/slices/game-slice";
-import { setRoomUi, showToast, writeLog } from "@/slices/ui-slice";
+import { writeLog } from "@/slices/ui-slice";
 import Player from "@backend/types/Player";
-import Room from "@backend/classes/Room";
 import {
   getGoTile,
   getJailTileIndex,
@@ -48,36 +45,6 @@ import {
   paymentGameCard,
 } from "./card-actions";
 import { isPlayerInJail } from "../utils";
-
-export const getRoomsHandler = (socket: Socket): AppThunk => {
-  socket.emit("get_rooms");
-
-  return (dispatch) => {
-    socket.on("rooms_list", ({ rooms }) => {
-      dispatch(setLobbyRooms(rooms));
-    });
-  };
-};
-
-export const handleRoomJoin = (socket: Socket, roomId: string): AppThunk => {
-  socket.emit("join_game", { roomId });
-
-  return (dispatch) => {
-    socket.on("room_joined", ({ room }: { room: Room }) => {
-      dispatch(setRoom(room));
-      dispatch(setRoomUi(room.logs));
-    });
-
-    socket.on("room_join_error", ({ error }) => {
-      dispatch(
-        showToast({
-          variant: "destructive",
-          title: error,
-        })
-      );
-    });
-  };
-};
 
 export const walkPlayer = (playerId: string, steps: number): AppThunk => {
   return (dispatch, getState) => {

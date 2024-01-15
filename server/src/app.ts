@@ -4,6 +4,7 @@ import { Server } from "socket.io";
 import cors from "cors";
 import gameController from "./controllers/gameController";
 import { TradeType } from "./api/types/Game";
+import { getRoomData } from "./controllers/roomController";
 
 const app = express();
 const server = http.createServer(app);
@@ -16,6 +17,7 @@ const io = new Server(server, {
       "http://127.0.0.1:5173",
       "http://localhost:5173",
       "http://localhost:4173",
+      "https://socket-io-monopoly.vercel.app",
     ],
   },
 });
@@ -24,12 +26,14 @@ server.listen("3001", () => {
   console.log("listening on 3001");
 });
 
+app.get("/rooms/:id", getRoomData);
+
 io.on("connection", (socket) => {
   console.log(
     `New connection ${socket.id}, Clients count: ${io.engine.clientsCount}`
   );
 
-  socket.on("join_game", ({ roomId }) => {
+  socket.on("join_game", ({ roomId }: { roomId: string }) => {
     gameController.joinRoom(io, socket, roomId);
   });
 
@@ -46,7 +50,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnecting", () => {
-    gameController.playerLeaving(io, socket);
+    gameController.playerDisconnect(io, socket);
   });
 
   socket.on("start_game", () => {
