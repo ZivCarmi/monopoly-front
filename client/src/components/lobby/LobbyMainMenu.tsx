@@ -4,6 +4,7 @@ import { KeyRound, Users2 } from "lucide-react";
 import CreateRoom from "@/components/CreateRoom";
 import { Link, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
+import Icon from "../ui/icon";
 
 const LobbyMainMenu = () => {
   const { toast } = useToast();
@@ -22,12 +23,12 @@ const LobbyMainMenu = () => {
         className="bg-gradient-to-tl from-pink-500 to-yellow-500 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-500"
       >
         <Link to="/rooms">
-          <Users2 className="mr-2 h-4 w-4" />
+          <Icon icon={Users2} />
           All Game Rooms
         </Link>
       </Button>
       <CreateRoom>
-        <KeyRound className="mr-2 h-4 w-4" />
+        <Icon icon={KeyRound} />
         Create a Private Room
       </CreateRoom>
     </div>

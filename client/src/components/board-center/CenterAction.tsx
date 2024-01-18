@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/app/hooks";
-import { ButtonWithIcon } from "../ui/button";
+import { Button } from "../ui/button";
 import RollDices from "../RollDices";
 import { ShoppingCart } from "lucide-react";
 import { useSocket } from "@/app/socket-context2";
@@ -7,6 +7,7 @@ import { PurchasableTile, isPurchasable } from "@backend/types/Board";
 import { selectCurrentPlayerTurn, selectGameBoard } from "@/slices/game-slice";
 import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constants";
 import { isPlayerInJail } from "../../utils";
+import Icon from "../ui/icon";
 
 const CenterAction = () => {
   const socket = useSocket();
@@ -42,22 +43,24 @@ const CenterAction = () => {
       )}
       <div className="flex items-center justify-center gap-2">
         {canPurchase && (
-          <ButtonWithIcon
-            icon={ShoppingCart}
-            children={`רכוש עבור $${tile.cost}`}
+          <Button
             variant="outline"
-            disabled={selfPlayer.money < tile.cost}
             onClick={purchasePropertyHandler}
-          />
+            disabled={selfPlayer.money < tile.cost}
+          >
+            <Icon icon={ShoppingCart} />
+            רכוש עבור {tile.cost}
+          </Button>
         )}
         {isPlayerInJail(socket.id) && !cubesRolledInTurn && (
-          <ButtonWithIcon
-            icon={ShoppingCart}
-            children={`שלם $${PAY_OUT_FROM_JAIL_AMOUNT} להשתחרר מהכלא`}
+          <Button
             variant="outline"
-            disabled={selfPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
             onClick={payOutOfJailHandler}
-          />
+            disabled={selfPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
+          >
+            <Icon icon={ShoppingCart} />
+            שלם {PAY_OUT_FROM_JAIL_AMOUNT} להשתחרר מהכלא
+          </Button>
         )}
         <RollDices />
       </div>

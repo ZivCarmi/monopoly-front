@@ -3,9 +3,12 @@ import { Board, SuspensionTileTypes } from "../types/Board";
 import { initializeMap } from "../helpers";
 import { RoomGameCards, TradeType } from "../types/Game";
 
+type PlayersObject = { [playerId: string]: Player };
+
 class Room {
   id: string;
-  players: { [playerId: string]: Player };
+  players: PlayersObject;
+  participants: PlayersObject;
   map: {
     board: Board;
     chances: RoomGameCards;
@@ -15,7 +18,6 @@ class Room {
       land: number;
     };
   };
-  participantsCount: number;
   gameStarted: boolean;
   hostId: string;
   dices: number[];
@@ -33,8 +35,8 @@ class Room {
   constructor(roomId: string, socketId: string) {
     this.id = roomId;
     this.players = {};
+    this.participants = {}; // copy of the original players for statistics
     this.map = initializeMap();
-    this.participantsCount = 1;
     this.gameStarted = false;
     this.hostId = socketId;
     this.dices = [1, 1];
@@ -45,5 +47,12 @@ class Room {
     this.logs = [];
   }
 }
+
+export type LobbyRoom = {
+  id: string;
+  players: Player[];
+  connectedSockets: number;
+  started: boolean;
+};
 
 export default Room;

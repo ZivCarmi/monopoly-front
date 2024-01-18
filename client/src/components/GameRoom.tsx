@@ -11,9 +11,11 @@ import {
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context2";
 import {
+  bankruptPlayer,
   setPlayers,
   setRoomHostId,
   setSelfPlayerReady,
+  setWinner,
   startGame,
   switchTurn,
 } from "@/slices/game-slice";
@@ -26,9 +28,13 @@ import GameScoreboard from "./game-scoreboard/GameScoreboard";
 import GameBoard from "./board/GameBoard";
 import GameSidebar from "./game-sidebar/GameSidebar";
 import Room from "@backend/classes/Room";
+import { isPlayerInOvercharge } from "@/utils";
+import WinnerScreen from "./winner/WinnerScreen";
 
 const GameRoom = () => {
-  const { isReady, started } = useAppSelector((state) => state.game);
+  const { isReady, started, currentPlayerTurnId, isLanded } = useAppSelector(
+    (state) => state.game
+  );
   const socket = useSocket();
   const dispatch = useAppDispatch();
 
@@ -117,7 +123,32 @@ const GameRoom = () => {
     dispatch(tradeUpdatedThunk(trade));
   };
 
-  // const onOvercharged = (data: { message: string }) => {};
+  const onOvercharged = () => {
+    // handle overcharge turn
+  };
+
+  const onPlayerBankrupted = ({
+    playerId,
+    message,
+  }: {
+    playerId: string;
+    message: string;
+  }) => {
+    dispatch(bankruptPlayer({ playerId }));
+    dispatch(writeLog(message));
+  };
+
+  const onGameEnded = ({ winnerId }: { winnerId: string }) => {
+    dispatch(setWinner({ winnerId }));
+  };
+
+  useEffect(() => {
+    if (!started || currentPlayerTurnId !== socket.id || !isLanded) return;
+
+    if (isPlayerInOvercharge(socket.id)) {
+      socket.emit("in_overcharge");
+    }
+  }, [isLanded]);
 
   useEffect(() => {
     socket.on("player_created", onPlayerCreated);
@@ -132,7 +163,9 @@ const GameRoom = () => {
     socket.on("trade_accepted", onTradeAccepted);
     socket.on("trade_declined", onTradeDeclined);
     socket.on("trade_updated", onTradeUpdated);
-    // socket.on("overcharged", onOvercharged);
+    socket.on("on_overcharge", onOvercharged);
+    socket.on("player_bankrupted", onPlayerBankrupted);
+    socket.on("game_ended", onGameEnded);
 
     return () => {
       socket.off("player_created", onPlayerCreated);
@@ -147,16 +180,21 @@ const GameRoom = () => {
       socket.off("trade_accepted", onTradeAccepted);
       socket.off("trade_declined", onTradeDeclined);
       socket.off("trade_updated", onTradeUpdated);
-      // socket.off("overcharged");
+      socket.off("on_overcharge", onOvercharged);
+      socket.off("player_bankrupted", onPlayerBankrupted);
+      socket.off("game_ended", onGameEnded);
     };
   }, []);
 
   return (
     <>
       {!started && !isReady && <PlayersForm />}
-      <div className="grid items-center justify-center min-h-screen grid-cols-[repeat(15,_1fr)]">
+      <div className="grid min-h-screen grid-cols-[repeat(15,_1fr)]">
         <GameScoreboard />
-        <GameBoard />
+        <div className="col-start-8 relative">
+          <GameBoard />
+          <WinnerScreen />
+        </div>
         <GameSidebar />
       </div>
     </>

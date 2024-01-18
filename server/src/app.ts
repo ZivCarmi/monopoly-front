@@ -5,6 +5,8 @@ import cors from "cors";
 import gameController from "./controllers/gameController";
 import { TradeType } from "./api/types/Game";
 import { getRoomData } from "./controllers/roomController";
+import base64id from "base64id";
+import url from "url";
 
 const app = express();
 const server = http.createServer(app);
@@ -29,6 +31,18 @@ server.listen("3001", () => {
 app.get("/rooms/:id", getRoomData);
 
 io.on("connection", (socket) => {
+  io.engine.generateId = (req) => {
+    const parsedUrl = new URLSearchParams(req.url);
+
+    // console.log(parsedUrl.get("/socket.io/test"));
+
+    // console.log(parsedUrl.get("test"));
+
+    // const prevId = parsedUrl.searchParams.get("socketId");
+
+    return base64id.generateId();
+  };
+
   console.log(
     `New connection ${socket.id}, Clients count: ${io.engine.clientsCount}`
   );
@@ -49,8 +63,16 @@ io.on("connection", (socket) => {
     gameController.addPlayer(io, socket, player);
   });
 
-  socket.on("disconnecting", () => {
+  socket.on("disconnect", (reason) => {
+    console.log("disconnect", reason);
+
     gameController.playerDisconnect(io, socket);
+  });
+
+  socket.on("disconnecting", () => {
+    console.log("disconnecting");
+
+    gameController.playerDisconnecting(io, socket);
   });
 
   socket.on("start_game", () => {
@@ -102,5 +124,13 @@ io.on("connection", (socket) => {
 
   socket.on("trade_updated", ({ trade }: { trade: TradeType }) => {
     gameController.updateTrade(io, socket, trade);
+  });
+
+  socket.on("player_bankrupt", () => {
+    gameController.bankruptPlayer(io, socket);
+  });
+
+  socket.on("in_overcharge", () => {
+    gameController.setOvercharge(io, socket);
   });
 });

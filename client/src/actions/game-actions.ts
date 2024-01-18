@@ -53,7 +53,7 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
     // if steps is positive we move forward, otherwise backwards on the board
     const incrementor = steps > 0 ? 1 : -1;
 
-    const interval = setInterval(() => {
+    const update = () => {
       dispatch(incrementPlayerPosition({ playerId, incrementor }));
 
       const { players, map } = getState().game;
@@ -78,19 +78,62 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
         );
       }
 
-      steps += incrementor === 1 ? -1 : 1;
+      steps -= incrementor;
 
-      // when finished walking
-      if (steps === 0) {
-        clearInterval(interval);
+      console.log(steps, incrementor);
 
-        setTimeout(() => {
+      setTimeout(() => {
+        if (steps === 0) {
           dispatch(allowTurnActions(true));
           dispatch(handlePlayerLanding(playerId));
           dispatch(setIsLanded(true));
-        }, MS_TO_MOVE_ON_TILES);
-      }
-    }, MS_TO_MOVE_ON_TILES);
+        } else {
+          requestAnimationFrame(update);
+        }
+      }, MS_TO_MOVE_ON_TILES);
+    };
+
+    requestAnimationFrame(update);
+
+    // const interval = setInterval(() => {
+    //   dispatch(incrementPlayerPosition({ playerId, incrementor }));
+
+    //   const { players, map } = getState().game;
+    //   const walkingPlayer = players.find((player) => playerId === player.id);
+
+    //   // award player for passing GO tile
+    //   if (walkingPlayer && walkingPlayer.tilePos === 0 && steps > 0) {
+    //     const goTile = getGoTile(map.board);
+    //     const goRewardOnPass = map.goRewards.pass;
+
+    //     dispatch(
+    //       writeLog(
+    //         `${walkingPlayer.name} עבר ב${goTile.name} והרוויח $${goRewardOnPass}`
+    //       )
+    //     );
+
+    //     dispatch(
+    //       transferMoney({
+    //         recieverId: playerId,
+    //         amount: goRewardOnPass,
+    //       })
+    //     );
+    //   }
+
+    //   // steps += incrementor === 1 ? -1 : 1;
+    //   steps -= incrementor;
+
+    //   // when finished walking
+    //   if (steps === 0) {
+    //     clearInterval(interval);
+
+    //     setTimeout(() => {
+    //       dispatch(allowTurnActions(true));
+    //       dispatch(handlePlayerLanding(playerId));
+    //       dispatch(setIsLanded(true));
+    //     }, MS_TO_MOVE_ON_TILES);
+    //   }
+    // }, MS_TO_MOVE_ON_TILES);
   };
 };
 

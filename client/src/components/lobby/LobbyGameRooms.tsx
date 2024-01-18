@@ -3,7 +3,7 @@ import LobbyGameRoomsActions from "./LobbyGameRoomsActions";
 import LobbyGameRoomsList from "./LobbyGameRoomsList";
 import NoRoomsAvailable from "./NoRoomsAvailable";
 import { useSocket } from "@/app/socket-context2";
-import Room from "@backend/classes/Room";
+import { LobbyRoom } from "@backend/classes/Room";
 import { setLobbyRooms } from "@/slices/lobby-slice";
 import { useEffect } from "react";
 
@@ -12,7 +12,7 @@ const LobbyGameRooms = () => {
   const socket = useSocket();
   const dispatch = useAppDispatch();
 
-  const setRooms = ({ rooms }: { rooms: Room[] }) => {
+  const setRooms = ({ rooms }: { rooms: LobbyRoom[] }) => {
     dispatch(setLobbyRooms(rooms));
   };
 

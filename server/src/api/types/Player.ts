@@ -28,6 +28,7 @@ type Player = NewPlayer & {
   money: number;
   tilePos: number;
   properties: number[];
+  bankrupted: boolean;
 };
 
 export default Player;

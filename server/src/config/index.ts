@@ -1,1 +1,1 @@
-export const PLAYER_MONEY = 1500;
+export const PLAYER_MONEY = 1200;

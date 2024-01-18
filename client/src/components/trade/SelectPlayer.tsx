@@ -35,7 +35,7 @@ const SelectPlayer = () => {
             className="text-center text-sm"
             onClick={() => createTrade(player.id)}
           >
-            <img src={`./${player.character}.png`} className="w-16" />
+            <img src={`/${player.character}.png`} className="w-16" />
             {player.name}
           </button>
         </li>

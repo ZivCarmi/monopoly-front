@@ -26,6 +26,14 @@ const MainLayout = () => {
     });
   };
 
+  const onRoomDeleted = () => {
+    navigate("/");
+    toast({
+      variant: "destructive",
+      title: "Room was deleted due to no active players",
+    });
+  };
+
   const onReturnedToLobby = () => {
     dispatch(resetRoom());
     dispatch(resetUi());
@@ -34,11 +42,13 @@ const MainLayout = () => {
   useEffect(() => {
     socket.on("room_joined", onRoomJoined);
     socket.on("room_join_error", onRoomJoinError);
+    socket.on("room_deleted", onRoomDeleted);
     socket.on("on_lobby", onReturnedToLobby);
 
     return () => {
       socket.off("room_joined", onRoomJoined);
       socket.off("room_join_error", onRoomJoinError);
+      socket.on("room_deleted", onRoomDeleted);
       socket.off("on_lobby", onReturnedToLobby);
     };
   });

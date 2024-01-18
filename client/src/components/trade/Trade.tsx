@@ -13,7 +13,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "../ui/alert-dialog";
-import { X } from "lucide-react";
+import { HeartHandshake, X } from "lucide-react";
+import Icon from "../ui/icon";
 
 const Trade = () => {
   const dispatch = useAppDispatch();
@@ -23,7 +24,10 @@ const Trade = () => {
   return (
     <AlertDialog open={inTrade}>
       <AlertDialogTrigger asChild onClick={() => dispatch(setInTrade(true))}>
-        <Button variant="primary">בצע עסקה</Button>
+        <Button variant="primary">
+          <Icon icon={HeartHandshake} />
+          בצע עסקה
+        </Button>
       </AlertDialogTrigger>
       <AlertDialogContent className="rtl trade-dialog min-w-[500px] max-w-max">
         <AlertDialogHeader>

@@ -1,8 +1,8 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import Room from "@backend/classes/Room";
+import { LobbyRoom } from "@backend/classes/Room";
 
 export interface LobbyState {
-  lobbyRooms: Room[];
+  lobbyRooms: LobbyRoom[];
 }
 
 const initialState: LobbyState = {
@@ -13,7 +13,7 @@ export const lobbySlice = createSlice({
   name: "lobby",
   initialState,
   reducers: {
-    setLobbyRooms: (state, action: PayloadAction<Room[]>) => {
+    setLobbyRooms: (state, action: PayloadAction<LobbyRoom[]>) => {
       state.lobbyRooms = action.payload;
     },
   },

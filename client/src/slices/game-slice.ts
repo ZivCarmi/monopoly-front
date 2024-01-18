@@ -6,6 +6,7 @@ import { TURN_TIMES } from "@/utils/constants";
 import {
   Board,
   IProperty,
+  isProperty,
   isPurchasable,
   PurchasableTile,
   RentIndexes,
@@ -44,6 +45,7 @@ export interface GameState {
   };
   drawnGameCard: GameCard | null;
   counter: number;
+  winner: Player | null;
 }
 
 const initialState: GameState = {
@@ -77,6 +79,7 @@ const initialState: GameState = {
   suspendedPlayers: {},
   drawnGameCard: null,
   counter: TURN_TIMES.rollDices,
+  winner: null,
 };
 
 export type TransferMoneyArgs = {
@@ -383,6 +386,31 @@ export const gameSlice = createSlice({
       state.cubesRolledInTurn = false;
       state.doublesInARow = 0;
     },
+    bankruptPlayer: (state, action: PayloadAction<{ playerId: string }>) => {
+      const { playerId } = action.payload;
+
+      state.players = state.players.filter((player) => player.id !== playerId);
+
+      // reset owned properties
+      state.map.board = state.map.board.map((tile) => {
+        if (isPurchasable(tile) && tile.owner === playerId) {
+          tile.owner = null;
+
+          if (isProperty(tile)) {
+            tile.rentIndex = RentIndexes.BLANK;
+          }
+        }
+
+        return tile;
+      });
+    },
+    setWinner: (state, action: PayloadAction<{ winnerId: string }>) => {
+      const winner = state.players.find(
+        (player) => action.payload.winnerId === player.id
+      );
+
+      state.winner = winner || null;
+    },
   },
 });
 
@@ -410,6 +438,8 @@ export const {
   resetCards,
   drawGameCard,
   switchTurn,
+  bankruptPlayer,
+  setWinner,
 } = gameSlice.actions;
 
 export const selectGameBoard = (state: RootState) => state.game.map.board;

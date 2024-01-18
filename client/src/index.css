@@ -139,7 +139,6 @@
 }
 
 .board {
-  grid-column-start: 8;
   display: grid;
   grid-template-columns:
     var(--board-corner-size) repeat(9, var(--board-tile-size))

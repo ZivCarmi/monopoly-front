@@ -10,15 +10,17 @@ const GameScoreboard = () => {
   }
 
   return (
-    <div className="flex flex-col col-start-2 col-end-7 h-full py-8">
-      <div className="outline outline-2 outline-neutral-800 rounded-sm rtl">
-        <table className="w-full text-right">
-          <tbody>
-            {players.map((player) => (
-              <PlayerScoreRow player={player} key={player.id} />
-            ))}
-          </tbody>
-        </table>
+    <div className="flex flex-col col-start-1 col-end-8 p-4">
+      <div className="bg-neutral-800 p-4 relative rounded-lg">
+        <div className="rtl">
+          <table className="w-full text-right">
+            <tbody>
+              {players.map((player) => (
+                <PlayerScoreRow player={player} key={player.id} />
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
