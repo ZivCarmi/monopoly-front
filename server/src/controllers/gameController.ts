@@ -68,7 +68,7 @@ const deleteRoom = (io: Server, socket: Socket) => {
   delete rooms[roomId];
 };
 
-export const getSocketRoomId = (socket: Socket): string => {
+const getSocketRoomId = (socket: Socket): string => {
   const socketRooms = Array.from(socket.rooms.values()).filter(
     (r) => r !== socket.id
   );
@@ -520,13 +520,11 @@ class GameController {
 
         return;
       case GameCardTypes.ADVANCE_TO_TILE:
-        advanceToTileGameCard(socket, drawnGameCard);
-
-        // rooms[roomId].players[playerId] = advanceToTileGameCard(
-        //   player.id,
-        //   drawnGameCard,
-        //   room
-        // );
+        rooms[roomId].players[playerId] = advanceToTileGameCard(
+          player.id,
+          drawnGameCard,
+          room
+        );
 
         return this.onPlayerLanding(socket);
       case GameCardTypes.ADVANCE_TO_TILE_TYPE:
