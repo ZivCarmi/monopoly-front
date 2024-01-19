@@ -1,7 +1,7 @@
 import { useSocket } from "@/app/socket-context2";
-import { Button } from "../ui/button";
-import { Link } from "react-router-dom";
 import { X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Button } from "../ui/button";
 import Icon from "../ui/icon";
 
 const BackToLobbyButton = () => {

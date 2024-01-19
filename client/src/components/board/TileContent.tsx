@@ -8,9 +8,7 @@ const TileContent: React.FC<TileContentProps> = (props) => {
     <div
       {...props}
       className={cn("tileBody w-full h-full flex", props.className)}
-    >
-      {props.children}
-    </div>
+    />
   );
 };
 

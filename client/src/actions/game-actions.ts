@@ -80,7 +80,7 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
 
       steps -= incrementor;
 
-      console.log(steps, incrementor);
+      // console.log(steps, incrementor);
 
       setTimeout(() => {
         if (steps === 0) {

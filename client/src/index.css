@@ -79,7 +79,7 @@
     @apply border-border;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-lunasima;
   }
 }
 
@@ -239,6 +239,13 @@
   grid-row: 1;
 }
 
+@layer base {
+  .board .row_left .badge,
+  .board .row_right .badge {
+    @apply px-0.5 py-2.5;
+  }
+}
+
 /* COULD BE BETTER! */
 .trade-dialog .tileBody:not(.cornerBody) {
   flex-direction: column-reverse;
@@ -265,6 +272,19 @@
 .row_left .tileBody:not(.cornerBody) {
   writing-mode: vertical-rl;
   padding-right: var(--city-tile-spacing);
+}
+
+.row_top .tileBody:not(.cornerBody) .badgeWrapper {
+  padding-top: 0.25rem;
+}
+
+.row_left .tileBody:not(.cornerBody) .badgeWrapper,
+.row_right .tileBody:not(.cornerBody) .badgeWrapper {
+  padding-left: 0.25rem;
+}
+
+.row_bottom .tileBody:not(.cornerBody) .badgeWrapper {
+  padding-bottom: 0.25rem;
 }
 
 .row_bottom .tileBody:not(.cornerBody) {

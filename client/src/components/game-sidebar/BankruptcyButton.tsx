@@ -1,7 +1,7 @@
 import { useSocket } from "@/app/socket-context2";
+import { Footprints } from "lucide-react";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
-import { Footprints } from "lucide-react";
 
 const BankruptcyButton = () => {
   const socket = useSocket();

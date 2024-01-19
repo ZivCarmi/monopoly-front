@@ -1,13 +1,14 @@
-import { getPlayerColor } from "@/utils";
+import { cn, getPlayerColor } from "@/utils";
 
-type OwnerIndicatorProps = {
+export interface OwnerIndicatorProps
+  extends React.HtmlHTMLAttributes<HTMLDivElement> {
   ownerId: string;
   children?: React.ReactNode;
-};
+}
 
 const OwnerIndicator: React.FC<OwnerIndicatorProps> = ({
   ownerId,
-  children,
+  ...props
 }) => {
   if (!ownerId) return null;
 
@@ -15,13 +16,15 @@ const OwnerIndicator: React.FC<OwnerIndicatorProps> = ({
 
   return (
     <div
-      className="w-full flex-[0_0_30%] flex items-center justify-center"
+      {...props}
+      className={cn(
+        "w-full flex-[0_0_30%] flex items-center justify-center",
+        props.className
+      )}
       style={{
         backgroundColor: ownerColor,
       }}
-    >
-      {children}
-    </div>
+    />
   );
 };
 

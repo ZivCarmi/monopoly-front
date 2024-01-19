@@ -10,10 +10,7 @@ const CreateRoom = ({ children }: { children: React.ReactNode }) => {
   };
 
   return (
-    <Button
-      onClick={createRoomHandler}
-      className="bg-gradient-to-tl from-green-400 to-blue-400 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-500"
-    >
+    <Button onClick={createRoomHandler} variant="primaryFancy">
       {children}
     </Button>
   );

@@ -1,12 +1,12 @@
 import { useAppSelector } from "@/app/hooks";
-import { Button } from "../ui/button";
-import RollDices from "../RollDices";
-import { ShoppingCart } from "lucide-react";
 import { useSocket } from "@/app/socket-context2";
-import { PurchasableTile, isPurchasable } from "@backend/types/Board";
 import { selectCurrentPlayerTurn, selectGameBoard } from "@/slices/game-slice";
 import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constants";
+import { PurchasableTile, isPurchasable } from "@backend/types/Board";
+import { ShoppingCart } from "lucide-react";
 import { isPlayerInJail } from "../../utils";
+import RollDices from "../RollDices";
+import { Button } from "../ui/button";
 import Icon from "../ui/icon";
 
 const CenterAction = () => {
@@ -49,7 +49,7 @@ const CenterAction = () => {
             disabled={selfPlayer.money < tile.cost}
           >
             <Icon icon={ShoppingCart} />
-            רכוש עבור {tile.cost}
+            רכוש עבור ${tile.cost}
           </Button>
         )}
         {isPlayerInJail(socket.id) && !cubesRolledInTurn && (
@@ -59,7 +59,7 @@ const CenterAction = () => {
             disabled={selfPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
           >
             <Icon icon={ShoppingCart} />
-            שלם {PAY_OUT_FROM_JAIL_AMOUNT} להשתחרר מהכלא
+            שלם ${PAY_OUT_FROM_JAIL_AMOUNT} להשתחרר מהכלא
           </Button>
         )}
         <RollDices />

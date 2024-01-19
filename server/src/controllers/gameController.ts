@@ -35,7 +35,7 @@ import {
   paymentGameCard,
 } from "../api/helpers";
 import { shuffleArray, cycleNextItem, cyclicRangeNumber } from "../api/utils";
-import { GameCardTypes, GameCard } from "../api/types/Cards";
+import { GameCardTypes } from "../api/types/Cards";
 import { RoomGameCards, TradeType } from "../api/types/Game";
 import { PLAYER_MONEY } from "../config";
 
@@ -69,7 +69,7 @@ const deleteRoom = (io: Server, socket: Socket) => {
   delete rooms[roomId];
 };
 
-const getSocketRoomId = (socket: Socket): string => {
+export const getSocketRoomId = (socket: Socket): string => {
   const socketRooms = Array.from(socket.rooms.values()).filter(
     (r) => r !== socket.id
   );
@@ -246,32 +246,32 @@ class GameController {
       rooms[roomId] = room;
 
       // FOR TESTING
-      const testMap = room.map.board.map((tile) => {
-        if (isProperty(tile)) {
-          // tile.owner = socket.id;
+      // const testMap = room.map.board.map((tile) => {
+      //   if (isProperty(tile)) {
+      //     // tile.owner = socket.id;
 
-          if (tile.country.id === CountryIds.USA) {
-            tile.owner = socket.id;
-          }
-          if (tile.country.id === CountryIds.RUSSIA) {
-            tile.owner = socket.id;
-          }
-          if (tile.country.id === CountryIds.CHINA) {
-            tile.owner = socket.id;
-          }
+      //     if (tile.country.id === CountryIds.USA) {
+      //       tile.owner = socket.id;
+      //     }
+      //     if (tile.country.id === CountryIds.RUSSIA) {
+      //       tile.owner = socket.id;
+      //     }
+      //     if (tile.country.id === CountryIds.CHINA) {
+      //       tile.owner = socket.id;
+      //     }
 
-          if (tile.country.id === CountryIds.EGYPT) {
-            tile.rentIndex = RentIndexes.HOTEL;
-            tile.owner = socket.id;
-          } else {
-            tile.rentIndex = RentIndexes.ONE_HOUSE;
-          }
-        }
+      //     if (tile.country.id === CountryIds.EGYPT) {
+      //       tile.rentIndex = RentIndexes.HOTEL;
+      //       tile.owner = socket.id;
+      //     } else {
+      //       tile.rentIndex = RentIndexes.ONE_HOUSE;
+      //     }
+      //   }
 
-        return tile;
-      });
+      //   return tile;
+      // });
 
-      rooms[roomId].map.board = testMap;
+      // rooms[roomId].map.board = testMap;
     }
 
     await socket.join(roomId);
@@ -369,7 +369,7 @@ class GameController {
     if (socket.id !== rooms[roomId].hostId || players.length < 2) return;
 
     // randomize the players array (IF COMMENTED IT'S FOR TESTING)
-    // shuffleArray(players);
+    shuffleArray(players);
 
     const startingPlayer = players[1].id;
     const gameStartMessage = "המשחק התחיל!";
@@ -461,6 +461,8 @@ class GameController {
     } else if (isTax(landedTile)) {
       this.payTax(roomId, playerId, landedTile);
     } else if (landedTile.type === TileTypes.SURPRISE) {
+      console.log("Drawing surprise.........");
+
       this.handleGameCard(socket, room.map.surprises);
       rooms[roomId].map.surprises.currentIndex += 1;
     } else if (isJail(landedTile)) {
@@ -519,11 +521,13 @@ class GameController {
 
         return;
       case GameCardTypes.ADVANCE_TO_TILE:
-        rooms[roomId].players[playerId] = advanceToTileGameCard(
-          player.id,
-          drawnGameCard,
-          room
-        );
+        advanceToTileGameCard(socket, drawnGameCard);
+
+        // rooms[roomId].players[playerId] = advanceToTileGameCard(
+        //   player.id,
+        //   drawnGameCard,
+        //   room
+        // );
 
         return this.onPlayerLanding(socket);
       case GameCardTypes.ADVANCE_TO_TILE_TYPE:
@@ -531,6 +535,11 @@ class GameController {
           player.id,
           drawnGameCard,
           room
+        );
+
+        console.log(
+          "on advanceToTileTypeGameCard, player after update...",
+          rooms[roomId].players[playerId]
         );
 
         return this.onPlayerLanding(socket);
@@ -555,7 +564,8 @@ class GameController {
     const player = room.players[socket.id];
     const tile = room.map.board[propertyIndex];
 
-    console.log("Attempted player:", player, "Attempted Tile:", tile);
+    console.log("Attempted player:", player);
+    console.log("Attempted Tile:", tile);
 
     if (propertyIndex !== player.tilePos) {
       console.log(
@@ -654,21 +664,23 @@ class GameController {
     ];
     // let randomizeDices = [2, 5];
 
-    const firstPlayerId = getPlayerIds(roomId)[0];
+    // const firstPlayerId = getPlayerIds(roomId)[0];
 
-    // test dices for first player
-    if (firstPlayerId === currentPlayerTurnId) {
-      randomizeDices = [3, 1];
-    } else {
-      randomizeDices = [5, 6];
-    }
+    // // test dices for first player
+    // if (firstPlayerId === currentPlayerTurnId) {
+    //   randomizeDices = [4, 3];
+    // } else {
+    //   randomizeDices = [2, 1];
+    // }
 
     const isDouble = randomizeDices[0] === randomizeDices[1];
     const dicesSum = randomizeDices[0] + randomizeDices[1];
 
     // update dices
     rooms[roomId].dices = randomizeDices;
-    if (isDouble) rooms[roomId].doublesInARow++;
+    if (isDouble) {
+      rooms[roomId].doublesInARow++;
+    }
 
     io.in(roomId).emit("dice_rolled", {
       dices: randomizeDices,
@@ -676,15 +688,18 @@ class GameController {
 
     // if player in jail
     if (suspendedPlayer && suspendedPlayer.reason === TileTypes.JAIL) {
-      if (suspendedPlayer.left <= 0) {
+      const suspensionTurnsLeft = --rooms[roomId].suspendedPlayers[
+        currentPlayerTurnId
+      ].left;
+
+      if (isDouble || suspensionTurnsLeft === 0) {
         delete rooms[roomId].suspendedPlayers[currentPlayerTurnId];
-      } else {
-        if (!isDouble) {
-          rooms[roomId].suspendedPlayers[currentPlayerTurnId].left--;
-        } else {
-          delete rooms[roomId].suspendedPlayers[currentPlayerTurnId];
-        }
       }
+
+      console.log(
+        "Switching turn after suspension action...",
+        rooms[roomId].suspendedPlayers[currentPlayerTurnId]
+      );
 
       return this.switchTurn(io, socket);
     }
@@ -738,18 +753,28 @@ class GameController {
       array: getPlayerIds(roomId),
     });
 
-    console.log(`Current player`, currentPlayerTurnId);
-    console.log(`Maybe next player id`, nextPlayerTurnId);
+    console.log(
+      `Turn before switch belongs to - `,
+      rooms[roomId].players[currentPlayerTurnId].character
+    );
+    console.log(
+      `Turn after switch belongs to - `,
+      rooms[roomId].players[nextPlayerTurnId].character
+    );
 
     // update current player turn
     rooms[roomId].currentPlayerTurnId = nextPlayerTurnId;
 
     const nextSuspendedPlayer = suspendedPlayers[nextPlayerTurnId];
 
-    console.log(`next suspended player`, nextSuspendedPlayer);
-
     // check if next player is suspended
     if (nextSuspendedPlayer) {
+      console.log(
+        `Next suspended player is`,
+        rooms[roomId].players[nextPlayerTurnId].character,
+        "Suspension data:",
+        nextSuspendedPlayer
+      );
       if (nextSuspendedPlayer.reason === TileTypes.VACATION) {
         if (nextSuspendedPlayer.left === 0) {
           // can safely remove the player from suspension
@@ -758,7 +783,7 @@ class GameController {
           rooms[roomId].suspendedPlayers[nextPlayerTurnId].left--;
 
           console.log(
-            `Switching turns because ${nextPlayerTurnId} is on vacation`
+            `Switching turns because ${rooms[roomId].players[nextPlayerTurnId].character} is on vacation`
           );
 
           console.log(

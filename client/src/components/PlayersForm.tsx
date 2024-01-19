@@ -1,3 +1,5 @@
+import { useAppSelector } from "@/app/hooks";
+import { useSocket } from "@/app/socket-context2";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -8,12 +10,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import * as z from "zod";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
-import { useAppSelector } from "@/app/hooks";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { selectPlayers } from "@/slices/game-slice";
+import { Characters, Colors, NewPlayer } from "@backend/types/Player";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import * as z from "zod";
 import {
   AlertDialog,
   AlertDialogContent,
@@ -21,8 +28,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
-import { NewPlayer, Characters, Colors } from "@backend/types/Player";
-import { useSocket } from "@/app/socket-context2";
+import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
 
 const formSchema = z.object({
   name: z
@@ -76,7 +82,7 @@ export function PlayersForm() {
     <AlertDialog defaultOpen>
       <AlertDialogContent className="sm:max-w-[425px]">
         <AlertDialogHeader>
-          <AlertDialogTitle>Create your player</AlertDialogTitle>
+          <AlertDialogTitle>צור שחקן</AlertDialogTitle>
         </AlertDialogHeader>
         <Form {...form}>
           <form
@@ -88,7 +94,7 @@ export function PlayersForm() {
               name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Name</FormLabel>
+                  <FormLabel>שם</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -101,7 +107,7 @@ export function PlayersForm() {
               name="character"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Character</FormLabel>
+                  <FormLabel>דמות</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={(e: Characters) => field.onChange(e)}
@@ -123,16 +129,22 @@ export function PlayersForm() {
                                 />
                               </FormControl>
                               <FormLabel className="block text-center">
-                                <img
-                                  src={`/${charLower}.png`}
-                                  width={140}
-                                  className={
-                                    characterWatch === charLower
-                                      ? "opacity-100"
-                                      : "opacity-40"
-                                  }
-                                />
-                                {char}
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <img
+                                        src={`/${charLower}.png`}
+                                        width={140}
+                                        className={
+                                          characterWatch === charLower
+                                            ? "opacity-100"
+                                            : "opacity-40"
+                                        }
+                                      />
+                                    </TooltipTrigger>
+                                    <TooltipContent>{char}</TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
                               </FormLabel>
                             </FormItem>
                           )
@@ -149,7 +161,7 @@ export function PlayersForm() {
               name="color"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Pick a color</FormLabel>
+                  <FormLabel>בחר צבע</FormLabel>
                   <FormControl>
                     <RadioGroup
                       onValueChange={(e: Colors) => field.onChange(e)}
@@ -190,7 +202,7 @@ export function PlayersForm() {
             />
             <AlertDialogFooter className="sm:flex-col sm:space-x-0 space-y-2">
               <Button type="submit" variant="secondary" className="w-full">
-                Join game
+                הכנס למשחק
               </Button>
             </AlertDialogFooter>
           </form>

@@ -12,7 +12,7 @@ const CityBuilding: React.FC<CityBuildingProps> = ({ count, icon }) => {
   return (
     <div className="inline-flex items-center gap-[2px] cityBuilding">
       {Array.from({ length: iconsCount }).map((_, idx) => (
-        <Icon size={16} key={idx} />
+        <Icon size={16} key={idx} className="text-black" />
       ))}
     </div>
   );

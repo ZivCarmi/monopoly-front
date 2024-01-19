@@ -1,3 +1,4 @@
+import { handleDices } from "@/actions/game-actions";
 import {
   cityLevelChangedThunk,
   paidOutOfJailThunk,
@@ -20,15 +21,15 @@ import {
   switchTurn,
 } from "@/slices/game-slice";
 import { writeLog } from "@/slices/ui-slice";
+import { isPlayerInOvercharge } from "@/utils";
+import Room from "@backend/classes/Room";
 import { TradeType } from "@backend/types/Game";
 import Player from "@backend/types/Player";
 import { useEffect } from "react";
 import PlayersForm from "./PlayersForm";
-import GameScoreboard from "./game-scoreboard/GameScoreboard";
 import GameBoard from "./board/GameBoard";
+import GameScoreboard from "./game-scoreboard/GameScoreboard";
 import GameSidebar from "./game-sidebar/GameSidebar";
-import Room from "@backend/classes/Room";
-import { isPlayerInOvercharge } from "@/utils";
 import WinnerScreen from "./winner/WinnerScreen";
 
 const GameRoom = () => {
@@ -78,6 +79,10 @@ const GameRoom = () => {
   }) => {
     dispatch(startGame({ generatedPlayers, currentPlayerTurn }));
     dispatch(writeLog(message));
+  };
+
+  const onDiceRolled = ({ dices }: { dices: number[] }) => {
+    dispatch(handleDices(dices, socket));
   };
 
   const onSwitchedTurn = ({ nextPlayerId }: { nextPlayerId: string }) => {
@@ -155,6 +160,7 @@ const GameRoom = () => {
     socket.on("update_players", onUpdatePlayers);
     socket.on("game_started", onGameStarted);
     socket.on("switched_turn", onSwitchedTurn);
+    socket.on("dice_rolled", onDiceRolled);
     socket.on("purchased_property", onPurchasedProperty);
     socket.on("sold_property", onSoldProperty);
     socket.on("city_level_change", onCityLevelChange);
@@ -172,6 +178,7 @@ const GameRoom = () => {
       socket.off("update_players", onUpdatePlayers);
       socket.off("game_started", onGameStarted);
       socket.off("switched_turn", onSwitchedTurn);
+      socket.off("dice_rolled", onDiceRolled);
       socket.off("purchased_property", onPurchasedProperty);
       socket.off("sold_property", onSoldProperty);
       socket.off("city_level_change", onCityLevelChange);
@@ -190,12 +197,12 @@ const GameRoom = () => {
     <>
       {!started && !isReady && <PlayersForm />}
       <div className="grid min-h-screen grid-cols-[repeat(15,_1fr)]">
-        <GameScoreboard />
+        <GameSidebar />
         <div className="col-start-8 relative">
           <GameBoard />
           <WinnerScreen />
         </div>
-        <GameSidebar />
+        <GameScoreboard />
       </div>
     </>
   );

@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 import { Button } from "../ui/button";
 import { useSocket } from "@/app/socket-context2";
-import { ArrowLeft, PlusSquare, RefreshCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, PlusSquare, RefreshCcw } from "lucide-react";
 import CreateRoom from "../CreateRoom";
 import { Link } from "react-router-dom";
+import Icon from "../ui/icon";
 
 const LobbyGameRoomsActions = () => {
   const socket = useSocket();
@@ -28,17 +29,17 @@ const LobbyGameRoomsActions = () => {
     <div className="mb-8 flex items-center justify-between">
       <Button asChild variant="outline">
         <Link to="/">
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
+          <Icon icon={ArrowRight} />
+          חזור
         </Link>
       </Button>
-      <div className="space-x-2">
+      <div className="flex gap-2">
         <Button variant="outline" onClick={fetchAllRooms}>
           <RefreshCcw className="h-4 w-4" />
         </Button>
         <CreateRoom>
-          <PlusSquare className="mr-2 h-4 w-4" />
-          New Room
+          <Icon icon={PlusSquare} />
+          חדר חדש
         </CreateRoom>
       </div>
     </div>

@@ -9,6 +9,7 @@ import { Home, Hotel } from "lucide-react";
 import CityBuilding from "./CityBuilding";
 import CityFlagIcon from "./CityFlagIcon";
 import OwnerIndicator from "./OwnerIndicator";
+import { Badge } from "../ui/badge";
 
 type PurchasableTileProps = {
   tile: PurchasableTile;
@@ -30,13 +31,19 @@ const PurchasableTile: React.FC<PurchasableTileProps> = ({ tile }) => {
       >
         <TileContent className="justify-between gap-1">
           <TileBody>{tile.name}</TileBody>
-          {tile.owner && (
+          {tile.owner ? (
             <OwnerIndicator ownerId={tile.owner}>
               {cityHasHotel && <CityBuilding icon={Hotel} />}
               {cityHasHouses && (
                 <CityBuilding icon={Home} count={tile.rentIndex} />
               )}
             </OwnerIndicator>
+          ) : (
+            <div className="badgeWrapper flex items-center justify-center">
+              <Badge variant="secondary" className="badge self-center ">
+                ${tile.cost}
+              </Badge>
+            </div>
           )}
           {isProperty(tile) && <CityFlagIcon countryId={tile.country.id} />}
         </TileContent>

@@ -27,6 +27,8 @@ import {
 import { shuffleArray } from "./utils";
 import Room from "./classes/Room";
 import { TradeType } from "./types/Game";
+import { Socket } from "socket.io";
+import { getSocketRoomId, rooms } from "../controllers/gameController";
 
 export const getGoTile = (board: Board) =>
   board.find((tile) => isGo(tile)) as IGo;
@@ -346,7 +348,7 @@ export const initializeMap = () => {
 
   const taxTile = new TileBuilder.TaxTile({
     name: "מס הכנסה",
-    taxRate: 125,
+    taxRate: 10,
   });
 
   const chanceTile = new TileBuilder.Tile({
@@ -635,16 +637,22 @@ export const paymentGameCard = (
 };
 
 export const advanceToTileGameCard = (
-  playerId: string,
-  card: AdvancedToTileCard,
-  room: Room
+  socket: Socket,
+  card: AdvancedToTileCard
+  // playerId: string,
+  // card: AdvancedToTileCard,
+  // room: Room
 ) => {
+  const roomId = getSocketRoomId(socket);
+
+  if (!roomId) return;
+
   const {
     players,
     map: { goRewards },
-  } = room;
+  } = rooms[roomId];
   const { event } = card;
-  const player = players[playerId];
+  const player = players[socket.id];
 
   if (event.shouldGetGoReward) {
     const shouldGetPassReward =
@@ -656,6 +664,10 @@ export const advanceToTileGameCard = (
   }
 
   player.tilePos = event.tileIndex;
+
+  rooms[roomId].players[socket.id] = player;
+
+  console.log("on advanceToTileGameCard, Player after change", player);
 
   return player;
 };

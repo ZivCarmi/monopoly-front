@@ -7,7 +7,7 @@ const GameSidebar = () => {
   const { started } = useAppSelector((state) => state.game);
 
   return (
-    <div className="flex flex-col col-start-9 col-end-[16] p-4">
+    <div className="flex flex-col col-start-1 col-end-8 p-4">
       <div className="bg-neutral-800 p-4 relative rounded-lg">
         <div className="flex flex-col gap-2">
           <BackToLobbyButton />

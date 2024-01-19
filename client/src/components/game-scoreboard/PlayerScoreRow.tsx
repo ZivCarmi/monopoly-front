@@ -59,7 +59,7 @@ const ChangeAppearanceButton = ({ playerId }: { playerId: string }) => {
 
   return (
     <Button variant="ghost" className="mx-auto text-xs">
-      Change appearance
+      שנה נראות
     </Button>
   );
 };

@@ -1,8 +1,8 @@
-import { Button } from "./ui/button";
-import { Dices, RefreshCcw } from "lucide-react";
-import { useSocket } from "@/app/socket-context2";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { useSocket } from "@/app/socket-context2";
 import { setIsLanded } from "@/slices/game-slice";
+import { Dices, RefreshCcw } from "lucide-react";
+import { Button } from "./ui/button";
 import Icon from "./ui/icon";
 
 const RollDices = () => {
@@ -27,21 +27,21 @@ const RollDices = () => {
 
   if (forceEndTurn || (cubesRolledInTurn && !hasExtraTurn)) {
     return (
-      <Button variant="outline" onClick={switchTurnHandler}>
+      <Button variant="primary" onClick={switchTurnHandler}>
         <Icon icon={RefreshCcw} />
         סיים תור
       </Button>
     );
   } else if (!cubesRolledInTurn) {
     return (
-      <Button variant="outline" onClick={rollDiceHandler}>
+      <Button variant="primary" onClick={rollDiceHandler}>
         <Icon icon={Dices} />
         הטל קוביות
       </Button>
     );
   } else if (hasExtraTurn) {
     return (
-      <Button variant="rollAgain" onClick={rollDiceHandler}>
+      <Button variant="primaryFancy" onClick={rollDiceHandler}>
         <Icon icon={Dices} />
         הטל שוב
       </Button>

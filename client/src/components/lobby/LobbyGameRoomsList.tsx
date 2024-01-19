@@ -7,7 +7,7 @@ const LobbyGameRoomsList = () => {
   return (
     <>
       <p className="text-center text-sm mb-4 text-muted-foreground">
-        Select the room you would like to join:
+        בחר חדר שברצונך להצטרף:
       </p>
       <ul className="space-y-2 max-h-[300px] overflow-auto">
         {lobbyRooms.map((room) => (

@@ -8,6 +8,9 @@ module.exports = {
     "./src/**/*.{ts,tsx}",
   ],
   theme: {
+    fontFamily: {
+      lunasima: ["Lunasima", "ui-sans-serif"],
+    },
     container: {
       center: true,
       padding: "2rem",

@@ -12,22 +12,24 @@ const AvailableGameRoom = ({ room }: { room: LobbyRoom }) => {
   };
 
   return (
-    <li className="pe-2">
+    <li>
       <button
         onClick={() => joinRoomHandler(room.id)}
-        className="w-full p-4 rounded-lg text-left space-y-1 bg-background border hover:bg-muted/50 transition-colors text-sm relative"
+        className="w-full p-4 rounded-lg text-left rtl:text-right space-y-1 bg-background border hover:bg-muted/50 transition-colors text-sm relative"
       >
         {room.started && (
-          <Badge className="absolute top-2 right-2">In Progress</Badge>
+          <Badge className="absolute top-2 ltr:right-2 rtl:left-2">
+            משחק רץ
+          </Badge>
         )}
         <h2>
-          <strong>Room ID:</strong> {room.id}
+          <strong>מספר חדר:</strong> {room.id}
         </h2>
         <div>
-          <strong>Participants:</strong> {room.connectedSockets}
+          <strong>מס' משתתפים:</strong> {room.connectedSockets}
         </div>
         <div className="flex items-center">
-          <strong>Players:</strong>&nbsp;
+          <strong>שחקנים:</strong>&nbsp;
           <ul className="flex items-center gap-[2px]">
             {Object.values(room.players).map((player) => (
               <li key={player.id}>
