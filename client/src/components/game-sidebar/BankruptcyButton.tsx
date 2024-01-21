@@ -1,4 +1,4 @@
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { Footprints } from "lucide-react";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";

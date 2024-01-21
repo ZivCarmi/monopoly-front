@@ -1,4 +1,4 @@
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { Button } from "../ui/button";
 import PropertyActions from "./PropertyActions";
 import { useAppSelector } from "@/app/hooks";

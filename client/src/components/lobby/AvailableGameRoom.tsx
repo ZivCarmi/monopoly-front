@@ -1,4 +1,4 @@
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { LobbyRoom } from "@backend/classes/Room";
 import { User } from "lucide-react";
 import { Badge } from "../ui/badge";
@@ -8,7 +8,7 @@ const AvailableGameRoom = ({ room }: { room: LobbyRoom }) => {
   const roomSpectatorsCount = room.connectedSockets - room.players.length;
 
   const joinRoomHandler = (roomId: string) => {
-    socket.emit("join_game", { roomId });
+    socket.emit("join_room", { roomId });
   };
 
   return (

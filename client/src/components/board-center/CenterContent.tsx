@@ -1,40 +1,22 @@
 import { useAppSelector } from "@/app/hooks";
-import { selectCurrentPlayerTurn } from "@/slices/game-slice";
-import CenterAction from "./CenterAction";
-import GameLog from "./GameLog";
-import { useSocket } from "@/app/socket-context2";
-import StartGameButton from "../StartGameButton";
-import Dices from "../Dices";
 import BoardCenter from "./BoardCenter";
+import CenterAction from "./CenterAction";
+import Dices from "./Dices";
+import GameLog from "./GameLog";
+import GameWaitingToStart from "./GameWaitingToStart";
 
 const CenterContent = () => {
-  const socket = useSocket();
-  const currentPlayerTurn = useAppSelector(selectCurrentPlayerTurn);
-  const { currentPlayerTurnId, started, roomHostId } = useAppSelector(
-    (state) => state.game
-  );
+  const { started } = useAppSelector((state) => state.game);
 
   return (
     <BoardCenter>
-      {started && (
-        <div className="space-y-4">
-          <div className="flex justify-between items-center gap-8"></div>
-          <Dices />
-          {currentPlayerTurnId === socket.id ? (
-            <CenterAction />
-          ) : (
-            <div className="flex items-center justify-center gap-2">
-              <img src={`/${currentPlayerTurn?.character}.png`} width={32} />
-              <h2 className="text-sm">
-                <span className="font-medium">{currentPlayerTurn?.name}</span>{" "}
-                משחק...
-              </h2>
-            </div>
-          )}
+      <div className="h-5/6 self-end flex flex-col overflow-y-hidden gap-4">
+        <Dices />
+        <div className="flex items-center justify-center gap-2 min-h-12">
+          {started ? <CenterAction /> : <GameWaitingToStart />}
         </div>
-      )}
-      {!started && roomHostId === socket.id && <StartGameButton />}
-      <GameLog />
+        <GameLog />
+      </div>
     </BoardCenter>
   );
 };

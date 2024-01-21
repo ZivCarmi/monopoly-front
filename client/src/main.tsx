@@ -7,7 +7,7 @@ import { ToggleTheme } from "./components/theme/ThemeToggle.tsx";
 import store from "@/app/store.ts";
 import { Provider } from "react-redux";
 import { Toaster } from "./components/ui/toaster.tsx";
-import { SocketProvider } from "./app/socket-context2.tsx";
+import { SocketProvider } from "./app/socket-context.tsx";
 import { DirectionProvider } from "@radix-ui/react-direction";
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(

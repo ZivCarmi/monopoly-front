@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { Button } from "./ui/button";
 import { selectPlayers } from "@/slices/game-slice";
 import Icon from "./ui/icon";
@@ -13,6 +13,27 @@ import {
 
 const StartGameButton = () => {
   const players = useAppSelector(selectPlayers);
+  const canStart = players.length > 1;
+
+  return canStart ? (
+    <StartButton canStart={canStart} />
+  ) : (
+    <TooltipProvider>
+      <Tooltip delayDuration={0}>
+        <TooltipTrigger asChild>
+          <span tabIndex={0}>
+            <StartButton canStart={canStart} />
+          </span>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>בשביל להתחיל משחק צריך לפחות 2 שחקנים</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
+const StartButton = ({ canStart }: { canStart: boolean }) => {
   const socket = useSocket();
 
   const startGameHandler = () => {
@@ -20,23 +41,10 @@ const StartGameButton = () => {
   };
 
   return (
-    <div className="flex items-center justify-center h-full">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <span tabIndex={0}>
-              <Button onClick={startGameHandler} disabled={players.length < 2}>
-                <Icon icon={Play} />
-                התחל משחק
-              </Button>
-            </span>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>בשביל להתחיל משחק צריך לפחות 2 שחקנים</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    </div>
+    <Button onClick={startGameHandler} disabled={!canStart}>
+      <Icon icon={Play} />
+      התחל משחק
+    </Button>
   );
 };
 

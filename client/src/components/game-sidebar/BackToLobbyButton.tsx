@@ -1,4 +1,4 @@
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { X } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";

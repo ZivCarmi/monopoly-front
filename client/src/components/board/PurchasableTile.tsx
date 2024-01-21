@@ -10,6 +10,7 @@ import CityBuilding from "./CityBuilding";
 import CityFlagIcon from "./CityFlagIcon";
 import OwnerIndicator from "./OwnerIndicator";
 import { Badge } from "../ui/badge";
+import TileBackgroundImage from "./TileBackgroundImage";
 
 type PurchasableTileProps = {
   tile: PurchasableTile;
@@ -29,7 +30,10 @@ const PurchasableTile: React.FC<PurchasableTileProps> = ({ tile }) => {
         onClick={() => dispatch(setSelectedTile(tile))}
         className="w-full h-full"
       >
-        <TileContent className="justify-between gap-1">
+        {isProperty(tile) && (
+          <TileBackgroundImage countryId={tile.country.id} />
+        )}
+        <TileContent className="justify-between gap-1 z-10 relative">
           <TileBody>{tile.name}</TileBody>
           {tile.owner ? (
             <OwnerIndicator ownerId={tile.owner}>
@@ -45,7 +49,11 @@ const PurchasableTile: React.FC<PurchasableTileProps> = ({ tile }) => {
               </Badge>
             </div>
           )}
-          {isProperty(tile) && <CityFlagIcon countryId={tile.country.id} />}
+          {isProperty(tile) && (
+            <>
+              <CityFlagIcon countryId={tile.country.id} />
+            </>
+          )}
         </TileContent>
       </PopoverTrigger>
       <PopoverContent>

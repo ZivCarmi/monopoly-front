@@ -8,7 +8,7 @@ const Dices = () => {
   const dices = useAppSelector(selectDices);
 
   return (
-    <div className="flex justify-center mb-2">
+    <div className="flex justify-center">
       {dices.map((dice, i) => {
         const RolledDice = DICE_ICONS[dice - 1];
         return <RolledDice strokeWidth={1.75} size={60} key={i} />;

@@ -319,6 +319,17 @@
   left: calc(100% - var(--flag-icon-center));
 }
 
+.tileImg {
+  scale: 1.5;
+  background-size: 120%;
+}
+
+.row_right .tileImg,
+.row_left .tileImg {
+  background-size: 100%;
+  transform: rotate(90deg);
+}
+
 .row_top .flagIcon {
   top: calc(100% - var(--flag-icon-center));
 }

@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { Button } from "../ui/button";
 import { setNegotiation, setTradeStatus } from "@/slices/trade-slice";
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { TradeType } from "@backend/types/Game";
 import SubmitTradeButton from "./SubmitTradeButton";
 

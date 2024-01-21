@@ -1,5 +1,5 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { selectPlayers } from "@/slices/game-slice";
 import { setTrade } from "@/slices/trade-slice";
 import { v4 as uuidv4 } from "uuid";

@@ -2,7 +2,7 @@ import { setNegotiation, setTradeStatus } from "@/slices/trade-slice";
 import { Button, buttonVariants } from "../ui/button";
 import { AlertDialogAction, AlertDialogCancel } from "../ui/alert-dialog";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 
 const TradeRecieved = () => {
   const socket = useSocket();

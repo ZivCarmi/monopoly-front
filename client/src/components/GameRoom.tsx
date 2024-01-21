@@ -10,7 +10,7 @@ import {
   tradeUpdatedThunk,
 } from "@/actions/socket-actions";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import {
   bankruptPlayer,
   setPlayers,

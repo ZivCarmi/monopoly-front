@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import LobbyGameRoomsActions from "./LobbyGameRoomsActions";
 import LobbyGameRoomsList from "./LobbyGameRoomsList";
 import NoRoomsAvailable from "./NoRoomsAvailable";
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { LobbyRoom } from "@backend/classes/Room";
 import { setLobbyRooms } from "@/slices/lobby-slice";
 import { useEffect } from "react";

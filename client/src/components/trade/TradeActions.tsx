@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { AlertDialogFooter } from "../ui/alert-dialog";
 import EditTrade from "./EditTrade";
 import SendTrade from "./SendTrade";

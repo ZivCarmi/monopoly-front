@@ -80,8 +80,6 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
 
       steps -= incrementor;
 
-      // console.log(steps, incrementor);
-
       setTimeout(() => {
         if (steps === 0) {
           dispatch(allowTurnActions(true));
@@ -94,46 +92,6 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
     };
 
     requestAnimationFrame(update);
-
-    // const interval = setInterval(() => {
-    //   dispatch(incrementPlayerPosition({ playerId, incrementor }));
-
-    //   const { players, map } = getState().game;
-    //   const walkingPlayer = players.find((player) => playerId === player.id);
-
-    //   // award player for passing GO tile
-    //   if (walkingPlayer && walkingPlayer.tilePos === 0 && steps > 0) {
-    //     const goTile = getGoTile(map.board);
-    //     const goRewardOnPass = map.goRewards.pass;
-
-    //     dispatch(
-    //       writeLog(
-    //         `${walkingPlayer.name} עבר ב${goTile.name} והרוויח $${goRewardOnPass}`
-    //       )
-    //     );
-
-    //     dispatch(
-    //       transferMoney({
-    //         recieverId: playerId,
-    //         amount: goRewardOnPass,
-    //       })
-    //     );
-    //   }
-
-    //   // steps += incrementor === 1 ? -1 : 1;
-    //   steps -= incrementor;
-
-    //   // when finished walking
-    //   if (steps === 0) {
-    //     clearInterval(interval);
-
-    //     setTimeout(() => {
-    //       dispatch(allowTurnActions(true));
-    //       dispatch(handlePlayerLanding(playerId));
-    //       dispatch(setIsLanded(true));
-    //     }, MS_TO_MOVE_ON_TILES);
-    //   }
-    // }, MS_TO_MOVE_ON_TILES);
   };
 };
 
@@ -146,10 +104,13 @@ export const handleDices = (dices: number[], socket: Socket): AppThunk => {
     const isDouble = dices[0] === dices[1];
     const dicesSum = dices.reduce((acc, dice) => acc + dice, 0);
 
-    if (!player) throw new Error(`Player was not found`);
+    if (!player) {
+      throw new Error(`Player was not found`);
+    }
 
-    if (!currentPlayerTurnId)
+    if (!currentPlayerTurnId) {
       throw new Error(`Current turn is not belong to ${currentPlayerTurnId}`);
+    }
 
     // update suspended player
     if (isPlayerInJail(currentPlayerTurnId)) {
@@ -196,10 +157,11 @@ export const handlePlayerLanding = (playerId: string): AppThunk => {
     const { players, map } = getState().game;
     const player = players.find((player) => player.id === playerId);
 
-    if (!player)
+    if (!player) {
       throw new Error(
         `Could not finish player landing, player with ID of ${playerId} was not found.`
       );
+    }
 
     const landedTile = map.board[player.tilePos];
     const goRewardOnLand = map.goRewards.land;
@@ -224,7 +186,9 @@ export const handlePlayerLanding = (playerId: string): AppThunk => {
 
       dispatch(handleRentPayment(player, landedTile));
     } else if (isCard(landedTile)) {
-      dispatch(drawGameCard({ type: landedTile.type }));
+      dispatch(
+        drawGameCard({ type: landedTile.type, tileIndex: player.tilePos })
+      );
 
       dispatch(handleGameCard(player));
     } else if (isTax(landedTile)) {
@@ -276,22 +240,24 @@ export const sendPlayerToJail = (player: Player, log?: string): AppThunk => {
 
 export const handleGameCard = (player: Player): AppThunk => {
   return (dispatch, getState) => {
-    const { drawnGameCard } = getState().game;
+    const {
+      drawnGameCard: { card },
+    } = getState().game;
 
-    if (!drawnGameCard) throw new Error("No chance card was found.");
+    if (!card) throw new Error("No chance card was found.");
 
-    switch (drawnGameCard.type) {
+    switch (card.type) {
       case GameCardTypes.PAYMENT:
       case GameCardTypes.GROUP_PAYMENT:
-        return dispatch(paymentGameCard(player.id, drawnGameCard));
+        return dispatch(paymentGameCard(player.id, card));
       case GameCardTypes.ADVANCE_TO_TILE:
-        dispatch(advanceToTileGameCard(player.id, drawnGameCard));
+        dispatch(advanceToTileGameCard(player.id, card));
         return dispatch(handlePlayerLanding(player.id));
       case GameCardTypes.ADVANCE_TO_TILE_TYPE:
-        dispatch(advanceToTileTypeGameCard(player.id, drawnGameCard));
+        dispatch(advanceToTileTypeGameCard(player.id, card));
         return dispatch(handlePlayerLanding(player.id));
       case GameCardTypes.WALK:
-        return dispatch(walkPlayer(player.id, drawnGameCard.event.steps));
+        return dispatch(walkPlayer(player.id, card.event.steps));
       case GameCardTypes.GO_TO_JAIL:
         return dispatch(sendPlayerToJail(player));
     }
@@ -323,7 +289,7 @@ export const handleRentPayment = (
       map: { board },
     } = getState().game;
     const owner = players.find((player) => player.id === tile.owner);
-    let rentAmount: number = 0;
+    let rentAmount = 0;
 
     if (!owner) {
       throw new Error("Owner was not found in handleRentPayment");

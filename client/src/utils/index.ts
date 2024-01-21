@@ -49,6 +49,14 @@ export const mapPlayersOnBoard = () => {
   return initialMap;
 };
 
+export const isPlayer = (playerId: string) => {
+  const player = store
+    .getState()
+    .game.players.find((player) => player.id === playerId);
+
+  return player;
+};
+
 export const isPlayerSuspended = (playerId: string) => {
   const suspendedPlayer = store.getState().game.suspendedPlayers[playerId];
 

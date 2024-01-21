@@ -10,7 +10,7 @@ const initialState: UserState = {
   socketId: null,
 };
 
-export const socketSlice = createSlice({
+export const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
@@ -20,6 +20,6 @@ export const socketSlice = createSlice({
   },
 });
 
-export const { setSocketId } = socketSlice.actions;
+export const { setSocketId } = userSlice.actions;
 
-export default socketSlice.reducer;
+export default userSlice.reducer;

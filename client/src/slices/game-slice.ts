@@ -43,7 +43,10 @@ export interface GameState {
   suspendedPlayers: {
     [playerId: string]: SuspensionProps;
   };
-  drawnGameCard: GameCard | null;
+  drawnGameCard: {
+    tileIndex: number | null;
+    card: GameCard | null;
+  };
   counter: number;
   winner: Player | null;
 }
@@ -77,7 +80,10 @@ const initialState: GameState = {
   doublesInARow: 0,
   forceEndTurn: false,
   suspendedPlayers: {},
-  drawnGameCard: null,
+  drawnGameCard: {
+    tileIndex: null,
+    card: null,
+  },
   counter: TURN_TIMES.rollDices,
   winner: null,
 };
@@ -349,24 +355,32 @@ export const gameSlice = createSlice({
       delete state.suspendedPlayers[playerId];
     },
     resetCards: (state) => {
-      state.drawnGameCard = null;
+      state.drawnGameCard = {
+        tileIndex: null,
+        card: null,
+      };
     },
     drawGameCard: (
       state,
-      action: PayloadAction<{ type: TileTypes.CHANCE | TileTypes.SURPRISE }>
+      action: PayloadAction<{
+        type: TileTypes.CHANCE | TileTypes.SURPRISE;
+        tileIndex: number;
+      }>
     ) => {
       const { chances, surprises } = state.map;
 
+      state.drawnGameCard.tileIndex = action.payload.tileIndex;
+
       switch (action.payload.type) {
         case TileTypes.CHANCE:
-          state.drawnGameCard = cycleNextItem({
+          state.drawnGameCard.card = cycleNextItem({
             currentIndex: chances.currentIndex,
             array: chances.cards,
           });
           state.map.chances.currentIndex += 1;
           break;
         case TileTypes.SURPRISE:
-          state.drawnGameCard = cycleNextItem({
+          state.drawnGameCard.card = cycleNextItem({
             currentIndex: surprises.currentIndex,
             array: surprises.cards,
           });

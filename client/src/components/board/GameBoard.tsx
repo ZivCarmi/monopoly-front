@@ -1,9 +1,5 @@
 import { useAppSelector } from "@/app/hooks";
-import {
-  selectCurrentPlayerTurn,
-  selectGameBoard,
-  selectPlayers,
-} from "@/slices/game-slice";
+import { selectGameBoard, selectPlayers } from "@/slices/game-slice";
 import { cn, createBoard, isPlayerInJail, mapPlayersOnBoard } from "@/utils";
 import {
   GameTile,
@@ -17,7 +13,6 @@ import { rowClassname, MappedPlayersByTiles } from "@/types/Board";
 import CenterContent from "../board-center/CenterContent";
 import BoardTile from "./BoardTile";
 import { AnimatePresence } from "framer-motion";
-import { useSocket } from "@/app/socket-context2";
 import DrawnCardBox from "../DrawnCardBox";
 import PurchasableTile from "./PurchasableTile";
 import CornerTile from "./CornerTile";
@@ -26,12 +21,10 @@ import BoardRow from "./BoardRow";
 import Board from "./Board";
 
 const GameBoard = () => {
-  const socket = useSocket();
   const players = useAppSelector(selectPlayers);
-  const { drawnGameCard, currentPlayerTurnId, isLanded } = useAppSelector(
+  const { drawnGameCard, currentPlayerTurnId } = useAppSelector(
     (state) => state.game
   );
-  const currentPlayer = useAppSelector(selectCurrentPlayerTurn);
   const [mappedPlayers, setMappedPlayers] = useState<MappedPlayersByTiles>({});
   const board = useAppSelector(selectGameBoard);
   const [gameBoard, setGameBoard] = useState<GameTile[][]>([]);
@@ -56,11 +49,10 @@ const GameBoard = () => {
               <BoardTile key={tileIndex}>
                 <AnimatePresence>
                   {isCard(tile) &&
-                    drawnGameCard &&
-                    isLanded &&
-                    currentPlayer?.tilePos === tileIndex && (
+                    drawnGameCard.card &&
+                    drawnGameCard.tileIndex === tileIndex && (
                       <DrawnCardBox row={rowClassname[rowIndex]}>
-                        {drawnGameCard.message}
+                        {drawnGameCard.card.message}
                       </DrawnCardBox>
                     )}
                 </AnimatePresence>
@@ -83,18 +75,18 @@ const GameBoard = () => {
                 )}
                 {mappedPlayers[tileIndex]?.map((player, idx) => {
                   const isPlayerTurn = player.id === currentPlayerTurnId;
-                  const isSelfPlayer = player.id === socket.id;
 
                   return (
                     <button
                       key={player.id}
                       className={cn(
-                        "w-8 h-8 rounded-full p-[0.1rem] pointer-events-auto bg-black bg-opacity-75 absolute ",
+                        "w-8 h-8 rounded-full p-[0.1rem] pointer-events-auto bg-opacity-75 absolute ",
                         isPlayerInJail(player.id) && "z-[-1]",
                         isPlayerTurn && "animate-pulse duration-1000",
                         "mapped_player"
                       )}
                       style={{
+                        backgroundColor: player.color,
                         top:
                           rowClassname[rowIndex] === "right"
                             ? `${0.5 + idx}rem`
@@ -111,9 +103,7 @@ const GameBoard = () => {
                           rowClassname[rowIndex] === "left"
                             ? `${0.5 + idx}rem`
                             : "",
-                        boxShadow: isSelfPlayer
-                          ? `0px 0px 7px 1px ${player.color}`
-                          : "",
+                        boxShadow: `0px 0px 7px 1px ${player.color}`,
                       }}
                     >
                       <img src={`/${player.character}.png`} />

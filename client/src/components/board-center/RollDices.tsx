@@ -1,9 +1,9 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { setIsLanded } from "@/slices/game-slice";
 import { Dices, RefreshCcw } from "lucide-react";
-import { Button } from "./ui/button";
-import Icon from "./ui/icon";
+import { Button } from "../ui/button";
+import Icon from "../ui/icon";
 
 const RollDices = () => {
   const dispatch = useAppDispatch();
@@ -17,6 +17,8 @@ const RollDices = () => {
     if (hasExtraTurn) {
       dispatch(setIsLanded(false));
     }
+
+    console.log("Rolling dice...");
 
     socket.emit("rolling_dice");
   };

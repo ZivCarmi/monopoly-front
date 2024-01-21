@@ -1,11 +1,11 @@
 import { useAppDispatch } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { resetRoom, setRoom } from "@/slices/game-slice";
 import { resetUi, setRoomUi } from "@/slices/ui-slice";
 import Room from "@backend/classes/Room";
+import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
-import { useEffect } from "react";
 
 const MainLayout = () => {
   const socket = useSocket();
@@ -20,6 +20,7 @@ const MainLayout = () => {
   };
 
   const onRoomJoinError = ({ error }: { error: string }) => {
+    navigate("/");
     toast({
       variant: "destructive",
       title: error,
@@ -48,7 +49,7 @@ const MainLayout = () => {
     return () => {
       socket.off("room_joined", onRoomJoined);
       socket.off("room_join_error", onRoomJoinError);
-      socket.on("room_deleted", onRoomDeleted);
+      socket.off("room_deleted", onRoomDeleted);
       socket.off("on_lobby", onReturnedToLobby);
     };
   });

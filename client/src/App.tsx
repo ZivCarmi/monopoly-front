@@ -7,7 +7,7 @@ import {
 import LobbyPage from "./pages/Lobby";
 import LobbyRoomsPage from "./pages/LobbyRooms";
 import LobbyLayout from "./components/lobby/LobbyLayout";
-import GameRoomPage, { getGameRoomData } from "./pages/GameRoom";
+import GameRoomPage from "./pages/GameRoom";
 import MainLayout from "./components/MainLayout";
 
 const router = createBrowserRouter(
@@ -20,7 +20,7 @@ const router = createBrowserRouter(
       <Route
         path="/rooms/:roomId"
         element={<GameRoomPage />}
-        loader={getGameRoomData}
+        // loader={getGameRoomData}
       />
     </Route>
   )

@@ -1,122 +1,122 @@
 import cors from "cors";
-import express from "express";
-import http from "http";
-import { Server } from "socket.io";
 import { TradeType } from "./api/types/Game";
-import gameController from "./controllers/gameController";
-import { getRoomData } from "./controllers/roomController";
-
-const app = express();
-const server = http.createServer(app);
+import {
+  downgradeCity,
+  payOutOfJail,
+  purchaseProperty,
+  rollDice,
+  sellProperty,
+  startGame,
+  switchTurn,
+  upgradeCity,
+} from "./controllers/gameController";
+import { getRoomData, joinRoom } from "./controllers/roomController";
+import app from "./services/expressService";
+import io from "./services/socketService";
+import { getLobbyRooms } from "./controllers/lobbyController";
+import { backToLobby } from "./utils/game-utils";
+import {
+  addPlayer,
+  bankruptPlayer,
+  playerDisconnecting,
+  setOvercharge,
+} from "./controllers/playerController";
+import {
+  acceptTrade,
+  createTrade,
+  declineTrade,
+  updateTrade,
+} from "./controllers/tradeController";
 
 app.use(cors());
 
-const io = new Server(server, {
-  cors: {
-    origin: [
-      "http://127.0.0.1:5173",
-      "http://localhost:5173",
-      "http://localhost:4173",
-      "https://socket-io-monopoly.vercel.app",
-    ],
-  },
-});
-
-server.listen("3001", () => {
-  console.log("listening on 3001");
-});
-
-app.get("/rooms/:id", getRoomData);
+app.get("/", (req, res) => res.status(200).json("Monopoly server is running"));
 
 io.on("connection", (socket) => {
   console.log(
     `New connection ${socket.id}, Clients count: ${io.engine.clientsCount}`
   );
 
-  socket.on("join_game", ({ roomId }: { roomId: string }) => {
-    gameController.joinRoom(io, socket, roomId);
+  socket.on("get_room", ({ roomId }: { roomId: string }) => {
+    getRoomData(socket, roomId);
   });
 
-  socket.on("get_rooms", () => {
-    gameController.getRooms(io, socket);
+  socket.on("join_room", ({ roomId }: { roomId: string }) => {
+    joinRoom(socket, roomId);
+  });
+
+  socket.on("get_lobby_rooms", () => {
+    getLobbyRooms(socket);
   });
 
   socket.on("back_to_lobby", () => {
-    gameController.backToLobby(io, socket);
+    backToLobby(socket);
   });
 
   socket.on("create_player", ({ player }) => {
-    gameController.addPlayer(io, socket, player);
-  });
-
-  socket.on("disconnect", (reason) => {
-    console.log("disconnect", reason);
-
-    gameController.playerDisconnect(io, socket);
+    addPlayer(socket, player);
   });
 
   socket.on("disconnecting", () => {
-    console.log("disconnecting");
-
-    gameController.playerDisconnecting(io, socket);
+    playerDisconnecting(socket);
   });
 
   socket.on("start_game", () => {
-    gameController.startGame(io, socket);
+    startGame(socket);
   });
 
   socket.on("rolling_dice", () => {
-    gameController.rollDice(io, socket);
+    rollDice(socket);
   });
 
   socket.on("switch_turn", () => {
-    gameController.switchTurn(io, socket);
+    switchTurn(socket);
   });
 
   socket.on("pay_out_of_jail", () => {
-    gameController.payOutOfJail(io, socket);
+    payOutOfJail(socket);
   });
 
   socket.on(
     "purchase_property",
     ({ propertyIndex }: { propertyIndex: number }) => {
-      gameController.purchaseProperty(io, socket, propertyIndex);
+      purchaseProperty(socket, propertyIndex);
     }
   );
 
   socket.on("sell_property", ({ propertyIndex }: { propertyIndex: number }) => {
-    gameController.sellProperty(io, socket, propertyIndex);
+    sellProperty(socket, propertyIndex);
   });
 
   socket.on("upgrade_city", ({ tileIndex }: { tileIndex: number }) => {
-    gameController.upgradeCity(io, socket, tileIndex);
+    upgradeCity(socket, tileIndex);
   });
 
   socket.on("downgrade_city", ({ tileIndex }: { tileIndex: number }) => {
-    gameController.downgradeCity(io, socket, tileIndex);
+    downgradeCity(socket, tileIndex);
   });
 
   socket.on("create_trade", ({ trade }: { trade: TradeType }) => {
-    gameController.createTrade(io, socket, trade);
+    createTrade(socket, trade);
   });
 
   socket.on("trade_accepted", ({ tradeId }: { tradeId: string }) => {
-    gameController.acceptTrade(io, socket, tradeId);
+    acceptTrade(socket, tradeId);
   });
 
   socket.on("trade_declined", ({ tradeId }: { tradeId: string }) => {
-    gameController.declineTrade(io, socket, tradeId);
+    declineTrade(socket, tradeId);
   });
 
   socket.on("trade_updated", ({ trade }: { trade: TradeType }) => {
-    gameController.updateTrade(io, socket, trade);
+    updateTrade(socket, trade);
   });
 
   socket.on("player_bankrupt", () => {
-    gameController.bankruptPlayer(io, socket);
+    bankruptPlayer(socket);
   });
 
   socket.on("in_overcharge", () => {
-    gameController.setOvercharge(io, socket);
+    setOvercharge(socket);
   });
 });

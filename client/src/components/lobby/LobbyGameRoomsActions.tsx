@@ -1,4 +1,4 @@
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { ArrowRight, PlusSquare, RefreshCcw } from "lucide-react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
@@ -10,7 +10,7 @@ const LobbyGameRoomsActions = () => {
   const socket = useSocket();
 
   const fetchAllRooms = () => {
-    socket.emit("get_rooms");
+    socket.emit("get_lobby_rooms");
   };
 
   useEffect(() => {

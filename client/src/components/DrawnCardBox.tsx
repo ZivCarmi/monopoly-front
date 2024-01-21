@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useAppDispatch } from "@/app/hooks";
 import { resetCards } from "@/slices/game-slice";
 import { BoardRow } from "@/types/Board";
+import { MS_FOR_CARD_MESSAGE } from "@/utils/constants";
 
 type DrawnCardBoxProps = {
   children: React.ReactNode;
@@ -20,7 +21,7 @@ const DrawnCardBox: React.FC<DrawnCardBoxProps> = ({ children, row }) => {
 
     const timeout = setTimeout(() => {
       dispatch(resetCards());
-    }, 5000);
+    }, MS_FOR_CARD_MESSAGE);
 
     return () => {
       clearTimeout(timeout);
@@ -33,7 +34,7 @@ const DrawnCardBox: React.FC<DrawnCardBoxProps> = ({ children, row }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className={cn(
-        "w-40 absolute rounded-md bg-violet-600 py-2 px-4 text-sm z-[1]",
+        "w-40 absolute rounded-md bg-violet-600 py-2 px-4 text-sm z-10",
         isYAxis && "left-1/2 -translate-x-1/2",
         isXAxis && "top-1/2 -translate-y-1/2",
         row === "top" && "top-full",

@@ -1,4 +1,4 @@
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import Player from "@backend/types/Player";
 import { Button } from "../ui/button";
 import { useAppSelector } from "@/app/hooks";
@@ -87,7 +87,7 @@ const HostIndicator = ({ playerId }: { playerId: string }) => {
   }
 
   return (
-    <TooltipProvider>
+    <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
           <Badge>

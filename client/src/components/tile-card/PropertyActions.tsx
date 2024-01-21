@@ -3,7 +3,7 @@ import { getCityLevelText } from "@backend/helpers";
 import { hasMonopoly } from "@backend/helpers";
 import { Button } from "../ui/button";
 import { useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context2";
+import { useSocket } from "@/app/socket-context";
 import { selectPurchasableTileIndex } from "@/slices/ui-slice";
 import { isPlayerSuspended } from "@/utils";
 import { selectGameBoard } from "@/slices/game-slice";
