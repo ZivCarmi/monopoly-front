@@ -15,29 +15,28 @@ export const paymentGameCard = (
     const players = getState().game.players;
     const { event, type } = drawnGameCard;
 
-    switch (type) {
-      case GameCardTypes.PAYMENT:
-        return dispatch(
+    if (type === GameCardTypes.PAYMENT) {
+      return dispatch(
+        transferMoney({
+          payerId: event.paymentType === PaymentTypes.PAY ? playerId : "",
+          recieverId: event.paymentType === PaymentTypes.PAY ? "" : playerId,
+          amount: event.amount,
+        })
+      );
+    } else if (type === GameCardTypes.GROUP_PAYMENT) {
+      for (const player of players) {
+        if (player.id === playerId) continue;
+
+        dispatch(
           transferMoney({
-            payerId: event.paymentType === PaymentTypes.PAY ? playerId : "",
-            recieverId: event.paymentType === PaymentTypes.PAY ? "" : playerId,
+            payerId:
+              event.paymentType === PaymentTypes.PAY ? playerId : player.id,
+            recieverId:
+              event.paymentType === PaymentTypes.PAY ? player.id : playerId,
             amount: event.amount,
           })
         );
-      case GameCardTypes.GROUP_PAYMENT:
-        for (const player of players) {
-          if (player.id === playerId) continue;
-
-          dispatch(
-            transferMoney({
-              payerId:
-                event.paymentType === PaymentTypes.PAY ? playerId : player.id,
-              recieverId:
-                event.paymentType === PaymentTypes.PAY ? player.id : playerId,
-              amount: event.amount,
-            })
-          );
-        }
+      }
     }
   };
 };

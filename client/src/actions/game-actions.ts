@@ -241,7 +241,9 @@ export const handleGameCard = (player: Player): AppThunk => {
       drawnGameCard: { card },
     } = getState().game;
 
-    if (!card) throw new Error("No chance card was found.");
+    if (!card) {
+      throw new Error("No chance card was found.");
+    }
 
     switch (card.type) {
       case GameCardTypes.PAYMENT:
@@ -263,8 +265,6 @@ export const handleGameCard = (player: Player): AppThunk => {
 
 export const handleTaxPayment = (player: Player, tile: ITax): AppThunk => {
   return (dispatch) => {
-    if (!tile.taxRate) return;
-
     const rentAmount = Math.ceil((player.money * tile.taxRate) / 100);
 
     dispatch(

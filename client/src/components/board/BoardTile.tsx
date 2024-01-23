@@ -3,7 +3,7 @@ type BoardTileProps = {
 };
 
 const BoardTile: React.FC<BoardTileProps> = ({ children }) => {
-  return <li className="relative">{children}</li>;
+  return <li className="relative rtl">{children}</li>;
 };
 
 export default BoardTile;

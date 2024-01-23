@@ -541,40 +541,27 @@ export const paymentGameCard = (
   const { event, type } = card;
   let updatedPlayers = players;
 
-  switch (type) {
-    case GameCardTypes.PAYMENT:
-      switch (event.paymentType) {
-        case PaymentTypes.PAY:
-          updatedPlayers[playerId].money -= event.amount;
-          return updatedPlayers;
-        case PaymentTypes.EARN:
-          updatedPlayers[playerId].money += event.amount;
-          return updatedPlayers;
+  if (type === GameCardTypes.PAYMENT) {
+    if (event.paymentType === PaymentTypes.PAY) {
+      updatedPlayers[playerId].money -= event.amount;
+    } else if (event.paymentType === PaymentTypes.EARN) {
+      updatedPlayers[playerId].money += event.amount;
+    }
+  } else if (type === GameCardTypes.GROUP_PAYMENT) {
+    for (const player in players) {
+      if (players[player].id === playerId) continue;
+
+      if (event.paymentType === PaymentTypes.PAY) {
+        updatedPlayers[playerId].money -= event.amount;
+        updatedPlayers[player].money += event.amount;
+      } else if (event.paymentType === PaymentTypes.EARN) {
+        updatedPlayers[playerId].money += event.amount;
+        updatedPlayers[player].money -= event.amount;
       }
-    case GameCardTypes.GROUP_PAYMENT:
-      switch (event.paymentType) {
-        case PaymentTypes.PAY:
-          for (const player in players) {
-            if (players[player].id === playerId) continue;
-
-            updatedPlayers[playerId].money -= event.amount;
-            updatedPlayers[player].money += event.amount;
-          }
-
-          return updatedPlayers;
-        case PaymentTypes.EARN:
-          for (const player in players) {
-            if (players[player].id === playerId) continue;
-
-            updatedPlayers[playerId].money += event.amount;
-            updatedPlayers[player].money -= event.amount;
-          }
-
-          return updatedPlayers;
-      }
-    default:
-      return updatedPlayers;
+    }
   }
+
+  return updatedPlayers;
 };
 
 export const advanceToTileGameCard = (

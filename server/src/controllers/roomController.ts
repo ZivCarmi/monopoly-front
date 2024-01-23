@@ -108,13 +108,3 @@ export async function getRoomData(socket: Socket, roomId: string) {
 
   joinRoom(socket, roomId);
 }
-
-// export const getRoomData = (req: Request<{ id: string }>, res: Response) => {
-//   const { id } = req.params;
-
-//   if (!rooms[id]) {
-//     return res.status(200).json({ room: null });
-//   }
-
-//   return res.status(200).json({ room: rooms[id] });
-// };

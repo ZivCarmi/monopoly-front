@@ -34,7 +34,7 @@ const DrawnCardBox: React.FC<DrawnCardBoxProps> = ({ children, row }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       className={cn(
-        "w-40 absolute rounded-md bg-violet-600 py-2 px-4 text-sm z-10",
+        "w-40 absolute rounded-md bg-violet-600 py-2 px-4 text-sm z-10 text-right",
         isYAxis && "left-1/2 -translate-x-1/2",
         isXAxis && "top-1/2 -translate-y-1/2",
         row === "top" && "top-full",

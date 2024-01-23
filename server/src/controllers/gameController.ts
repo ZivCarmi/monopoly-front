@@ -114,15 +114,15 @@ export function payRent(
     rentAmount = Math.ceil((payingPlayer.money * rentIndexAmount) / 100);
   }
 
-  if (payingPlayer.money >= rentAmount) {
-    rooms[roomId].players[payerId].money = payingPlayer.money - rentAmount;
-    rooms[roomId].players[owner.id].money += rentAmount;
+  rooms[roomId].players[payerId].money -= rentAmount;
+  rooms[roomId].players[owner.id].money += rentAmount;
 
-    writeLogToRoom(
-      roomId,
-      `${payingPlayer.name} שילם שכירות בסך $${rentAmount} לידי ${owner.name}`
-    );
-  } else {
+  writeLogToRoom(
+    roomId,
+    `${payingPlayer.name} שילם שכירות בסך $${rentAmount} לידי ${owner.name}`
+  );
+
+  if (rooms[roomId].players[payerId].money < 0) {
     rooms[roomId].players[payerId].debtTo = owner.id;
   }
 }
@@ -131,11 +131,11 @@ export function payTax(roomId: string, payerId: string, tile: ITax) {
   const payingPlayer = rooms[roomId].players[payerId];
   const taxAmount = Math.ceil((payingPlayer.money * tile.taxRate) / 100);
 
-  if (payingPlayer.money >= taxAmount) {
-    rooms[roomId].players[payerId].money -= taxAmount;
+  rooms[roomId].players[payerId].money -= taxAmount;
 
-    writeLogToRoom(roomId, `${payingPlayer.name} שילם מס בסך $${taxAmount}`);
-  } else {
+  writeLogToRoom(roomId, `${payingPlayer.name} שילם מס בסך $${taxAmount}`);
+
+  if (rooms[roomId].players[payerId].money < 0) {
     rooms[roomId].players[payerId].debtTo = "bank";
   }
 }
@@ -367,13 +367,13 @@ export function rollDice(socket: Socket) {
   rooms[roomId].dices = randomizeDices();
 
   // FOR TESTING
-  // const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
-  // const firstPlayerId = getPlayerIds(roomId)[0];
-  // if (firstPlayerId === currentPlayerTurnId) {
-  //   rooms[roomId].dices = [2, 1];
-  // } else {
-  //   rooms[roomId].dices = [3, 3];
-  // }
+  const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
+  const firstPlayerId = getPlayerIds(roomId)[0];
+  if (firstPlayerId === currentPlayerTurnId) {
+    rooms[roomId].dices = [4, 3];
+  } else {
+    rooms[roomId].dices = [4, 3];
+  }
 
   const isDouble = rooms[roomId].dices[0] === rooms[roomId].dices[1];
   const dicesSum = rooms[roomId].dices[0] + rooms[roomId].dices[1];

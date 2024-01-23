@@ -148,13 +148,9 @@ export const hasProperties = (socket: Socket) => {
 
   if (!rooms[roomId]) return false;
 
-  const hasProperties = rooms[roomId].map.board.some(
+  return rooms[roomId].map.board.some(
     (tile) => isPurchasable(tile) && tile.owner === socket.id
   );
-
-  console.log("in hasProperties", hasProperties);
-
-  return hasProperties;
 };
 
 export const isPlayerHasTurn = (socket: Socket) => {

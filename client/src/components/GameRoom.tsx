@@ -128,10 +128,11 @@ const GameRoom = () => {
     dispatch(tradeUpdatedThunk(trade));
   };
 
-  // const onPlayerInDebt = ({ playerId }: { playerId: string }) => {
-  // handle in debt turn
-  // maybe increase turn timer to allow the player to cover the debt
-  // };
+  const onPlayerInDebt = ({ playerId }: { playerId: string }) => {
+    // handle in debt turn
+    // maybe increase turn timer to allow the player to cover the debt
+    console.log(`Player ID: ${playerId} in debt`);
+  };
 
   const onPlayerBankrupted = ({
     playerId,
@@ -204,7 +205,7 @@ const GameRoom = () => {
     socket.on("trade_accepted", onTradeAccepted);
     socket.on("trade_declined", onTradeDeclined);
     socket.on("trade_updated", onTradeUpdated);
-    // socket.on("player_in_debt", onPlayerInDebt);
+    socket.on("player_in_debt", onPlayerInDebt);
     socket.on("player_bankrupted", onPlayerBankrupted);
     socket.on("game_ended", onGameEnded);
 
@@ -223,7 +224,7 @@ const GameRoom = () => {
       socket.off("trade_accepted", onTradeAccepted);
       socket.off("trade_declined", onTradeDeclined);
       socket.off("trade_updated", onTradeUpdated);
-      // socket.off("player_in_debt", onPlayerInDebt);
+      socket.off("player_in_debt", onPlayerInDebt);
       socket.off("player_bankrupted", onPlayerBankrupted);
       socket.off("game_ended", onGameEnded);
     };
