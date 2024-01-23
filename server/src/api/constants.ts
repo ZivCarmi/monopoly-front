@@ -1,5 +1,7 @@
 import { CountryIds } from "./types/Board";
 
+export const MS_TO_MOVE_ON_TILES = 250;
+
 export const DICE_OPTIONS = [1, 2, 3, 4, 5, 6] as const;
 
 export const AIRPORT_RENTS = [25, 50, 100, 200] as const;

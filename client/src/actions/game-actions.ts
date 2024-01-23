@@ -37,7 +37,7 @@ import {
   isTax,
   isVacation,
 } from "@backend/types/Board";
-import { MS_TO_MOVE_ON_TILES } from "@/utils/constants";
+import { MS_TO_MOVE_ON_TILES } from "@backend/constants";
 import { GameCardTypes } from "@backend/types/Cards";
 import {
   advanceToTileGameCard,
@@ -45,6 +45,43 @@ import {
   paymentGameCard,
 } from "./card-actions";
 import { isPlayerInJail } from "../utils";
+
+export const handleDices = (dices: number[]): AppThunk => {
+  return (dispatch, getState) => {
+    dispatch(setDices({ dices }));
+
+    const { players, currentPlayerTurnId, doublesInARow } = getState().game;
+    const player = players.find((player) => player.id === currentPlayerTurnId);
+    const isDouble = dices[0] === dices[1];
+    const dicesSum = dices.reduce((acc, dice) => acc + dice, 0);
+
+    if (!player) {
+      throw new Error("Player was not found");
+    }
+
+    if (!currentPlayerTurnId) {
+      throw new Error(`Current turn is not belong to ${currentPlayerTurnId}`);
+    }
+
+    // update suspended player
+    if (isPlayerInJail(currentPlayerTurnId)) {
+      return isDouble
+        ? dispatch(freePlayer({ playerId: currentPlayerTurnId }))
+        : dispatch(handleStaySuspendedPlayer(currentPlayerTurnId));
+    }
+
+    if (doublesInARow === 3) {
+      return dispatch(
+        sendPlayerToJail(
+          player,
+          `${player.name} נשלח לכלא לאחר 3 דאבלים רצופים`
+        )
+      );
+    }
+
+    dispatch(walkPlayer(currentPlayerTurnId, dicesSum));
+  };
+};
 
 export const walkPlayer = (playerId: string, steps: number): AppThunk => {
   return (dispatch, getState) => {
@@ -92,45 +129,6 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
     };
 
     requestAnimationFrame(update);
-  };
-};
-
-export const handleDices = (dices: number[], socket: Socket): AppThunk => {
-  return (dispatch, getState) => {
-    dispatch(setDices({ dices }));
-
-    const { players, currentPlayerTurnId, doublesInARow } = getState().game;
-    const player = players.find((player) => player.id === currentPlayerTurnId);
-    const isDouble = dices[0] === dices[1];
-    const dicesSum = dices.reduce((acc, dice) => acc + dice, 0);
-
-    if (!player) {
-      throw new Error(`Player was not found`);
-    }
-
-    if (!currentPlayerTurnId) {
-      throw new Error(`Current turn is not belong to ${currentPlayerTurnId}`);
-    }
-
-    // update suspended player
-    if (isPlayerInJail(currentPlayerTurnId)) {
-      return !isDouble
-        ? dispatch(handleStaySuspendedPlayer(currentPlayerTurnId))
-        : dispatch(freePlayer({ playerId: currentPlayerTurnId }));
-    }
-
-    if (doublesInARow === 3) {
-      dispatch(
-        sendPlayerToJail(
-          player,
-          `${player.name} נשלח לכלא לאחר 3 דאבלים רצופים`
-        )
-      );
-
-      return socket.emit("switch_turn");
-    }
-
-    dispatch(walkPlayer(currentPlayerTurnId, dicesSum));
   };
 };
 

@@ -1,6 +1,9 @@
 import { Socket } from "socket.io";
 import { rooms } from "../controllers/gameController";
 import io from "../services/socketService";
+import { TileTypes, isPurchasable } from "../api/types/Board";
+import { DICE_OPTIONS } from "../api/constants";
+import { TradeType } from "../api/types/Game";
 
 export const getSocketRoomId = (socket: Socket): string => {
   const socketRooms = Array.from(socket.rooms.values()).filter(
@@ -131,3 +134,113 @@ export function updateHostId(socket: Socket, newHostId?: string): string {
 
   return newHostId;
 }
+
+export function isPlayerInDebt(socket: Socket) {
+  const roomId = getSocketRoomId(socket);
+
+  if (!rooms[roomId]) return null;
+
+  return rooms[roomId]?.players[socket.id]?.debtTo;
+}
+
+export const hasProperties = (socket: Socket) => {
+  const roomId = getSocketRoomId(socket);
+
+  if (!rooms[roomId]) return false;
+
+  const hasProperties = rooms[roomId].map.board.some(
+    (tile) => isPurchasable(tile) && tile.owner === socket.id
+  );
+
+  console.log("in hasProperties", hasProperties);
+
+  return hasProperties;
+};
+
+export const isPlayerHasTurn = (socket: Socket) => {
+  const roomId = getSocketRoomId(socket);
+
+  if (!rooms[roomId]) return false;
+
+  return rooms[roomId]?.currentPlayerTurnId === socket.id;
+};
+
+export const isPlayerInJail = (socket: Socket) => {
+  const roomId = getSocketRoomId(socket);
+
+  if (!rooms[roomId]) return false;
+
+  return (
+    rooms[roomId]?.suspendedPlayers[socket.id] &&
+    rooms[roomId].suspendedPlayers[socket.id].reason === TileTypes.JAIL
+  );
+};
+
+export const isOwner = (socket: Socket, propertyIndex: number[] | number) => {
+  const roomId = getSocketRoomId(socket);
+
+  if (!rooms[roomId]) return false;
+
+  // checks if every passed properties belongs to the socket
+  if (Array.isArray(propertyIndex)) {
+    return propertyIndex.every((propertyIdx) => {
+      const property = rooms[roomId].map.board[propertyIdx];
+
+      if (isPurchasable(property) && property.owner === socket.id) {
+        return true;
+      }
+
+      return false;
+    });
+  }
+
+  const property = rooms[roomId].map.board[propertyIndex];
+
+  return isPurchasable(property) && property.owner === socket.id;
+};
+
+export const randomizeDices = () => {
+  let randomizeDices = [
+    DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
+    DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
+  ];
+
+  return randomizeDices;
+};
+
+export const isValidTrade = (socket: Socket, trade: TradeType) => {
+  const roomId = getSocketRoomId(socket);
+
+  if (!rooms[roomId]) return false;
+
+  const players = [trade.offeror, trade.offeree];
+
+  // check if at least one of the players made an offer
+  const isAnOffer = players.some((player) => {
+    if (player.money > 0) {
+      return true;
+    }
+
+    if (player.properties.length > 0) {
+      return true;
+    }
+
+    return false;
+  });
+
+  // check if both players can fulfill the offer
+  const IsValidPlayers = players.every((player) => {
+    // check if player exist
+    if (!rooms[roomId].players[player.id]) return false;
+
+    // check if player has enough money
+    if (rooms[roomId].players[player.id].money < player.money) return false;
+
+    // check if player has all the properties
+    if (!isOwner(socket, player.properties)) return false;
+
+    return true;
+  });
+
+  return isAnOffer && IsValidPlayers;
+};

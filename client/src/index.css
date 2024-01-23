@@ -324,9 +324,16 @@
   background-size: 120%;
 }
 
-.row_right .tileImg,
+.row_right .tileIm,
 .row_left .tileImg {
   background-size: 100%;
+}
+
+.row_right .tileImg {
+  transform: rotate(-90deg);
+}
+
+.row_left .tileImg {
   transform: rotate(90deg);
 }
 

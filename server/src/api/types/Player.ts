@@ -29,6 +29,7 @@ type Player = NewPlayer & {
   tilePos: number;
   properties: number[];
   bankrupted: boolean;
+  debtTo: string | null;
 };
 
 export default Player;

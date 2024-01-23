@@ -7,19 +7,21 @@ import {
   RentIndexes,
   TileTypes,
   isAirport,
+  isChanceCard,
   isCompany,
   isGo,
   isGoToJail,
   isJail,
   isProperty,
   isPurchasable,
+  isSurpriseCard,
   isTax,
   isVacation,
 } from "../api/types/Board";
 import {
   AIRPORT_RENTS,
   COMPANY_RENTS,
-  DICE_OPTIONS,
+  MS_TO_MOVE_ON_TILES,
   PAY_OUT_FROM_JAIL_AMOUNT,
 } from "../api/constants";
 import {
@@ -36,10 +38,18 @@ import { GameCardTypes } from "../api/types/Cards";
 import { RoomGameCards } from "../api/types/Game";
 import io from "../services/socketService";
 import {
+  checkForWinner,
   getPlayerIds,
   getSocketRoomId,
+  hasProperties,
+  isPlayerInDebt,
+  isPlayerHasTurn,
+  randomizeDices,
   writeLogToRoom,
+  isPlayerInJail,
+  isOwner,
 } from "../utils/game-utils";
+import { bankruptPlayer } from "./playerController";
 
 export const rooms: { [roomId: string]: Room } = {};
 
@@ -55,7 +65,7 @@ export function startGame(socket: Socket) {
   // randomize the players array (IF COMMENTED IT'S FOR TESTING)
   shuffleArray(players);
 
-  const startingPlayer = players[1].id;
+  const startingPlayer = players[0].id;
   const gameStartMessage = "המשחק התחיל!";
 
   rooms[roomId].participants = { ...rooms[roomId].players };
@@ -104,78 +114,94 @@ export function payRent(
     rentAmount = Math.ceil((payingPlayer.money * rentIndexAmount) / 100);
   }
 
-  rooms[roomId].players[payerId].money = payingPlayer.money - rentAmount;
-  rooms[roomId].players[owner.id].money += rentAmount;
+  if (payingPlayer.money >= rentAmount) {
+    rooms[roomId].players[payerId].money = payingPlayer.money - rentAmount;
+    rooms[roomId].players[owner.id].money += rentAmount;
 
-  writeLogToRoom(
-    roomId,
-    `${payingPlayer.name} שילם שכירות בסך $${rentAmount} לידי ${owner.name}`
-  );
+    writeLogToRoom(
+      roomId,
+      `${payingPlayer.name} שילם שכירות בסך $${rentAmount} לידי ${owner.name}`
+    );
+  } else {
+    rooms[roomId].players[payerId].debtTo = owner.id;
+  }
 }
 
 export function payTax(roomId: string, payerId: string, tile: ITax) {
   const payingPlayer = rooms[roomId].players[payerId];
   const taxAmount = Math.ceil((payingPlayer.money * tile.taxRate) / 100);
 
-  rooms[roomId].players[payerId].money -= taxAmount;
+  if (payingPlayer.money >= taxAmount) {
+    rooms[roomId].players[payerId].money -= taxAmount;
+
+    writeLogToRoom(roomId, `${payingPlayer.name} שילם מס בסך $${taxAmount}`);
+  } else {
+    rooms[roomId].players[payerId].debtTo = "bank";
+  }
 }
 
 export function onPlayerLanding(socket: Socket) {
   const roomId = getSocketRoomId(socket);
-  const playerId = socket.id;
 
   if (!roomId) return;
 
   const room = rooms[roomId];
-  const currentPlayerPosition = room.players[playerId].tilePos;
+  const currentPlayerPosition = room.players[socket.id].tilePos;
   const landedTile = room.map.board[currentPlayerPosition];
-  const playerName = room.players[playerId].name;
+  const playerName = room.players[socket.id].name;
   const goRewardOnLand = room.map.goRewards.land;
 
   if (isGo(landedTile)) {
-    rooms[roomId].players[playerId].money += goRewardOnLand;
+    rooms[roomId].players[socket.id].money += goRewardOnLand;
 
     writeLogToRoom(
       roomId,
       `${playerName} נחת על ${landedTile.name} והרוויח $${goRewardOnLand}`
     );
   } else if (isPurchasable(landedTile)) {
-    if (landedTile.owner && landedTile.owner !== playerId) {
-      payRent(roomId, playerId, landedTile);
+    if (landedTile.owner && landedTile.owner !== socket.id) {
+      payRent(roomId, socket.id, landedTile);
     }
-  } else if (landedTile.type === TileTypes.CHANCE) {
+  } else if (isChanceCard(landedTile)) {
     handleGameCard(socket, room.map.chances);
     rooms[roomId].map.chances.currentIndex += 1;
   } else if (isTax(landedTile)) {
-    payTax(roomId, playerId, landedTile);
-  } else if (landedTile.type === TileTypes.SURPRISE) {
-    console.log("Drawing surprise.........");
-
+    payTax(roomId, socket.id, landedTile);
+  } else if (isSurpriseCard(landedTile)) {
     handleGameCard(socket, room.map.surprises);
     rooms[roomId].map.surprises.currentIndex += 1;
   } else if (isJail(landedTile)) {
     // Maybe do here something? not sure
   } else if (isVacation(landedTile)) {
-    rooms[roomId].suspendedPlayers[playerId] = {
+    rooms[roomId].suspendedPlayers[socket.id] = {
       reason: TileTypes.VACATION,
       left: landedTile.suspensionAmount,
     };
 
     writeLogToRoom(roomId, `${playerName} יצא לחופשה`);
   } else if (isGoToJail(landedTile)) {
-    sendPlayerToJail(roomId, playerId);
+    sendPlayerToJail(roomId, socket.id);
   }
 
-  console.log("Player state after landing", rooms[roomId].players[playerId]);
+  const timeToLand = (room.dices[0] + room.dices[1]) * MS_TO_MOVE_ON_TILES;
+
+  setTimeout(() => {
+    if (isPlayerInDebt(socket)) {
+      if (hasProperties(socket)) {
+        io.in(roomId).emit("player_in_debt", { playerId: socket.id });
+      } else {
+        bankruptPlayer(socket);
+      }
+    }
+  }, timeToLand);
+
+  console.log("Player state after landing", rooms[roomId].players[socket.id]);
 }
 
 export function sendPlayerToJail(roomId: string, playerId: string) {
   const room = rooms[roomId];
 
-  if (!room) {
-    console.log("Room not found in sendPlayerToJail");
-    return;
-  }
+  if (!room) return;
 
   const jailTileIndex = getJailTileIndex(room.map.board);
   const jailTile = room.map.board[jailTileIndex] as IJail;
@@ -260,9 +286,7 @@ export function purchaseProperty(socket: Socket, propertyIndex: number) {
     return;
   }
 
-  if (room.currentPlayerTurnId !== socket.id) return;
-
-  if (!isPurchasable(tile)) return;
+  if (!isPlayerHasTurn(socket) || !isPurchasable(tile)) return;
 
   if (tile.owner || player.money < tile.cost) return;
 
@@ -301,11 +325,13 @@ export function sellProperty(socket: Socket, propertyIndex: number) {
 
   console.log("Attempted player:", player, "Attempted Tile:", tile);
 
-  if (room.currentPlayerTurnId !== socket.id) return;
-
-  if (!isPurchasable(tile)) return;
-
-  if (tile.owner !== socket.id || room.suspendedPlayers[socket.id]) return;
+  if (
+    !isPlayerHasTurn(socket) ||
+    !isPurchasable(tile) ||
+    !isOwner(socket, propertyIndex) ||
+    isPlayerInJail(socket)
+  )
+    return;
 
   const purchaseMessage = `${player.name} מכר את ${tile.name}`;
 
@@ -319,7 +345,6 @@ export function sellProperty(socket: Socket, propertyIndex: number) {
   tile.owner = null;
   rooms[roomId].map.board[propertyIndex] = tile;
 
-  // console.log(rooms[roomId].map.board[propertyIndex]);
   console.log(rooms[roomId].players[socket.id]);
 
   io.in(roomId).emit("sold_property", {
@@ -337,62 +362,42 @@ export function rollDice(socket: Socket) {
 
   if (!roomId) return;
 
-  const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
+  if (!isPlayerHasTurn(socket) || isPlayerInDebt(socket)) return;
 
-  if (currentPlayerTurnId !== socket.id) return;
+  rooms[roomId].dices = randomizeDices();
 
-  if (rooms[roomId].players[socket.id].money < 0) return;
+  // FOR TESTING
+  // const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
+  // const firstPlayerId = getPlayerIds(roomId)[0];
+  // if (firstPlayerId === currentPlayerTurnId) {
+  //   rooms[roomId].dices = [2, 1];
+  // } else {
+  //   rooms[roomId].dices = [3, 3];
+  // }
 
-  const suspendedPlayer = rooms[roomId].suspendedPlayers[currentPlayerTurnId];
-  let randomizeDices = [
-    DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
-    DICE_OPTIONS[Math.floor(Math.random() * DICE_OPTIONS.length)],
-  ];
-  // let randomizeDices = [2, 5];
+  const isDouble = rooms[roomId].dices[0] === rooms[roomId].dices[1];
+  const dicesSum = rooms[roomId].dices[0] + rooms[roomId].dices[1];
 
-  const firstPlayerId = getPlayerIds(roomId)[0];
-
-  // test dices for first player
-  if (firstPlayerId === currentPlayerTurnId) {
-    randomizeDices = [4, 3];
-  } else {
-    randomizeDices = [2, 1];
-  }
-
-  const isDouble = randomizeDices[0] === randomizeDices[1];
-  const dicesSum = randomizeDices[0] + randomizeDices[1];
-
-  // update dices
-  rooms[roomId].dices = randomizeDices;
   if (isDouble) {
     rooms[roomId].doublesInARow++;
   }
 
-  io.in(roomId).emit("dice_rolled", {
-    dices: randomizeDices,
-  });
+  io.in(roomId).emit("dice_rolled", { dices: rooms[roomId].dices });
 
-  // if player in jail
-  if (suspendedPlayer && suspendedPlayer.reason === TileTypes.JAIL) {
-    const suspensionTurnsLeft = --rooms[roomId].suspendedPlayers[
-      currentPlayerTurnId
-    ].left;
+  if (isPlayerInJail(socket)) {
+    const suspensionTurnsLeft = --rooms[roomId].suspendedPlayers[socket.id]
+      .left;
 
     if (isDouble || suspensionTurnsLeft === 0) {
-      delete rooms[roomId].suspendedPlayers[currentPlayerTurnId];
+      delete rooms[roomId].suspendedPlayers[socket.id];
     }
-
-    console.log(
-      "Switching turn after suspension action...",
-      rooms[roomId].suspendedPlayers[currentPlayerTurnId]
-    );
 
     return switchTurn(socket);
   }
 
   // send player to jail
   if (rooms[roomId].doublesInARow === 3) {
-    sendPlayerToJail(roomId, currentPlayerTurnId);
+    sendPlayerToJail(roomId, socket.id);
 
     return switchTurn(socket);
   }
@@ -430,18 +435,26 @@ export function switchTurn(socket: Socket): void {
 
   if (!roomId) return;
 
-  const { currentPlayerTurnId, suspendedPlayers } = rooms[roomId];
+  console.log("Attempting to switch turn...");
+  console.log("Player state", rooms[roomId].players[socket.id]);
 
-  if (!currentPlayerTurnId) return;
+  if (!isPlayerHasTurn(socket) || isPlayerInDebt(socket)) return;
+
+  const winnerId = checkForWinner(roomId);
+
+  if (winnerId) {
+    io.in(roomId).emit("game_ended", { winnerId });
+    return;
+  }
 
   const nextPlayerTurnId = cycleNextItem({
-    currentValue: currentPlayerTurnId,
+    currentValue: socket.id,
     array: getPlayerIds(roomId),
   });
 
   console.log(
     `Turn before switch belongs to - `,
-    rooms[roomId].players[currentPlayerTurnId].character
+    rooms[roomId].players[socket.id].character
   );
   console.log(
     `Turn after switch belongs to - `,
@@ -451,31 +464,33 @@ export function switchTurn(socket: Socket): void {
   // update current player turn
   rooms[roomId].currentPlayerTurnId = nextPlayerTurnId;
 
-  const nextSuspendedPlayer = suspendedPlayers[nextPlayerTurnId];
+  const nextSuspendedPlayer = rooms[roomId].suspendedPlayers[nextPlayerTurnId];
 
   // check if next player is suspended
-  if (nextSuspendedPlayer) {
+  if (
+    nextSuspendedPlayer &&
+    nextSuspendedPlayer.reason === TileTypes.VACATION
+  ) {
     console.log(
       `Next suspended player is`,
       rooms[roomId].players[nextPlayerTurnId].character,
       "Suspension data:",
       nextSuspendedPlayer
     );
-    if (nextSuspendedPlayer.reason === TileTypes.VACATION) {
-      if (nextSuspendedPlayer.left === 0) {
-        // can safely remove the player from suspension
-        delete rooms[roomId].suspendedPlayers[nextPlayerTurnId];
-      } else {
-        rooms[roomId].suspendedPlayers[nextPlayerTurnId].left--;
 
-        console.log(
-          `Switching turns because ${rooms[roomId].players[nextPlayerTurnId].character} is on vacation`
-        );
+    if (nextSuspendedPlayer.left === 0) {
+      // can safely remove the player from suspension
+      delete rooms[roomId].suspendedPlayers[nextPlayerTurnId];
+    } else {
+      rooms[roomId].suspendedPlayers[nextPlayerTurnId].left--;
 
-        console.log("updated suspended state", rooms[roomId].suspendedPlayers);
+      console.log(
+        `Switching turns because ${rooms[roomId].players[nextPlayerTurnId].character} is on vacation`
+      );
 
-        return switchTurn(socket);
-      }
+      console.log("updated suspended state", rooms[roomId].suspendedPlayers);
+
+      return switchTurn(socket);
     }
   }
 
@@ -494,9 +509,7 @@ export function payOutOfJail(socket: Socket) {
 
   if (!roomId) return;
 
-  const { currentPlayerTurnId, suspendedPlayers } = rooms[roomId];
-
-  if (currentPlayerTurnId !== socket.id || !suspendedPlayers[socket.id]) return;
+  if (!isPlayerHasTurn(socket) || !isPlayerInJail(socket)) return;
 
   const player = rooms[roomId].players[socket.id];
 
@@ -506,7 +519,7 @@ export function payOutOfJail(socket: Socket) {
     rooms[roomId].players[socket.id].money -= PAY_OUT_FROM_JAIL_AMOUNT;
 
     // Remove player from suspension state
-    delete rooms[roomId].suspendedPlayers[currentPlayerTurnId];
+    delete rooms[roomId].suspendedPlayers[socket.id];
 
     io.in(roomId).emit("paid_out_of_jail", { message });
 
@@ -516,7 +529,7 @@ export function payOutOfJail(socket: Socket) {
   }
 }
 
-export function upgradeCity(socket: Socket, tileIndex: number) {
+export function upgradeCity(socket: Socket, propertyIndex: number) {
   const roomId = getSocketRoomId(socket);
 
   console.log("--------------------------------------");
@@ -524,18 +537,15 @@ export function upgradeCity(socket: Socket, tileIndex: number) {
   if (!roomId) return;
 
   const {
-    currentPlayerTurnId,
-    suspendedPlayers,
     map: { board },
   } = rooms[roomId];
-  const tile = board[tileIndex];
-
-  if (!isProperty(tile) || tile.owner !== socket.id) return;
+  const tile = board[propertyIndex];
 
   if (
+    !isProperty(tile) ||
     !hasMonopoly(board, tile.country.id) ||
-    currentPlayerTurnId !== socket.id ||
-    suspendedPlayers[socket.id] ||
+    !isPlayerHasTurn(socket) ||
+    isPlayerInJail(socket) ||
     tile.rentIndex === RentIndexes.HOTEL
   )
     return;
@@ -545,14 +555,14 @@ export function upgradeCity(socket: Socket, tileIndex: number) {
   const message = `${player.name} שדרג ל${cityLevelText} ב${tile.name}`;
 
   tile.rentIndex += 1;
-  rooms[roomId].map.board[tileIndex] = tile;
+  rooms[roomId].map.board[propertyIndex] = tile;
   rooms[roomId].players[socket.id].money -=
     tile.rentIndex === RentIndexes.FOUR_HOUSES
       ? tile.hotelCost
       : tile.houseCost;
 
   io.in(roomId).emit("city_level_change", {
-    propertyIndex: tileIndex,
+    propertyIndex,
     changeType: "upgrade",
     message,
   });
@@ -560,7 +570,7 @@ export function upgradeCity(socket: Socket, tileIndex: number) {
   writeLogToRoom(roomId, message);
 }
 
-export function downgradeCity(socket: Socket, tileIndex: number) {
+export function downgradeCity(socket: Socket, propertyIndex: number) {
   const roomId = getSocketRoomId(socket);
 
   console.log("--------------------------------------");
@@ -568,21 +578,15 @@ export function downgradeCity(socket: Socket, tileIndex: number) {
   if (!roomId) return;
 
   const {
-    currentPlayerTurnId,
-    suspendedPlayers,
     map: { board },
   } = rooms[roomId];
-  const tile = board[tileIndex];
-
-  if (!isProperty(tile) || tile.owner !== socket.id) return;
-
-  console.log(tile.rentIndex, RentIndexes.BLANK);
-  console.log(tile.rentIndex !== RentIndexes.BLANK);
+  const tile = board[propertyIndex];
 
   if (
+    !isProperty(tile) ||
     !hasMonopoly(board, tile.country.id) ||
-    currentPlayerTurnId !== socket.id ||
-    suspendedPlayers[socket.id] ||
+    !isPlayerHasTurn(socket) ||
+    isPlayerInJail(socket) ||
     tile.rentIndex === RentIndexes.BLANK
   )
     return;
@@ -594,11 +598,11 @@ export function downgradeCity(socket: Socket, tileIndex: number) {
     tile.rentIndex === RentIndexes.HOTEL ? tile.hotelCost : tile.houseCost;
 
   tile.rentIndex -= 1;
-  rooms[roomId].map.board[tileIndex] = tile;
+  rooms[roomId].map.board[propertyIndex] = tile;
   rooms[roomId].players[socket.id].money += transactionAmount / 2;
 
   io.in(roomId).emit("city_level_change", {
-    propertyIndex: tileIndex,
+    propertyIndex: propertyIndex,
     changeType: "downgrade",
     message,
   });

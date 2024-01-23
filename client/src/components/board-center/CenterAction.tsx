@@ -3,11 +3,12 @@ import { useSocket } from "@/app/socket-context";
 import { selectCurrentPlayerTurn, selectGameBoard } from "@/slices/game-slice";
 import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constants";
 import { PurchasableTile, isPurchasable } from "@backend/types/Board";
-import { isPlayerInJail } from "../../utils";
+import { isPlayerInDebt, isPlayerInJail } from "../../utils";
 import PayOutOfJailButton from "./PayOutOfJailButton";
 import PlayerIsPlayingNotice from "./PlayerIsPlayingNotice";
 import PurchasePropertyButton from "./PurchasePropertyButton";
 import RollDices from "./RollDices";
+import PlayerInDebt from "./PlayerInDebt";
 
 const CenterAction = () => {
   const socket = useSocket();
@@ -16,8 +17,14 @@ const CenterAction = () => {
   const currentPlayer = useAppSelector(selectCurrentPlayerTurn);
   const board = useAppSelector(selectGameBoard);
 
+  console.log(canPerformTurnActions);
+
   if (currentPlayerTurnId !== socket.id) {
     return <PlayerIsPlayingNotice />;
+  }
+
+  if (isPlayerInDebt(socket.id)) {
+    return <PlayerInDebt />;
   }
 
   if (!currentPlayer || !canPerformTurnActions) {

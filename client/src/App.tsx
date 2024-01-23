@@ -17,11 +17,7 @@ const router = createBrowserRouter(
         <Route index element={<LobbyPage />} />
         <Route path="rooms" element={<LobbyRoomsPage />} />
       </Route>
-      <Route
-        path="/rooms/:roomId"
-        element={<GameRoomPage />}
-        // loader={getGameRoomData}
-      />
+      <Route path="/rooms/:roomId" element={<GameRoomPage />} />
     </Route>
   )
 );

@@ -71,7 +71,7 @@ export const isPlayerInJail = (playerId: string) => {
   return suspendedPlayer.reason === TileTypes.JAIL;
 };
 
-export const isPlayerInOvercharge = (playerId: string) => {
+export const isPlayerInDebt = (playerId: string) => {
   const { players } = store.getState().game;
 
   return players.find((player) => player.id === playerId && player.money < 0);

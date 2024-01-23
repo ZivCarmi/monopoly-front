@@ -19,7 +19,6 @@ import {
   addPlayer,
   bankruptPlayer,
   playerDisconnecting,
-  setOvercharge,
 } from "./controllers/playerController";
 import {
   acceptTrade,
@@ -114,9 +113,5 @@ io.on("connection", (socket) => {
 
   socket.on("player_bankrupt", () => {
     bankruptPlayer(socket);
-  });
-
-  socket.on("in_overcharge", () => {
-    setOvercharge(socket);
   });
 });

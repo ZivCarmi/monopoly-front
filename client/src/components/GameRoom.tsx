@@ -21,7 +21,6 @@ import {
   switchTurn,
 } from "@/slices/game-slice";
 import { writeLog } from "@/slices/ui-slice";
-import { isPlayerInOvercharge } from "@/utils";
 import Room from "@backend/classes/Room";
 import { TradeType } from "@backend/types/Game";
 import Player from "@backend/types/Player";
@@ -33,9 +32,10 @@ import GameSidebar from "./game-sidebar/GameSidebar";
 import WinnerScreen from "./winner/WinnerScreen";
 
 const GameRoom = () => {
-  const { isReady, started, currentPlayerTurnId, isLanded } = useAppSelector(
-    (state) => state.game
-  );
+  const { isReady, started } = useAppSelector((state) => state.game);
+  // const boardRef = useRef<HTMLDivElement>(null);
+  // const boardSizeRef = useRef([0, 0]);
+  // const scaleRef = useRef(1);
   const socket = useSocket();
   const dispatch = useAppDispatch();
 
@@ -82,7 +82,7 @@ const GameRoom = () => {
   };
 
   const onDiceRolled = ({ dices }: { dices: number[] }) => {
-    dispatch(handleDices(dices, socket));
+    dispatch(handleDices(dices));
   };
 
   const onSwitchedTurn = ({ nextPlayerId }: { nextPlayerId: string }) => {
@@ -128,8 +128,9 @@ const GameRoom = () => {
     dispatch(tradeUpdatedThunk(trade));
   };
 
-  const onOvercharged = () => {
-    // handle overcharge turn
+  const onPlayerInDebt = ({ playerId }: { playerId: string }) => {
+    // handle in debt turn
+    // maybe increase turn timer to allow the player to cover the debt
   };
 
   const onPlayerBankrupted = ({
@@ -147,15 +148,49 @@ const GameRoom = () => {
     dispatch(setWinner({ winnerId }));
   };
 
-  useEffect(() => {
-    if (!started || currentPlayerTurnId !== socket.id || !isLanded) return;
+  // const onResize = useCallback(() => {
+  //   if (!boardRef.current) return;
 
-    if (isPlayerInOvercharge(socket.id)) {
-      socket.emit("in_overcharge");
-    }
-  }, [isLanded]);
+  //   // const boardPadding = window.getComputedStyle(boardSizeRef.current).padding;
+  //   if (
+  //     boardSizeRef.current[0] !== boardRef.current.offsetWidth ||
+  //     boardSizeRef.current[1] !== boardRef.current.offsetHeight
+  //   ) {
+  //     boardSizeRef.current = [
+  //       boardRef.current.offsetWidth,
+  //       boardRef.current.offsetHeight,
+  //     ];
+
+  //     const windowWidth = window.innerWidth;
+  //     const windowHeight = window.innerHeight;
+
+  //     console.log(windowWidth, windowHeight);
+
+  //     console.log(
+  //       boardSizeRef.current[0] / windowWidth,
+  //       boardSizeRef.current[1] / windowHeight
+  //     );
+
+  //     // const isMax =
+  //     //   boardSizeRef.current[0] >= windowWidth &&
+  //     //   boardSizeRef.current[1] >= windowHeight;
+  //     // const scale = Math.min(
+  //     //   boardSizeRef.current[0] / windowWidth,
+  //     //   boardSizeRef.current[1] / windowHeight
+  //     // );
+  //     // boardSizeRef.current[0] = !isMax ? windowWidth * scale : boardSizeRef.current[0];
+  //     // boardSizeRef.current[1] = !isMax ? windowHeight * scale : boardSizeRef.current[1];
+
+  //     // console.log(scaleRef.current);
+  //     // console.log(boardSizeRef.current);
+
+  //     // scaleRef.current = !isMax ? scale : 1;
+  //   }
+  // }, []);
 
   useEffect(() => {
+    // onResize();
+    // window.addEventListener("resize", onResize);
     socket.on("player_created", onPlayerCreated);
     socket.on("update_players", onUpdatePlayers);
     socket.on("game_started", onGameStarted);
@@ -169,11 +204,12 @@ const GameRoom = () => {
     socket.on("trade_accepted", onTradeAccepted);
     socket.on("trade_declined", onTradeDeclined);
     socket.on("trade_updated", onTradeUpdated);
-    socket.on("on_overcharge", onOvercharged);
+    socket.on("player_in_debt", onPlayerInDebt);
     socket.on("player_bankrupted", onPlayerBankrupted);
     socket.on("game_ended", onGameEnded);
 
     return () => {
+      // window.removeEventListener("resize", onResize);
       socket.off("player_created", onPlayerCreated);
       socket.off("update_players", onUpdatePlayers);
       socket.off("game_started", onGameStarted);
@@ -187,7 +223,7 @@ const GameRoom = () => {
       socket.off("trade_accepted", onTradeAccepted);
       socket.off("trade_declined", onTradeDeclined);
       socket.off("trade_updated", onTradeUpdated);
-      socket.off("on_overcharge", onOvercharged);
+      socket.off("player_in_debt", onPlayerInDebt);
       socket.off("player_bankrupted", onPlayerBankrupted);
       socket.off("game_ended", onGameEnded);
     };
@@ -196,9 +232,19 @@ const GameRoom = () => {
   return (
     <>
       {!started && !isReady && <PlayersForm />}
-      <div className="grid min-h-screen grid-cols-[repeat(15,_1fr)]">
+      <div className="grid min-h-screen grid-cols-[minmax(15rem,1fr)_auto_minmax(15rem,1fr)]">
         <GameSidebar />
-        <div className="col-start-8 relative">
+        <div
+          className="relative p-4 overflow-hidden"
+          // style={{
+          //   transform: `scale(${scaleRef.current})`,
+          //   width:
+          //     scaleRef.current < 0 ? `${boardSizeRef.current[0]}px` : "auto",
+          //   height:
+          //     scaleRef.current < 0 ? `${boardSizeRef.current[1]}px` : "auto",
+          // }}
+          // ref={boardRef}
+        >
           <GameBoard />
           <WinnerScreen />
         </div>

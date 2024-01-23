@@ -3,6 +3,7 @@ import { Socket } from "socket.io";
 import io from "../services/socketService";
 import { getSocketRoomId } from "../utils/game-utils";
 import Room from "../api/classes/Room";
+import { CountryIds, RentIndexes, isProperty } from "../api/types/Board";
 
 export async function joinRoom(socket: Socket, roomId: string) {
   const connectedSockets = io.sockets.adapter.rooms.get(roomId);
@@ -35,16 +36,6 @@ export async function joinRoom(socket: Socket, roomId: string) {
     // Update room
     room = rooms[roomId];
 
-    // const playerTwoTest = {
-    //   ...rooms[roomId].players[socket.id],
-    //   money: 52,
-    //   tilePos: 10,
-    //   properties: [3, 6, 9, 12, 18, 21, 27, 13, 16],
-    //   bankrupted: false,
-    // };
-
-    // rooms[roomId].players[socket.id] = playerTwoTest;
-
     // FOR TESTING
     // const testMap = room.map.board.map((tile) => {
     //   if (isProperty(tile)) {
@@ -75,18 +66,6 @@ export async function joinRoom(socket: Socket, roomId: string) {
     rooms[roomId] = room;
 
     // FOR TESTING
-    // const playerOneTest = {
-    //   ...rooms[roomId].players[socket.id],
-    //   money: 504,
-    //   tilePos: 8,
-    //   properties: [
-    //     24, 31, 38, 5, 11, 25, 32, 1, 8, 15, 26, 19, 14, 35, 39, 34,
-    //   ],
-    //   bankrupted: false,
-    // };
-
-    // rooms[roomId].players[socket.id] = playerOneTest;
-
     // const testMap = room.map.board.map((tile) => {
     //   if (isProperty(tile)) {
     //     // tile.owner = socket.id;

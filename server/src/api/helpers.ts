@@ -1,3 +1,17 @@
+import TileBuilder from "./classes/Board";
+import GameCards, {
+  AdvancedToTileCard,
+  AdvancedToTileTypeCard,
+  PaymentCard,
+} from "./classes/Cards";
+import Room from "./classes/Room";
+import {
+  AIRPORT_NAMES,
+  AIRPORT_TILE_COST,
+  COMPANY_NAMES,
+  COMPANY_TILE_COST,
+  COUNTRIES,
+} from "./constants";
 import {
   Board,
   CountryIds,
@@ -8,25 +22,9 @@ import {
   isGo,
   isJail,
   isProperty,
-  isPurchasable,
 } from "./types/Board";
 import { GameCardTypes, PaymentTypes } from "./types/Cards";
-import GameCards, {
-  AdvancedToTileCard,
-  AdvancedToTileTypeCard,
-  PaymentCard,
-} from "./classes/Cards";
-import TileBuilder from "./classes/Board";
-import {
-  AIRPORT_NAMES,
-  AIRPORT_TILE_COST,
-  COMPANY_NAMES,
-  COMPANY_TILE_COST,
-  COUNTRIES,
-} from "./constants";
 import { shuffleArray } from "./utils";
-import Room from "./classes/Room";
-import { TradeType } from "./types/Game";
 
 export const getGoTile = (board: Board) =>
   board.find((tile) => isGo(tile)) as IGo;
@@ -49,61 +47,6 @@ export const hasMonopoly = (board: Board, countryId: CountryIds) => {
   const cities = getCities(board, countryId);
 
   return cities.every((city) => city.owner === cities[0].owner);
-};
-
-export const isOwner = (
-  board: Board,
-  playerId: string,
-  propertyIndex: number[] | number
-) => {
-  if (Array.isArray(propertyIndex)) {
-    return propertyIndex.every((propertyIdx) => {
-      const property = board[propertyIdx];
-
-      if (isPurchasable(property) && property.owner === playerId) {
-        return true;
-      }
-
-      return false;
-    });
-  }
-
-  const property = board[propertyIndex];
-
-  return isPurchasable(property) && property.owner === playerId;
-};
-
-export const isValidTrade = (room: Room, trade: TradeType) => {
-  const players = [trade.offeror, trade.offeree];
-
-  // check if at least one of the players made an offer
-  const isAnOffer = players.some((player) => {
-    if (player.money > 0) {
-      return true;
-    }
-
-    if (player.properties.length > 0) {
-      return true;
-    }
-
-    return false;
-  });
-
-  // check if both players can fulfill the offer
-  const IsValidPlayers = players.every((player) => {
-    // check if player exist
-    if (!room.players[player.id]) return false;
-
-    // check if player has enough money
-    if (room.players[player.id].money < player.money) return false;
-
-    // check if player has all the properties
-    if (!isOwner(room.map.board, player.id, player.properties)) return false;
-
-    return true;
-  });
-
-  return isAnOffer && IsValidPlayers;
 };
 
 export const getCityLevelText = (rentIndex: RentIndexes) => {
@@ -346,7 +289,7 @@ export const initializeMap = () => {
 
   const taxTile = new TileBuilder.TaxTile({
     name: "מס הכנסה",
-    taxRate: 10,
+    taxRate: 125,
   });
 
   const chanceTile = new TileBuilder.Tile({

@@ -156,6 +156,14 @@ export function isCard(object: any): object is IChance | ISurprise {
   return object.type === TileTypes.CHANCE || object.type === TileTypes.SURPRISE;
 }
 
+export function isChanceCard(object: any): object is IChance {
+  return object.type === TileTypes.CHANCE;
+}
+
+export function isSurpriseCard(object: any): object is ISurprise {
+  return object.type === TileTypes.SURPRISE;
+}
+
 export function isTax(object: any): object is ITax {
   return object.type === TileTypes.TAX;
 }

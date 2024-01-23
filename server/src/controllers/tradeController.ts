@@ -1,7 +1,10 @@
 import { Socket } from "socket.io";
-import { isValidTrade } from "../api/helpers";
 import { TradeType } from "../api/types/Game";
-import { getSocketRoomId, writeLogToRoom } from "../utils/game-utils";
+import {
+  getSocketRoomId,
+  isValidTrade,
+  writeLogToRoom,
+} from "../utils/game-utils";
 import { rooms } from "./gameController";
 import io from "../services/socketService";
 import { isPurchasable } from "../api/types/Board";
@@ -12,7 +15,7 @@ export function createTrade(socket: Socket, trade: TradeType) {
 
   console.log("--------------------------------------");
 
-  if (!roomId || !isValidTrade(rooms[roomId], trade)) return;
+  if (!roomId || !isValidTrade(socket, trade)) return;
 
   // check if offeror is the socket
   if (trade.offeror.id !== socket.id) return;
@@ -106,7 +109,7 @@ export function updateTrade(socket: Socket, trade: TradeType) {
 
   console.log("--------------------------------------");
 
-  if (!roomId) return;
+  if (!rooms[roomId]) return;
 
   const room = rooms[roomId];
   const tradeIndex = room.trades.findIndex((_trade) => _trade.id === trade.id);
@@ -116,7 +119,7 @@ export function updateTrade(socket: Socket, trade: TradeType) {
 
   if (playerTurnInTrade !== socket.id) return;
 
-  if (tradeIndex === -1 || !isValidTrade(rooms[roomId], trade)) return;
+  if (tradeIndex === -1 || !isValidTrade(socket, trade)) return;
 
   trade.turn = cycleNextItem({
     currentValue: foundTrade.turn,

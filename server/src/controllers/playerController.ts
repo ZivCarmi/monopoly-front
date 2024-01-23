@@ -1,10 +1,11 @@
 import { Socket } from "socket.io";
 import Player, { NewPlayer } from "../api/types/Player";
 import {
-  checkForWinner,
   deleteRoom,
   getPlayersCount,
   getSocketRoomId,
+  isPlayerInDebt,
+  isPlayerHasTurn,
   updateHostId,
   writeLogToRoom,
 } from "../utils/game-utils";
@@ -32,6 +33,7 @@ export function addPlayer(socket: Socket, player: NewPlayer) {
     tilePos: 0,
     properties: [],
     bankrupted: false,
+    debtTo: null,
   };
 
   // add the player
@@ -88,18 +90,16 @@ export function playerDisconnecting(socket: Socket) {
 export function bankruptPlayer(socket: Socket) {
   const roomId = getSocketRoomId(socket);
   const player = rooms[roomId]?.players[socket.id];
+  const debtTo = isPlayerInDebt(socket);
 
   if (!roomId || !player) return;
-
-  if (rooms[roomId].currentPlayerTurnId === socket.id) {
-    switchTurn(socket);
-  }
 
   delete rooms[roomId].players[socket.id];
   rooms[roomId].participants[socket.id].bankrupted = true;
   rooms[roomId].map.board = rooms[roomId].map.board.map((tile) => {
     if (isPurchasable(tile) && tile.owner === socket.id) {
-      tile.owner = null;
+      const newOwner = debtTo === "bank" ? null : debtTo;
+      tile.owner = newOwner;
 
       if (isProperty(tile)) {
         tile.rentIndex = RentIndexes.BLANK;
@@ -114,29 +114,7 @@ export function bankruptPlayer(socket: Socket) {
     message: `${player.name} פשט את הרגל`,
   });
 
-  const winnerId = checkForWinner(roomId);
-
-  if (winnerId) {
-    io.in(roomId).emit("game_ended", {
-      winnerId,
-    });
+  if (isPlayerHasTurn(socket)) {
+    switchTurn(socket);
   }
-}
-
-export function setOvercharge(socket: Socket) {
-  const roomId = getSocketRoomId(socket);
-
-  if (!roomId) return;
-
-  if (rooms[roomId].currentPlayerTurnId !== socket.id) return;
-
-  const player = rooms[roomId].players[socket.id];
-
-  if (player.money >= 0) return;
-
-  if (player.properties.length === 0) {
-    return bankruptPlayer(socket);
-  }
-
-  socket.emit("on_overcharge");
 }

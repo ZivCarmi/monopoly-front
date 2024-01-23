@@ -8,7 +8,7 @@ const GameLog = () => {
       <div className="text-center text-sm space-y-1.5 overflow-y-auto max-w-xl w-full mx-auto px-8 scrollbar-thin scrollbar-thumb-rounded-xl scrollbar-thumb-stone-700">
         {gameLog.map((log) => (
           <p
-            key={log.message}
+            key={log.id}
             className="tracking-tighter text-pretty text-slate-100 opacity-[.6]"
           >
             {log.message}
