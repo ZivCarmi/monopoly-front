@@ -289,7 +289,7 @@ export const initializeMap = () => {
 
   const taxTile = new TileBuilder.TaxTile({
     name: "מס הכנסה",
-    taxRate: 125,
+    taxRate: 10,
   });
 
   const chanceTile = new TileBuilder.Tile({

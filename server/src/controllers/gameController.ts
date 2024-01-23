@@ -385,8 +385,8 @@ export function rollDice(socket: Socket) {
   io.in(roomId).emit("dice_rolled", { dices: rooms[roomId].dices });
 
   if (isPlayerInJail(socket)) {
-    const suspensionTurnsLeft = --rooms[roomId].suspendedPlayers[socket.id]
-      .left;
+    const suspensionTurnsLeft = rooms[roomId].suspendedPlayers[socket.id]
+      .left--;
 
     if (isDouble || suspensionTurnsLeft === 0) {
       delete rooms[roomId].suspendedPlayers[socket.id];
