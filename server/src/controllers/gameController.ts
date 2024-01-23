@@ -185,15 +185,15 @@ export function onPlayerLanding(socket: Socket) {
 
   const timeToLand = (room.dices[0] + room.dices[1]) * MS_TO_MOVE_ON_TILES;
 
-  setTimeout(() => {
-    if (isPlayerInDebt(socket)) {
+  if (isPlayerInDebt(socket)) {
+    setTimeout(() => {
       if (hasProperties(socket)) {
         io.in(roomId).emit("player_in_debt", { playerId: socket.id });
       } else {
         bankruptPlayer(socket);
       }
-    }
-  }, timeToLand);
+    }, timeToLand);
+  }
 
   console.log("Player state after landing", rooms[roomId].players[socket.id]);
 }
@@ -482,15 +482,21 @@ export function switchTurn(socket: Socket): void {
       // can safely remove the player from suspension
       delete rooms[roomId].suspendedPlayers[nextPlayerTurnId];
     } else {
+      const nextSocketPlayer = io.sockets.sockets.get(nextPlayerTurnId);
+
       rooms[roomId].suspendedPlayers[nextPlayerTurnId].left--;
 
       console.log(
         `Switching turns because ${rooms[roomId].players[nextPlayerTurnId].character} is on vacation`
       );
 
-      console.log("updated suspended state", rooms[roomId].suspendedPlayers);
+      console.log("Updated suspended state", rooms[roomId].suspendedPlayers);
 
-      return switchTurn(socket);
+      if (nextSocketPlayer) {
+        return switchTurn(nextSocketPlayer);
+      } else {
+        return console.log("Next socket is not found!\nNeed to check why...");
+      }
     }
   }
 
