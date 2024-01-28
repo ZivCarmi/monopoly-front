@@ -6,7 +6,6 @@ export interface TradeState {
   tradeId: string | null;
   inTrade: boolean;
   status: TradeStatus;
-  isNegotiated: boolean;
   isPublished: boolean;
   offeror: TradePlayer | null;
   offeree: TradePlayer | null;
@@ -17,7 +16,6 @@ const initialState: TradeState = {
   tradeId: null,
   inTrade: false,
   status: "idle",
-  isNegotiated: false,
   isPublished: false,
   offeror: null,
   offeree: null,
@@ -35,7 +33,6 @@ export const tradeSlice = createSlice({
       state.tradeId = null;
       state.inTrade = false;
       state.status = "idle";
-      state.isNegotiated = false;
       state.isPublished = false;
       state.offeror = null;
       state.offeree = null;
@@ -49,9 +46,6 @@ export const tradeSlice = createSlice({
       state.tradeId = id;
       state.offeror = offeror;
       state.offeree = offeree;
-    },
-    setNegotiation: (state, action: PayloadAction<boolean>) => {
-      state.isNegotiated = action.payload;
     },
     setPublished: (state) => {
       state.isPublished = true;
@@ -132,7 +126,6 @@ export const {
   resetTrade,
   setTradeId,
   setTrade,
-  setNegotiation,
   setPublished,
   updateTrade,
   setPlayerMoney,

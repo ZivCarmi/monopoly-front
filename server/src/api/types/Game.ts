@@ -24,4 +24,8 @@ export type TradePlayer = {
   properties: number[];
 };
 
+export interface InTradePlayer extends TradePlayer {
+  maxMoney: number;
+}
+
 export type TradeStatus = "idle" | "sent" | "recieved";

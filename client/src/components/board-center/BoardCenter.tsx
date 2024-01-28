@@ -1,10 +1,13 @@
-type CenterProps = {
-  children?: React.ReactNode;
-};
+import { cn } from "@/utils";
+import { ReactNode } from "react";
 
-const BoardCenter: React.FC<CenterProps> = ({ children }) => {
+export interface CenterProps extends React.HTMLAttributes<HTMLDivElement> {
+  children?: ReactNode;
+}
+
+const BoardCenter = ({ children, className, ...props }: CenterProps) => {
   return (
-    <div className="col-start-2 col-end-11 row-start-2 row-end-[11] border border-neutral-600 p-8 rtl grid">
+    <div {...props} className={cn("p-8 grid center rtl", className)}>
       {children}
     </div>
   );

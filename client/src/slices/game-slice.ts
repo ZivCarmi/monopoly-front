@@ -245,7 +245,6 @@ export const gameSlice = createSlice({
       // update player
       if (playerIndex >= 0) {
         state.players[playerIndex].money -= tile.cost;
-        state.players[playerIndex].properties.push(propertyIndex);
       }
 
       // update board
@@ -260,14 +259,10 @@ export const gameSlice = createSlice({
       const playerIndex = state.players.findIndex(
         (player) => player.id === state.currentPlayerTurnId
       );
-      const playerProperties = state.players[playerIndex].properties;
 
       // update player
       if (playerIndex >= 0) {
         state.players[playerIndex].money += tile.cost / 2;
-        state.players[playerIndex].properties = playerProperties.filter(
-          (tileIndex) => tileIndex !== propertyIndex
-        );
       }
 
       // update board

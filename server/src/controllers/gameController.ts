@@ -1,6 +1,21 @@
 import { Socket } from "socket.io";
 import Room from "../api/classes/Room";
 import {
+  AIRPORT_RENTS,
+  COMPANY_RENTS,
+  MS_TO_MOVE_ON_TILES,
+  PAY_OUT_FROM_JAIL_AMOUNT,
+} from "../api/constants";
+import {
+  advanceToTileGameCard,
+  advanceToTileTypeGameCard,
+  getCityLevelText,
+  getJailTileIndex,
+  hasBuildings,
+  hasMonopoly,
+  paymentGameCard,
+} from "../api/helpers";
+import {
   IJail,
   ITax,
   PurchasableTile,
@@ -18,36 +33,21 @@ import {
   isTax,
   isVacation,
 } from "../api/types/Board";
-import {
-  AIRPORT_RENTS,
-  COMPANY_RENTS,
-  MS_TO_MOVE_ON_TILES,
-  PAY_OUT_FROM_JAIL_AMOUNT,
-} from "../api/constants";
-import {
-  advanceToTileGameCard,
-  advanceToTileTypeGameCard,
-  getCityLevelText,
-  getJailTileIndex,
-  hasBuildings,
-  hasMonopoly,
-  paymentGameCard,
-} from "../api/helpers";
-import { shuffleArray, cycleNextItem, cyclicRangeNumber } from "../api/utils";
 import { GameCardTypes } from "../api/types/Cards";
 import { RoomGameCards } from "../api/types/Game";
+import { cycleNextItem, cyclicRangeNumber, shuffleArray } from "../api/utils";
 import io from "../services/socketService";
 import {
   checkForWinner,
   getPlayerIds,
   getSocketRoomId,
   hasProperties,
-  isPlayerInDebt,
+  isOwner,
   isPlayerHasTurn,
+  isPlayerInDebt,
+  isPlayerInJail,
   randomizeDices,
   writeLogToRoom,
-  isPlayerInJail,
-  isOwner,
 } from "../utils/game-utils";
 import { bankruptPlayer } from "./playerController";
 
@@ -185,9 +185,9 @@ export function onPlayerLanding(socket: Socket) {
 
   const timeToLand = (room.dices[0] + room.dices[1]) * MS_TO_MOVE_ON_TILES;
 
-  if (isPlayerInDebt(socket)) {
+  if (isPlayerInDebt(socket.id)) {
     setTimeout(() => {
-      if (hasProperties(socket)) {
+      if (hasProperties(socket.id)) {
         io.in(roomId).emit("player_in_debt", { playerId: socket.id });
       } else {
         bankruptPlayer(socket);
@@ -267,7 +267,6 @@ export function handleGameCard(socket: Socket, roomGameCards: RoomGameCards) {
 export function purchaseProperty(socket: Socket, propertyIndex: number) {
   const roomId = getSocketRoomId(socket);
 
-  console.log("--------------------------------------");
   console.log("Player attempting to purchase...");
 
   if (!roomId) return;
@@ -280,27 +279,28 @@ export function purchaseProperty(socket: Socket, propertyIndex: number) {
   console.log("Attempted Tile:", tile);
 
   if (propertyIndex !== player.tilePos) {
-    console.log(
+    return console.log(
       "propertyIndex from client is not in sync with player position on server."
     );
-    return;
   }
 
-  if (!isPlayerHasTurn(socket) || !isPurchasable(tile)) return;
-
-  if (tile.owner || player.money < tile.cost) return;
+  if (
+    !isPlayerHasTurn(socket.id) ||
+    !isPurchasable(tile) ||
+    tile.owner ||
+    player.money < tile.cost
+  )
+    return;
 
   const purchaseMessage = `${player.name} רכש את ${tile.name}`;
 
   // update player
-  rooms[roomId].players[socket.id].properties.push(propertyIndex);
   rooms[roomId].players[socket.id].money -= tile.cost;
 
   // update board
   tile.owner = player.id;
   rooms[roomId].map.board[propertyIndex] = tile;
 
-  // console.log(rooms[roomId].map.board[propertyIndex]);
   console.log(rooms[roomId].players[socket.id]);
 
   io.in(roomId).emit("purchased_property", {
@@ -314,7 +314,6 @@ export function purchaseProperty(socket: Socket, propertyIndex: number) {
 export function sellProperty(socket: Socket, propertyIndex: number) {
   const roomId = getSocketRoomId(socket);
 
-  console.log("--------------------------------------");
   console.log("Player attempting to sell property...");
 
   if (!roomId) return;
@@ -326,19 +325,16 @@ export function sellProperty(socket: Socket, propertyIndex: number) {
   console.log("Attempted player:", player, "Attempted Tile:", tile);
 
   if (
-    !isPlayerHasTurn(socket) ||
+    !isPlayerHasTurn(socket.id) ||
     !isPurchasable(tile) ||
-    !isOwner(socket, propertyIndex) ||
-    isPlayerInJail(socket)
+    !isOwner(socket.id, propertyIndex) ||
+    isPlayerInJail(socket.id)
   )
     return;
 
   const purchaseMessage = `${player.name} מכר את ${tile.name}`;
 
   // update player
-  rooms[roomId].players[socket.id].properties = player.properties.filter(
-    (tileIndex) => tileIndex !== propertyIndex
-  );
   rooms[roomId].players[socket.id].money += tile.cost / 2;
 
   // update board
@@ -360,20 +356,19 @@ export function rollDice(socket: Socket) {
 
   console.log("--------------------------------------");
 
-  if (!roomId) return;
-
-  if (!isPlayerHasTurn(socket) || isPlayerInDebt(socket)) return;
+  if (!roomId || !isPlayerHasTurn(socket.id) || isPlayerInDebt(socket.id))
+    return;
 
   rooms[roomId].dices = randomizeDices();
 
   // FOR TESTING
-  const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
-  const firstPlayerId = getPlayerIds(roomId)[0];
-  if (firstPlayerId === currentPlayerTurnId) {
-    rooms[roomId].dices = [4, 3];
-  } else {
-    rooms[roomId].dices = [4, 3];
-  }
+  // const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
+  // const firstPlayerId = getPlayerIds(roomId)[0];
+  // if (firstPlayerId === currentPlayerTurnId) {
+  //   rooms[roomId].dices = [4, 3];
+  // } else {
+  //   rooms[roomId].dices = [4, 3];
+  // }
 
   const isDouble = rooms[roomId].dices[0] === rooms[roomId].dices[1];
   const dicesSum = rooms[roomId].dices[0] + rooms[roomId].dices[1];
@@ -384,7 +379,7 @@ export function rollDice(socket: Socket) {
 
   io.in(roomId).emit("dice_rolled", { dices: rooms[roomId].dices });
 
-  if (isPlayerInJail(socket)) {
+  if (isPlayerInJail(socket.id)) {
     const suspensionTurnsLeft = rooms[roomId].suspendedPlayers[socket.id]
       .left--;
 
@@ -408,8 +403,6 @@ export function rollDice(socket: Socket) {
 export function walkPlayer(socket: Socket, steps: number) {
   const roomId = getSocketRoomId(socket);
   const playerId = socket.id;
-
-  console.log("--------------------------------------");
 
   if (!roomId) return;
 
@@ -438,7 +431,7 @@ export function switchTurn(socket: Socket): void {
   console.log("Attempting to switch turn...");
   console.log("Player state", rooms[roomId].players[socket.id]);
 
-  if (!isPlayerHasTurn(socket) || isPlayerInDebt(socket)) return;
+  if (!isPlayerHasTurn(socket.id) || isPlayerInDebt(socket.id)) return;
 
   const winnerId = checkForWinner(roomId);
 
@@ -511,11 +504,9 @@ export function switchTurn(socket: Socket): void {
 export function payOutOfJail(socket: Socket) {
   const roomId = getSocketRoomId(socket);
 
-  console.log("--------------------------------------");
-
   if (!roomId) return;
 
-  if (!isPlayerHasTurn(socket) || !isPlayerInJail(socket)) return;
+  if (!isPlayerHasTurn(socket.id) || !isPlayerInJail(socket.id)) return;
 
   const player = rooms[roomId].players[socket.id];
 
@@ -538,7 +529,7 @@ export function payOutOfJail(socket: Socket) {
 export function upgradeCity(socket: Socket, propertyIndex: number) {
   const roomId = getSocketRoomId(socket);
 
-  console.log("--------------------------------------");
+  console.log("Attempting to Upgrade city....");
 
   if (!roomId) return;
 
@@ -550,22 +541,29 @@ export function upgradeCity(socket: Socket, propertyIndex: number) {
   if (
     !isProperty(tile) ||
     !hasMonopoly(board, tile.country.id) ||
-    !isPlayerHasTurn(socket) ||
-    isPlayerInJail(socket) ||
+    !isPlayerHasTurn(socket.id) ||
+    isPlayerInJail(socket.id) ||
     tile.rentIndex === RentIndexes.HOTEL
   )
     return;
 
-  const cityLevelText = getCityLevelText(tile.rentIndex + 1);
   const player = rooms[roomId].players[socket.id];
-  const message = `${player.name} שדרג ל${cityLevelText} ב${tile.name}`;
-
-  tile.rentIndex += 1;
-  rooms[roomId].map.board[propertyIndex] = tile;
-  rooms[roomId].players[socket.id].money -=
+  const upgradeCost =
     tile.rentIndex === RentIndexes.FOUR_HOUSES
       ? tile.hotelCost
       : tile.houseCost;
+
+  if (player.money < upgradeCost) {
+    console.log("Player doesn't have money in upgradeCity", player);
+    return;
+  }
+
+  tile.rentIndex += 1;
+  rooms[roomId].map.board[propertyIndex] = tile;
+  rooms[roomId].players[socket.id].money -= upgradeCost;
+
+  const cityLevelText = getCityLevelText(tile.rentIndex + 1);
+  const message = `${player.name} שדרג ל${cityLevelText} ב${tile.name}`;
 
   io.in(roomId).emit("city_level_change", {
     propertyIndex,
@@ -579,8 +577,6 @@ export function upgradeCity(socket: Socket, propertyIndex: number) {
 export function downgradeCity(socket: Socket, propertyIndex: number) {
   const roomId = getSocketRoomId(socket);
 
-  console.log("--------------------------------------");
-
   if (!roomId) return;
 
   const {
@@ -591,8 +587,8 @@ export function downgradeCity(socket: Socket, propertyIndex: number) {
   if (
     !isProperty(tile) ||
     !hasMonopoly(board, tile.country.id) ||
-    !isPlayerHasTurn(socket) ||
-    isPlayerInJail(socket) ||
+    !isPlayerHasTurn(socket.id) ||
+    isPlayerInJail(socket.id) ||
     tile.rentIndex === RentIndexes.BLANK
   )
     return;

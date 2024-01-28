@@ -1,5 +1,5 @@
 import store from "@/app/store";
-import { MappedPlayersByTiles } from "@/types/Board";
+import { BoardRaw, MappedPlayersByTiles, rowClassname } from "@/types/Board";
 import {
   CountryIds,
   GameTile,
@@ -9,7 +9,7 @@ import {
   isProperty,
   isPurchasable,
 } from "@backend/types/Board";
-import { type ClassValue, clsx } from "clsx";
+import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {
@@ -19,15 +19,17 @@ export function cn(...inputs: ClassValue[]) {
 // create board that contains 10 tiles in a each row
 export const createBoard = () => {
   const { board } = store.getState().game.map;
-  const boardRows: GameTile[][] = [];
-  let tempBoard: GameTile[] = [];
+  const boardRows: BoardRaw = [];
+  let rowTiles: GameTile[] = [];
+  let counter = 0;
 
   board.forEach((tile) => {
-    tempBoard.push(tile);
+    rowTiles.push(tile);
 
-    if (tempBoard.length === board.length / 4) {
-      boardRows.push(tempBoard);
-      tempBoard = [];
+    if (rowTiles.length === board.length / 4) {
+      boardRows.push({ area: rowClassname[counter], tiles: rowTiles });
+      rowTiles = [];
+      counter++;
     }
   });
 
@@ -105,6 +107,20 @@ export const getPlayerPropertiesId = (ownerId: string) => {
   }
 
   return propertiesId;
+};
+
+export const getPlayerName = (playerId: string) => {
+  const { players } = store.getState().game;
+  const player = players.find((player) => player.id === playerId);
+
+  return player?.name ? player.name : "";
+};
+
+export const getPlayerCharacter = (playerId: string) => {
+  const { players } = store.getState().game;
+  const player = players.find((player) => player.id === playerId);
+
+  return player?.character;
 };
 
 export const getPlayerColor = (playerId: string) => {

@@ -1,16 +1,14 @@
-import { PurchasableTile, RentIndexes, isProperty } from "@backend/types/Board";
-import { Popover, PopoverTrigger, PopoverContent } from "../ui/popover";
-import TileCard from "../tile-card/TileCard";
 import { useAppDispatch } from "@/app/hooks";
 import { setSelectedTile } from "@/slices/ui-slice";
-import TileBody from "./TileBody";
-import TileContent from "./TileContent";
+import { PurchasableTile, RentIndexes, isProperty } from "@backend/types/Board";
 import { Home, Hotel } from "lucide-react";
+import TileCard from "../tile-card/TileCard";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import CityBuilding from "./CityBuilding";
 import CityFlagIcon from "./CityFlagIcon";
 import OwnerIndicator from "./OwnerIndicator";
-import { Badge } from "../ui/badge";
-import TileBackgroundImage from "./TileBackgroundImage";
+import Tile from "./Tile";
+import TileCostBadge from "./TileCostBadge";
 
 type PurchasableTileProps = {
   tile: PurchasableTile;
@@ -30,11 +28,10 @@ const PurchasableTile: React.FC<PurchasableTileProps> = ({ tile }) => {
         onClick={() => dispatch(setSelectedTile(tile))}
         className="w-full h-full"
       >
-        {isProperty(tile) && (
-          <TileBackgroundImage countryId={tile.country.id} />
-        )}
-        <TileContent className="justify-between gap-1 z-10 relative">
-          <TileBody>{tile.name}</TileBody>
+        <Tile
+          tile={tile}
+          className="flex-col justify-between relative tileContent"
+        >
           {tile.owner ? (
             <OwnerIndicator ownerId={tile.owner}>
               {cityHasHotel && <CityBuilding icon={Hotel} />}
@@ -43,18 +40,10 @@ const PurchasableTile: React.FC<PurchasableTileProps> = ({ tile }) => {
               )}
             </OwnerIndicator>
           ) : (
-            <div className="badgeWrapper flex items-center justify-center">
-              <Badge variant="secondary" className="badge self-center ">
-                ${tile.cost}
-              </Badge>
-            </div>
+            <TileCostBadge cost={tile.cost} />
           )}
-          {isProperty(tile) && (
-            <>
-              <CityFlagIcon countryId={tile.country.id} />
-            </>
-          )}
-        </TileContent>
+        </Tile>
+        {isProperty(tile) && <CityFlagIcon countryId={tile.country.id} />}
       </PopoverTrigger>
       <PopoverContent>
         <TileCard />

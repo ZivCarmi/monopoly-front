@@ -1,4 +1,4 @@
-import { setNegotiation, setTradeStatus } from "@/slices/trade-slice";
+import { setTradeStatus } from "@/slices/trade-slice";
 import { Button, buttonVariants } from "../ui/button";
 import { AlertDialogAction, AlertDialogCancel } from "../ui/alert-dialog";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
@@ -10,19 +10,14 @@ const TradeRecieved = () => {
   const { tradeId } = useAppSelector((state) => state.trade);
 
   const declineTradeHandler = () => {
-    socket.emit("trade_declined", {
-      tradeId,
-    });
+    socket.emit("trade_decline", { tradeId });
   };
 
   const acceptTradeHandler = () => {
-    socket.emit("trade_accepted", {
-      tradeId,
-    });
+    socket.emit("trade_accept", { tradeId });
   };
 
   const negotiateHandler = () => {
-    dispatch(setNegotiation(true));
     dispatch(setTradeStatus("idle"));
   };
 

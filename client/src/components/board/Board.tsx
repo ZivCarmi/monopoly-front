@@ -14,22 +14,25 @@ const originalCornerSize = document.documentElement.style.getPropertyValue(
 const originalTileSize =
   document.documentElement.style.getPropertyValue("--board-tile-size");
 
-const Board: React.FC<BoardProps> = memo(
-  ({ children, className, cornerSize, tileSize }) => {
-    const _cornerSize = cornerSize ? `${cornerSize}px` : originalCornerSize;
-    const _tileSize = tileSize ? `${tileSize}px` : originalTileSize;
+const Board: React.FC<BoardProps> = ({
+  children,
+  className,
+  cornerSize,
+  tileSize,
+}) => {
+  const _cornerSize = cornerSize ? `${cornerSize}px` : originalCornerSize;
+  const _tileSize = tileSize ? `${tileSize}px` : originalTileSize;
 
-    const style = {
-      "--board-corner-size": _cornerSize,
-      "--board-tile-size": _tileSize,
-    } as React.CSSProperties;
+  const style = {
+    "--board-corner-size": _cornerSize,
+    "--board-tile-size": _tileSize,
+  } as React.CSSProperties;
 
-    return (
-      <div className={cn("board ltr", className)} style={style}>
-        {children}
-      </div>
-    );
-  }
-);
+  return (
+    <div className={cn("board ltr gap-1", className)} style={style}>
+      {children}
+    </div>
+  );
+};
 
-export default Board;
+export default memo(Board);

@@ -29,29 +29,26 @@ const Trade = () => {
           בצע עסקה
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="rtl trade-dialog min-w-[500px] max-w-max">
-        <AlertDialogHeader>
-          {offeree ? (
-            <AlertDialogTitle>
-              בעסקה עם{" "}
-              <span style={{ color: offeree.color }}>{offeree.name}</span>
-            </AlertDialogTitle>
-          ) : (
-            <>
-              <AlertDialogTitle>ביצוע עסקה</AlertDialogTitle>
-              <AlertDialogDescription>
-                בחר את השחקן שאיתו ברצונך לבצע עסקה
-              </AlertDialogDescription>
-            </>
-          )}
-        </AlertDialogHeader>
+      <AlertDialogContent className="min-w-[500px] max-w-max">
         {offeree ? (
           <>
+            <AlertDialogHeader>
+              <AlertDialogTitle>
+                בעסקה עם{" "}
+                <span style={{ color: offeree.color }}>{offeree.name}</span>
+              </AlertDialogTitle>
+            </AlertDialogHeader>
             <TradeOffers />
             <TradeActions />
           </>
         ) : (
           <>
+            <AlertDialogHeader>
+              <AlertDialogTitle>ביצוע עסקה</AlertDialogTitle>
+              <AlertDialogDescription>
+                בחר את השחקן שאיתו ברצונך לבצע עסקה
+              </AlertDialogDescription>
+            </AlertDialogHeader>
             <SelectPlayer />
             <AlertDialogCancel
               onClick={() => dispatch(setInTrade(false))}

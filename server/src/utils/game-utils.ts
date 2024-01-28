@@ -1,13 +1,22 @@
 import { Socket } from "socket.io";
+import { DICE_OPTIONS } from "../api/constants";
+import { TileTypes, isPurchasable } from "../api/types/Board";
+import { TradeType } from "../api/types/Game";
 import { rooms } from "../controllers/gameController";
 import io from "../services/socketService";
-import { TileTypes, isPurchasable } from "../api/types/Board";
-import { DICE_OPTIONS } from "../api/constants";
-import { TradeType } from "../api/types/Game";
 
-export const getSocketRoomId = (socket: Socket): string => {
+export const getSocketRoomId = (socket: Socket | string): string => {
+  let socketId = socket;
+
+  if (typeof socket === "string") {
+    const foundSocket = io.sockets.sockets.get(socket);
+    socket = foundSocket as Socket;
+  } else if (socket instanceof Socket) {
+    socketId = socket.id;
+  }
+
   const socketRooms = Array.from(socket.rooms.values()).filter(
-    (r) => r !== socket.id
+    (r) => r !== socketId
   );
   const roomId = socketRooms && socketRooms[0];
 
@@ -61,8 +70,6 @@ export async function backToLobby(socket: Socket) {
 
   if (!roomId) return;
 
-  console.log("-----------------------------\nBacking up to lobby...");
-
   socket.emit("on_lobby");
 
   const roomPlayersCount = getPlayersCount(roomId);
@@ -90,8 +97,6 @@ export async function backToLobby(socket: Socket) {
       roomHostId = updateHostId(socket);
       const hostPlayer = rooms[roomId].players[roomHostId];
 
-      console.log(hostPlayer);
-
       messages.push(`${hostPlayer.name} מונה למארח החדר`);
     }
 
@@ -105,10 +110,6 @@ export async function backToLobby(socket: Socket) {
   }
 
   writeLogToRoom(roomId, messages);
-
-  console.log(
-    `Left room - ${roomId} and now on lobby\n-----------------------------`
-  );
 }
 
 export function updateHostId(socket: Socket, newHostId?: string): string {
@@ -128,52 +129,50 @@ export function updateHostId(socket: Socket, newHostId?: string): string {
     }
   }
 
-  console.log(newHostId);
-
   rooms[roomId].hostId = newHostId;
 
   return newHostId;
 }
 
-export function isPlayerInDebt(socket: Socket) {
-  const roomId = getSocketRoomId(socket);
+export function isPlayerInDebt(playerId: string) {
+  const roomId = getSocketRoomId(playerId);
 
   if (!rooms[roomId]) return null;
 
-  return rooms[roomId]?.players[socket.id]?.debtTo;
+  return rooms[roomId]?.players[playerId]?.debtTo;
 }
 
-export const hasProperties = (socket: Socket) => {
-  const roomId = getSocketRoomId(socket);
+export const hasProperties = (playerId: string) => {
+  const roomId = getSocketRoomId(playerId);
 
   if (!rooms[roomId]) return false;
 
   return rooms[roomId].map.board.some(
-    (tile) => isPurchasable(tile) && tile.owner === socket.id
+    (tile) => isPurchasable(tile) && tile.owner === playerId
   );
 };
 
-export const isPlayerHasTurn = (socket: Socket) => {
-  const roomId = getSocketRoomId(socket);
+export const isPlayerHasTurn = (playerId: string) => {
+  const roomId = getSocketRoomId(playerId);
 
   if (!rooms[roomId]) return false;
 
-  return rooms[roomId]?.currentPlayerTurnId === socket.id;
+  return rooms[roomId]?.currentPlayerTurnId === playerId;
 };
 
-export const isPlayerInJail = (socket: Socket) => {
-  const roomId = getSocketRoomId(socket);
+export const isPlayerInJail = (playerId: string) => {
+  const roomId = getSocketRoomId(playerId);
 
   if (!rooms[roomId]) return false;
 
   return (
-    rooms[roomId]?.suspendedPlayers[socket.id] &&
-    rooms[roomId].suspendedPlayers[socket.id].reason === TileTypes.JAIL
+    rooms[roomId]?.suspendedPlayers[playerId] &&
+    rooms[roomId].suspendedPlayers[playerId].reason === TileTypes.JAIL
   );
 };
 
-export const isOwner = (socket: Socket, propertyIndex: number[] | number) => {
-  const roomId = getSocketRoomId(socket);
+export const isOwner = (playerId: string, propertyIndex: number[] | number) => {
+  const roomId = getSocketRoomId(playerId);
 
   if (!rooms[roomId]) return false;
 
@@ -182,7 +181,7 @@ export const isOwner = (socket: Socket, propertyIndex: number[] | number) => {
     return propertyIndex.every((propertyIdx) => {
       const property = rooms[roomId].map.board[propertyIdx];
 
-      if (isPurchasable(property) && property.owner === socket.id) {
+      if (isPurchasable(property) && property.owner === playerId) {
         return true;
       }
 
@@ -192,7 +191,7 @@ export const isOwner = (socket: Socket, propertyIndex: number[] | number) => {
 
   const property = rooms[roomId].map.board[propertyIndex];
 
-  return isPurchasable(property) && property.owner === socket.id;
+  return isPurchasable(property) && property.owner === playerId;
 };
 
 export const randomizeDices = () => {
@@ -233,7 +232,7 @@ export const isValidTrade = (socket: Socket, trade: TradeType) => {
     if (rooms[roomId].players[player.id].money < player.money) return false;
 
     // check if player has all the properties
-    if (!isOwner(socket, player.properties)) return false;
+    if (!isOwner(player.id, player.properties)) return false;
 
     return true;
   });

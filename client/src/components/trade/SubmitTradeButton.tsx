@@ -34,7 +34,7 @@ const SubmitTradeButton: React.FC<SubmitTradeButtonProps> = ({
       return true;
     }
 
-    if (player?.properties && player?.properties.length > 0) {
+    if (player?.properties && player.properties.length > 0) {
       return true;
     }
 

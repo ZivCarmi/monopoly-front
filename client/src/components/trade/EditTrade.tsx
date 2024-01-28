@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { Button } from "../ui/button";
-import { setNegotiation, setTradeStatus } from "@/slices/trade-slice";
+import { setTradeStatus } from "@/slices/trade-slice";
 import { useSocket } from "@/app/socket-context";
 import { TradeType } from "@backend/types/Game";
 import SubmitTradeButton from "./SubmitTradeButton";
@@ -19,15 +19,14 @@ const EditTrade = () => {
       offeree,
     };
 
-    socket.emit("trade_updated", {
-      trade: tradeObject,
-    });
+    console.log(tradeObject);
+
+    socket.emit("trade_update", { trade: tradeObject });
 
     dispatch(setTradeStatus("sent"));
   };
 
   const backToOfferHandler = () => {
-    dispatch(setNegotiation(false));
     dispatch(setTradeStatus("recieved"));
   };
 

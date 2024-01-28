@@ -17,7 +17,7 @@ import { RentIndexes, isProperty, isPurchasable } from "../api/types/Board";
 export function addPlayer(socket: Socket, player: NewPlayer) {
   const roomId = getSocketRoomId(socket);
 
-  console.log(roomId);
+  console.log("Adding player", roomId);
 
   if (!roomId) {
     return socket.emit("player_create_error", {
@@ -31,7 +31,6 @@ export function addPlayer(socket: Socket, player: NewPlayer) {
     ...player,
     money: PLAYER_MONEY,
     tilePos: 0,
-    properties: [],
     bankrupted: false,
     debtTo: null,
   };
@@ -90,7 +89,7 @@ export function playerDisconnecting(socket: Socket) {
 export function bankruptPlayer(socket: Socket) {
   const roomId = getSocketRoomId(socket);
   const player = rooms[roomId]?.players[socket.id];
-  const debtTo = isPlayerInDebt(socket);
+  const debtTo = isPlayerInDebt(socket.id);
 
   if (!roomId || !player) return;
 
@@ -114,7 +113,7 @@ export function bankruptPlayer(socket: Socket) {
     message: `${player.name} פשט את הרגל`,
   });
 
-  if (isPlayerHasTurn(socket)) {
+  if (isPlayerHasTurn(socket.id)) {
     switchTurn(socket);
   }
 }

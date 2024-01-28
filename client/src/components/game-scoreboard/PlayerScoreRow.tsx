@@ -11,6 +11,7 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import { cn, getPlayerColor } from "@/utils";
+import PlayerNamePlate from "../player/PlayerNamePlate";
 
 const PlayerScoreRow = ({ player }: { player: Player }) => {
   const { started } = useAppSelector((state) => state.game);
@@ -26,14 +27,7 @@ const PlayerScoreRow = ({ player }: { player: Player }) => {
       <TurnIndicator playerId={player.id} />
       <td className="text-right p-2" width="50%">
         <div className="flex items-center">
-          <div className="flex items-center space-x-2 space-x-reverse">
-            <img
-              src={`/${player.character}.png`}
-              width={32}
-              className="inline-block"
-            />
-            <span className="break-all">{player.name}</span>
-          </div>
+          <PlayerNamePlate character={player.character} name={player.name} />
         </div>
       </td>
       <td className="text-right p-2">

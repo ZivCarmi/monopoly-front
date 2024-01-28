@@ -1,17 +1,37 @@
+import { useAppSelector } from "@/app/hooks";
+import { BoardRow } from "@/types/Board";
+import { AnimatePresence } from "framer-motion";
 import { cn } from "@/utils";
 import { useEffect } from "react";
 import { motion } from "framer-motion";
 import { useAppDispatch } from "@/app/hooks";
 import { resetCards } from "@/slices/game-slice";
-import { BoardRow } from "@/types/Board";
 import { MS_FOR_CARD_MESSAGE } from "@/utils/constants";
 
-type DrawnCardBoxProps = {
+type GameCardProps = {
+  tileIndex: number;
+  rowClassName: BoardRow;
+};
+
+type DrawnGameCardProps = {
   children: React.ReactNode;
   row: BoardRow;
 };
 
-const DrawnCardBox: React.FC<DrawnCardBoxProps> = ({ children, row }) => {
+const GameCard = ({ tileIndex, rowClassName }: GameCardProps) => {
+  const { drawnGameCard } = useAppSelector((state) => state.game);
+  return (
+    <AnimatePresence>
+      {drawnGameCard.card && drawnGameCard.tileIndex === tileIndex && (
+        <DrawnGameCard row={rowClassName}>
+          {drawnGameCard.card.message}
+        </DrawnGameCard>
+      )}
+    </AnimatePresence>
+  );
+};
+
+const DrawnGameCard: React.FC<DrawnGameCardProps> = ({ children, row }) => {
   const dispatch = useAppDispatch();
   const isYAxis = row === "top" || row === "bottom";
   const isXAxis = row === "right" || row === "left";
@@ -48,4 +68,4 @@ const DrawnCardBox: React.FC<DrawnCardBoxProps> = ({ children, row }) => {
   );
 };
 
-export default DrawnCardBox;
+export default GameCard;

@@ -12,15 +12,13 @@ const GameScoreboard = () => {
   return (
     <div className="flex flex-col p-4">
       <div className="bg-neutral-800 p-4 relative rounded-lg">
-        <div className="rtl">
-          <table className="w-full text-right">
-            <tbody>
-              {players.map((player) => (
-                <PlayerScoreRow player={player} key={player.id} />
-              ))}
-            </tbody>
-          </table>
-        </div>
+        <table className="w-full text-right">
+          <tbody>
+            {players.map((player) => (
+              <PlayerScoreRow player={player} key={player.id} />
+            ))}
+          </tbody>
+        </table>
       </div>
     </div>
   );

@@ -1,16 +1,16 @@
-import { CornerTile } from "@backend/types/Board";
-import TileContent from "./TileContent";
-import TileBody from "./TileBody";
+import { CornerGameTile, isJail } from "@backend/types/Board";
+import JailTile from "./JailTile";
+import Tile from "./Tile";
 
 type CornerTileProps = {
-  tile: CornerTile;
+  tile: CornerGameTile;
 };
 
-const CornerTile: React.FC<CornerTileProps> = ({ tile }) => {
+const CornerTile = ({ tile }: CornerTileProps) => {
   return (
-    <TileContent className="items-center justify-center cornerBody">
-      <TileBody>{tile.name}</TileBody>
-    </TileContent>
+    <Tile tile={tile} className="justify-center items-center">
+      {isJail(tile) && <JailTile />}
+    </Tile>
   );
 };
 

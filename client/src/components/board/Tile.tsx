@@ -1,16 +1,17 @@
+import { cn } from "@/utils";
 import { ITile } from "@backend/types/Board";
-import TileBody from "./TileBody";
-import TileContent from "./TileContent";
 
-type TileProps = {
-  tile: ITile;
-};
+interface TileProps extends React.HTMLAttributes<HTMLDivElement> {
+  tile?: ITile;
+  showName?: boolean;
+}
 
-const Tile: React.FC<TileProps> = ({ tile }) => {
+const Tile: React.FC<TileProps> = ({ tile, children, ...props }) => {
   return (
-    <TileContent className="gap-1">
-      <TileBody>{tile.name}</TileBody>
-    </TileContent>
+    <div {...props} className={cn("flex w-full h-full", props.className)}>
+      {tile && <div className="text-sm text-center">{tile.name}</div>}
+      {children}
+    </div>
   );
 };
 

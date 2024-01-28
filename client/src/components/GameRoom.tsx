@@ -201,10 +201,10 @@ const GameRoom = () => {
     socket.on("sold_property", onSoldProperty);
     socket.on("city_level_change", onCityLevelChange);
     socket.on("paid_out_of_jail", onPaidOutOfJail);
-    socket.on("trade_created", onTradeCreated);
-    socket.on("trade_accepted", onTradeAccepted);
-    socket.on("trade_declined", onTradeDeclined);
-    socket.on("trade_updated", onTradeUpdated);
+    socket.on("created_trade", onTradeCreated);
+    socket.on("accepted_trade", onTradeAccepted);
+    socket.on("declined_trade", onTradeDeclined);
+    socket.on("updated_trade", onTradeUpdated);
     socket.on("player_in_debt", onPlayerInDebt);
     socket.on("player_bankrupted", onPlayerBankrupted);
     socket.on("game_ended", onGameEnded);
@@ -220,10 +220,10 @@ const GameRoom = () => {
       socket.off("sold_property", onSoldProperty);
       socket.off("city_level_change", onCityLevelChange);
       socket.off("paid_out_of_jail", onPaidOutOfJail);
-      socket.off("trade_created", onTradeCreated);
-      socket.off("trade_accepted", onTradeAccepted);
-      socket.off("trade_declined", onTradeDeclined);
-      socket.off("trade_updated", onTradeUpdated);
+      socket.off("created_trade", onTradeCreated);
+      socket.off("accepted_trade", onTradeAccepted);
+      socket.off("declined_trade", onTradeDeclined);
+      socket.off("updated_trade", onTradeUpdated);
       socket.off("player_in_debt", onPlayerInDebt);
       socket.off("player_bankrupted", onPlayerBankrupted);
       socket.off("game_ended", onGameEnded);
@@ -233,10 +233,10 @@ const GameRoom = () => {
   return (
     <>
       {!started && !isReady && <PlayersForm />}
-      <div className="grid min-h-screen grid-cols-[minmax(15rem,1fr)_auto_minmax(15rem,1fr)]">
+      <div className="grid min-h-screen grid-cols-[minmax(20rem,1fr)_auto_minmax(20rem,1fr)]">
         <GameSidebar />
         <div
-          className="relative p-4 overflow-hidden"
+          className="relative p-4"
           // style={{
           //   transform: `scale(${scaleRef.current})`,
           //   width:

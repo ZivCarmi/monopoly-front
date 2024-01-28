@@ -25,9 +25,7 @@ const SendTrade = () => {
       offeree,
     };
 
-    socket.emit("create_trade", {
-      trade: tradeObject,
-    });
+    socket.emit("trade_create", { trade: tradeObject });
 
     dispatch(setPublished());
     dispatch(setTradeId(tradeObject.id));

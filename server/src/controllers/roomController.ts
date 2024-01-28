@@ -1,15 +1,14 @@
-import { rooms } from "./gameController";
 import { Socket } from "socket.io";
+import Room from "../api/classes/Room";
 import io from "../services/socketService";
 import { getSocketRoomId } from "../utils/game-utils";
-import Room from "../api/classes/Room";
-import { CountryIds, RentIndexes, isProperty } from "../api/types/Board";
+import { rooms } from "./gameController";
 
 export async function joinRoom(socket: Socket, roomId: string) {
+  if (roomId.length !== 5) return;
+
   const connectedSockets = io.sockets.adapter.rooms.get(roomId);
   const existRoomId = getSocketRoomId(socket);
-
-  // console.log("existRoomId", existRoomId, roomId);
 
   // Maximum of 6 players + 4 spectators
   if (connectedSockets && connectedSockets.size >= 10) {

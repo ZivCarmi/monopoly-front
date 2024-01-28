@@ -25,11 +25,12 @@ const PropertyActions: React.FC<PropertyActionsProps> = ({ property }) => {
 
   if (!selfPlayer) return null;
 
-  const canAffordUpgrade =
-    property.rentIndex + 1 === RentIndexes.HOTEL
-      ? selfPlayer.money >= property.hotelCost
-      : selfPlayer.money >= property.houseCost;
-  const canUpgrade = selfPlayerHasTurn && !isSuspended && canAffordUpgrade;
+  const upgradeCost =
+    property.rentIndex === RentIndexes.FOUR_HOUSES
+      ? property.hotelCost
+      : property.houseCost;
+  const canUpgrade =
+    selfPlayerHasTurn && !isSuspended && selfPlayer.money >= upgradeCost;
   const canDowngrade =
     selfPlayerHasTurn &&
     !isSuspended &&

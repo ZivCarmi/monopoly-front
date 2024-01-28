@@ -126,9 +126,9 @@ export type GameTile =
   | IVacation
   | IGoToJail;
 
-export type Board = GameTile[];
+export type CornerGameTile = IGo | IJail | IVacation | IGoToJail;
 
-export type CornerTile = IGo | IJail | IVacation | IGoToJail;
+export type Board = GameTile[];
 
 export type PurchasableTile = IProperty | IAirport | ICompany;
 
@@ -184,7 +184,7 @@ export function isGoToJail(object: any): object is IGoToJail {
   return object.type === TileTypes.GO_TO_JAIL;
 }
 
-export function isCorner(object: any): object is CornerTile {
+export function isCorner(object: any): object is CornerGameTile {
   return (
     isGo(object) || isJail(object) || isVacation(object) || isGoToJail(object)
   );

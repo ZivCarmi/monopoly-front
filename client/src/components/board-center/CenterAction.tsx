@@ -17,8 +17,6 @@ const CenterAction = () => {
   const currentPlayer = useAppSelector(selectCurrentPlayerTurn);
   const board = useAppSelector(selectGameBoard);
 
-  console.log(canPerformTurnActions);
-
   if (currentPlayerTurnId !== socket.id) {
     return <PlayerIsPlayingNotice />;
   }

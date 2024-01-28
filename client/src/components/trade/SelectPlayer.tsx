@@ -21,8 +21,14 @@ const SelectPlayer = () => {
       setTrade({
         id: uuidv4(),
         turn: offereeId,
-        offeror: { id: socket.id, ...initialOffer },
-        offeree: { id: offereeId, ...initialOffer },
+        offeror: {
+          id: socket.id,
+          ...initialOffer,
+        },
+        offeree: {
+          id: offereeId,
+          ...initialOffer,
+        },
       })
     );
   };

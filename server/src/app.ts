@@ -95,19 +95,19 @@ io.on("connection", (socket) => {
     downgradeCity(socket, tileIndex);
   });
 
-  socket.on("create_trade", ({ trade }: { trade: TradeType }) => {
+  socket.on("trade_create", ({ trade }: { trade: TradeType }) => {
     createTrade(socket, trade);
   });
 
-  socket.on("trade_accepted", ({ tradeId }: { tradeId: string }) => {
+  socket.on("trade_accept", ({ tradeId }: { tradeId: string }) => {
     acceptTrade(socket, tradeId);
   });
 
-  socket.on("trade_declined", ({ tradeId }: { tradeId: string }) => {
+  socket.on("trade_decline", ({ tradeId }: { tradeId: string }) => {
     declineTrade(socket, tradeId);
   });
 
-  socket.on("trade_updated", ({ trade }: { trade: TradeType }) => {
+  socket.on("trade_update", ({ trade }: { trade: TradeType }) => {
     updateTrade(socket, trade);
   });
 

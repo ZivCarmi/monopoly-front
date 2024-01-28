@@ -24,7 +24,7 @@ export function createTrade(socket: Socket, trade: TradeType) {
 
   rooms[roomId].trades.push(trade);
 
-  io.in(roomId).emit("trade_created", trade);
+  io.in(roomId).emit("created_trade", trade);
 }
 
 export function acceptTrade(socket: Socket, tradeId: string) {
@@ -39,7 +39,7 @@ export function acceptTrade(socket: Socket, tradeId: string) {
   const room = rooms[roomId];
   const trade = room.trades.find((trade) => trade.id === tradeId);
 
-  if (!trade) return null;
+  if (!trade) return;
 
   const message = `${room.players[trade.offeror.id].name} ביצע עסקה עם ${
     room.players[trade.offeree.id].name
@@ -80,7 +80,7 @@ export function acceptTrade(socket: Socket, tradeId: string) {
   console.log(rooms[roomId].players[trade.offeror.id].money);
   console.log(rooms[roomId].players[trade.offeree.id].money);
 
-  io.in(roomId).emit("trade_accepted", {
+  io.in(roomId).emit("accepted_trade", {
     tradeId,
     message,
   });
@@ -99,9 +99,7 @@ export function declineTrade(socket: Socket, tradeId: string) {
     (trade) => trade.id !== tradeId
   );
 
-  io.in(roomId).emit("trade_declined", {
-    tradeId,
-  });
+  io.in(roomId).emit("declined_trade", { tradeId });
 }
 
 export function updateTrade(socket: Socket, trade: TradeType) {
@@ -113,13 +111,15 @@ export function updateTrade(socket: Socket, trade: TradeType) {
 
   const room = rooms[roomId];
   const tradeIndex = room.trades.findIndex((_trade) => _trade.id === trade.id);
-  const playerTurnInTrade = room.trades[tradeIndex].turn;
   const foundTrade = room.trades[tradeIndex];
   const playerIds = [foundTrade.offeror.id, foundTrade.offeree.id];
 
-  if (playerTurnInTrade !== socket.id) return;
-
-  if (tradeIndex === -1 || !isValidTrade(socket, trade)) return;
+  if (
+    room.trades[tradeIndex].turn !== socket.id ||
+    tradeIndex === -1 ||
+    !isValidTrade(socket, trade)
+  )
+    return;
 
   trade.turn = cycleNextItem({
     currentValue: foundTrade.turn,
@@ -128,5 +128,5 @@ export function updateTrade(socket: Socket, trade: TradeType) {
 
   rooms[roomId].trades[tradeIndex] = trade;
 
-  io.in(roomId).emit("trade_updated", trade);
+  io.in(roomId).emit("updated_trade", trade);
 }

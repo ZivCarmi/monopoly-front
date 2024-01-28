@@ -1,13 +1,16 @@
-import { cn } from "@/utils";
-import styles from "./Board.module.css";
+import { BoardRow } from "@/types/Board";
+import { ReactNode } from "react";
 
-export interface BoardRowProps extends React.HTMLAttributes<HTMLUListElement> {}
+export interface BoardRowProps extends React.HTMLAttributes<HTMLDivElement> {
+  area: BoardRow;
+  children: ReactNode;
+}
 
-const BoardRow: React.FC<BoardRowProps> = (props) => {
+const BoardRow = ({ area, children, ...props }: BoardRowProps) => {
   return (
-    <ul {...props} className={cn(styles.row, "row", props.className)}>
-      {props.children}
-    </ul>
+    <div {...props} className={`flex gap-1 row row_${area}`}>
+      {children}
+    </div>
   );
 };
 

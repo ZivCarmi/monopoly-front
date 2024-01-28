@@ -1,6 +1,7 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import GameRoom from "@/components/GameRoom";
+import GameBoardProvider from "@/components/board/GameBoardProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
@@ -35,7 +36,11 @@ const GameRoomPage = () => {
     };
   }, []);
 
-  return <GameRoom />;
+  return (
+    <GameBoardProvider>
+      <GameRoom />
+    </GameBoardProvider>
+  );
 };
 
 export default GameRoomPage;

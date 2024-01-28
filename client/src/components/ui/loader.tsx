@@ -1,5 +1,7 @@
+import styles from "./loader.module.css";
+
 const Loader = () => {
-  return <span className="loader"></span>;
+  return <span className={styles.loader}></span>;
 };
 
 export default Loader;
