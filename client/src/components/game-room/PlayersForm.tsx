@@ -23,12 +23,12 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import {
   AlertDialog,
-  AlertDialogContent,
+  AlertDialogContentRelatived,
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "./ui/alert-dialog";
-import { RadioGroup, RadioGroupItem } from "./ui/radio-group";
+} from "../ui/alert-dialog";
+import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
 const formSchema = z.object({
   name: z
@@ -80,7 +80,7 @@ export function PlayersForm() {
 
   return (
     <AlertDialog defaultOpen>
-      <AlertDialogContent className="sm:max-w-[425px]">
+      <AlertDialogContentRelatived className="sm:max-w-[425px]">
         <AlertDialogHeader>
           <AlertDialogTitle>צור שחקן</AlertDialogTitle>
         </AlertDialogHeader>
@@ -96,7 +96,7 @@ export function PlayersForm() {
                 <FormItem>
                   <FormLabel>שם</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} maxLength={30} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -207,7 +207,7 @@ export function PlayersForm() {
             </AlertDialogFooter>
           </form>
         </Form>
-      </AlertDialogContent>
+      </AlertDialogContentRelatived>
     </AlertDialog>
   );
 }

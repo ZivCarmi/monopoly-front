@@ -1,4 +1,4 @@
-import CreateRoom from "@/components/CreateRoom";
+import CreateRoomButton from "@/components/lobby/CreateRoomButton";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Gamepad2, Users2 } from "lucide-react";
@@ -18,10 +18,10 @@ const LobbyMainMenu = () => {
 
   return (
     <div className="flex items-center justify-center gap-2">
-      <CreateRoom>
+      <CreateRoomButton>
         <Icon icon={Gamepad2} />
         צור חדר חדש
-      </CreateRoom>
+      </CreateRoomButton>
       <Button
         asChild
         className="bg-gradient-to-tl from-pink-500 to-yellow-500 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-500"

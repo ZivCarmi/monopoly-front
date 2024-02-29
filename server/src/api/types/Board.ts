@@ -128,6 +128,14 @@ export type GameTile =
 
 export type CornerGameTile = IGo | IJail | IVacation | IGoToJail;
 
+export type NormalGameTile =
+  | IProperty
+  | IAirport
+  | ICompany
+  | ITax
+  | IChance
+  | ISurprise;
+
 export type Board = GameTile[];
 
 export type PurchasableTile = IProperty | IAirport | ICompany;

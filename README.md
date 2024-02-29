@@ -14,24 +14,6 @@ The game includes features such as:
 
 https://github.com/ZivCarmi/Socket.IO-Monopoly/assets/53994703/76096271-96f3-4b26-8755-9a585604b566
 
-# Getting Started
+# Link
 
-To run the app:
-
-```
-cd client;
-
-npm install;
-
-npm run dev
-```
-
-To run the server:
-
-```
-cd server;
-
-npm install;
-
-npm run dev
-```
+https://socket-io-monopoly.vercel.app

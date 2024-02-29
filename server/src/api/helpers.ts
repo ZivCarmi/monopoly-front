@@ -22,12 +22,16 @@ import {
   isGo,
   isJail,
   isProperty,
+  isVacation,
 } from "./types/Board";
 import { GameCardTypes, PaymentTypes } from "./types/Cards";
 import { shuffleArray } from "./utils";
 
 export const getGoTile = (board: Board) =>
   board.find((tile) => isGo(tile)) as IGo;
+
+export const getVacationTileIndex = (board: Board) =>
+  board.findIndex((tile) => isVacation(tile));
 
 export const getJailTileIndex = (board: Board) =>
   board.findIndex((tile) => isJail(tile));
@@ -64,7 +68,7 @@ export const getCityLevelText = (rentIndex: RentIndexes) => {
     case RentIndexes.HOTEL:
       return "מלון";
     default:
-      return "שכירות";
+      return "";
   }
 };
 

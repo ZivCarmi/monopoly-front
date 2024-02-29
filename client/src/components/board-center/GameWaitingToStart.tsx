@@ -1,6 +1,6 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import StartGameButton from "../StartGameButton";
+import StartGameButton from "./StartGameButton";
 
 const GameWaitingToStart = () => {
   const socket = useSocket();

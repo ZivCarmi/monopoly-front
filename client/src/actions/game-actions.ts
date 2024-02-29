@@ -1,29 +1,33 @@
 import { AppThunk } from "@/app/store";
-import { AIRPORT_RENTS, COMPANY_RENTS } from "@backend/constants";
 import {
-  transferMoney,
-  suspendPlayer,
-  drawGameCard,
-  movePlayer,
-  staySuspendedTurn,
-  freePlayer,
-  setDices,
-  incrementPlayerPosition,
   allowTurnActions,
-  endPlayerTurn,
+  drawGameCard,
+  freePlayer,
+  incrementPlayerPosition,
+  movePlayer,
+  setDices,
   setIsLanded,
+  staySuspendedTurn,
+  suspendPlayer,
+  transferMoney,
 } from "@/slices/game-slice";
 import { writeLog } from "@/slices/ui-slice";
-import Player from "@backend/types/Player";
+import {
+  AIRPORT_RENTS,
+  COMPANY_RENTS,
+  MS_TO_MOVE_ON_TILES,
+} from "@backend/constants";
 import {
   getGoTile,
   getJailTileIndex,
+  getVacationTileIndex,
   hasBuildings,
   hasMonopoly,
 } from "@backend/helpers";
 import {
   IJail,
   ITax,
+  IVacation,
   PurchasableTile,
   TileTypes,
   isAirport,
@@ -36,14 +40,14 @@ import {
   isTax,
   isVacation,
 } from "@backend/types/Board";
-import { MS_TO_MOVE_ON_TILES } from "@backend/constants";
 import { GameCardTypes } from "@backend/types/Cards";
+import Player from "@backend/types/Player";
+import { isPlayerSuspended } from "../utils";
 import {
   advanceToTileGameCard,
   advanceToTileTypeGameCard,
   paymentGameCard,
 } from "./card-actions";
-import { isPlayerInJail } from "../utils";
 
 export const handleDices = (dices: number[]): AppThunk => {
   return (dispatch, getState) => {
@@ -63,18 +67,20 @@ export const handleDices = (dices: number[]): AppThunk => {
     }
 
     // update suspended player
-    if (isPlayerInJail(currentPlayerTurnId)) {
+    if (isPlayerSuspended(currentPlayerTurnId)?.reason === TileTypes.JAIL) {
       return isDouble
         ? dispatch(freePlayer({ playerId: currentPlayerTurnId }))
         : dispatch(handleStaySuspendedPlayer(currentPlayerTurnId));
     }
 
+    if (isPlayerSuspended(currentPlayerTurnId)?.reason === TileTypes.VACATION) {
+      dispatch(freePlayer({ playerId: currentPlayerTurnId }));
+    }
+
     if (doublesInARow === 3) {
+      dispatch(sendPlayerToJail(player.id));
       return dispatch(
-        sendPlayerToJail(
-          player,
-          `${player.name} נשלח לכלא לאחר 3 דאבלים רצופים`
-        )
+        writeLog(`${player.name} נשלח לכלא לאחר 3 דאבלים רצופים`)
       );
     }
 
@@ -166,17 +172,11 @@ export const handlePlayerLanding = (playerId: string): AppThunk => {
     if (isGo(landedTile)) {
       const goTile = getGoTile(map.board);
 
+      dispatch(transferMoney({ recieverId: playerId, amount: goRewardOnLand }));
       dispatch(
         writeLog(
           `${player.name} נחת על ${goTile.name} והרוויח $${goRewardOnLand}`
         )
-      );
-
-      dispatch(
-        transferMoney({
-          recieverId: playerId,
-          amount: goRewardOnLand,
-        })
       );
     } else if (isPurchasable(landedTile)) {
       if (!landedTile.owner || landedTile.owner === playerId) return;
@@ -191,24 +191,39 @@ export const handlePlayerLanding = (playerId: string): AppThunk => {
     } else if (isTax(landedTile)) {
       dispatch(handleTaxPayment(player, landedTile));
     } else if (isVacation(landedTile)) {
-      dispatch(endPlayerTurn());
-
+      dispatch(sendPlayerToVacation(playerId));
       dispatch(writeLog(`${player.name} יצא לחופשה`));
-
-      return dispatch(
-        suspendPlayer({
-          playerId,
-          suspensionReason: TileTypes.VACATION,
-          suspensionLeft: landedTile.suspensionAmount,
-        })
-      );
     } else if (isGoToJail(landedTile)) {
-      dispatch(sendPlayerToJail(player));
+      dispatch(sendPlayerToJail(playerId));
+      dispatch(writeLog(`${player.name} נשלח לכלא`));
     }
   };
 };
 
-export const sendPlayerToJail = (player: Player, log?: string): AppThunk => {
+export const sendPlayerToVacation = (playerId: string): AppThunk => {
+  return (dispatch, getState) => {
+    const { map } = getState().game;
+
+    const vacationTileIndex = getVacationTileIndex(map.board);
+    const vacationTile = map.board[vacationTileIndex] as IVacation;
+
+    if (!vacationTile) {
+      throw new Error("Vacation tile not found on the board");
+    }
+
+    dispatch(movePlayer({ playerId, tilePosition: vacationTileIndex }));
+
+    dispatch(
+      suspendPlayer({
+        playerId,
+        suspensionReason: TileTypes.VACATION,
+        suspensionLeft: vacationTile.suspensionAmount,
+      })
+    );
+  };
+};
+
+export const sendPlayerToJail = (playerId: string): AppThunk => {
   return (dispatch, getState) => {
     const { map } = getState().game;
 
@@ -219,15 +234,11 @@ export const sendPlayerToJail = (player: Player, log?: string): AppThunk => {
       throw new Error("Jail tile not found on the board");
     }
 
-    dispatch(movePlayer({ playerId: player.id, tilePosition: jailTileIndex }));
+    dispatch(movePlayer({ playerId, tilePosition: jailTileIndex }));
 
-    dispatch(endPlayerTurn());
-
-    dispatch(writeLog(log ?? `${player.name} נשלח לכלא`));
-
-    return dispatch(
+    dispatch(
       suspendPlayer({
-        playerId: player.id,
+        playerId,
         suspensionReason: TileTypes.JAIL,
         suspensionLeft: jailTile.suspensionAmount,
       })
@@ -258,7 +269,7 @@ export const handleGameCard = (player: Player): AppThunk => {
       case GameCardTypes.WALK:
         return dispatch(walkPlayer(player.id, card.event.steps));
       case GameCardTypes.GO_TO_JAIL:
-        return dispatch(sendPlayerToJail(player));
+        return dispatch(sendPlayerToJail(player.id));
     }
   };
 };

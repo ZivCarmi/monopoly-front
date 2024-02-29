@@ -1,46 +1,46 @@
-import { useSocket } from "@/app/socket-context";
-import Player from "@backend/types/Player";
-import { Button } from "../ui/button";
 import { useAppSelector } from "@/app/hooks";
+import { useSocket } from "@/app/socket-context";
+import { cn, getPlayerColor } from "@/utils";
+import Player from "@backend/types/Player";
 import { Crown } from "lucide-react";
-import { Badge } from "../ui/badge";
+import PlayerNamePlate from "../../player/PlayerNamePlate";
+import { Button } from "../../ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "../ui/tooltip";
-import { cn, getPlayerColor } from "@/utils";
-import PlayerNamePlate from "../player/PlayerNamePlate";
+} from "../../ui/tooltip";
 
-const PlayerScoreRow = ({ player }: { player: Player }) => {
+const PlayerRow = ({ player }: { player: Player }) => {
   const { started } = useAppSelector((state) => state.game);
   const socket = useSocket();
 
   return (
-    <tr
+    <div
       className={cn(
-        "text-center h-[56px]",
-        socket.id === player.id && "bg-background"
+        "flex items-center text-center p-2 relative rounded-lg",
+        socket.id === player.id && "bg-background/50"
       )}
     >
       <TurnIndicator playerId={player.id} />
-      <td className="text-right p-2" width="50%">
-        <div className="flex items-center">
-          <PlayerNamePlate character={player.character} name={player.name} />
-        </div>
-      </td>
-      <td className="text-right p-2">
+      <div className="flex items-center gap-3">
+        <PlayerNamePlate
+          name={player.name}
+          character={player.character}
+          color={player.color}
+          className="text-sm"
+        />
+        <HostIndicator playerId={player.id} />
+      </div>
+      <div className="grow text-end px-4">
         {started ? (
           <>${player.money}</>
         ) : (
           <ChangeAppearanceButton playerId={player.id} />
         )}
-      </td>
-      <td className="p-2 pr-0 rounded-tl-lg rounded-bl-lg">
-        <HostIndicator playerId={player.id} />
-      </td>
-    </tr>
+      </div>
+    </div>
   );
 };
 
@@ -64,12 +64,10 @@ const TurnIndicator = ({ playerId }: { playerId: string }) => {
   const isPlayerTurn = currentPlayerTurnId === playerId;
 
   return (
-    <td className="rounded-tr-full rounded-br-full p-2 pl-0">
-      <div
-        className="w-1 h-[56px] rounded-tl-full rounded-bl-full absolute right-0 transform -translate-y-1/2"
-        style={isPlayerTurn ? { backgroundColor: playerColor } : {}}
-      />
-    </td>
+    <div
+      className="w-1 rounded-tl-full rounded-bl-full absolute top-0 bottom-0 -right-4"
+      style={isPlayerTurn ? { backgroundColor: playerColor } : {}}
+    />
   );
 };
 
@@ -84,9 +82,7 @@ const HostIndicator = ({ playerId }: { playerId: string }) => {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <Badge>
-            <Crown size={14} />
-          </Badge>
+          <Crown className="w-4 h-4 text-amber-400" />
         </TooltipTrigger>
         <TooltipContent>
           <p>מארח החדר</p>
@@ -96,4 +92,4 @@ const HostIndicator = ({ playerId }: { playerId: string }) => {
   );
 };
 
-export default PlayerScoreRow;
+export default PlayerRow;

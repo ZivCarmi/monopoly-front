@@ -14,7 +14,7 @@ type PropertyActionsProps = {
 
 const PropertyActions: React.FC<PropertyActionsProps> = ({ property }) => {
   const socket = useSocket();
-  const { currentPlayerTurnId, players } = useAppSelector(
+  const { currentPlayerTurnId, players, suspendedPlayers } = useAppSelector(
     (state) => state.game
   );
   const board = useAppSelector(selectGameBoard);
@@ -30,13 +30,18 @@ const PropertyActions: React.FC<PropertyActionsProps> = ({ property }) => {
       ? property.hotelCost
       : property.houseCost;
   const canUpgrade =
-    selfPlayerHasTurn && !isSuspended && selfPlayer.money >= upgradeCost;
+    selfPlayerHasTurn &&
+    !isSuspended &&
+    selfPlayer.money >= upgradeCost &&
+    property.rentIndex !== RentIndexes.HOTEL;
   const canDowngrade =
     selfPlayerHasTurn &&
     !isSuspended &&
     property.rentIndex !== RentIndexes.BLANK;
   const upgradedCityLevelText = getCityLevelText(property.rentIndex + 1);
   const downgradedCityLevelText = getCityLevelText(property.rentIndex - 1);
+
+  console.log(suspendedPlayers);
 
   const upgradeCityHandler = () => {
     socket.emit("upgrade_city", {
@@ -53,26 +58,26 @@ const PropertyActions: React.FC<PropertyActionsProps> = ({ property }) => {
   return (
     hasMonopoly(board, property.country.id) && (
       <div className="flex gap-2">
-        {property.rentIndex !== RentIndexes.HOTEL && (
-          <Button
-            variant="primary"
-            disabled={!canUpgrade}
-            onClick={upgradeCityHandler}
-            className="flex-1"
-          >
-            שדרג ל{upgradedCityLevelText}
-          </Button>
-        )}
-        {property.rentIndex !== RentIndexes.BLANK && (
-          <Button
-            variant="warning"
-            disabled={!canDowngrade}
-            onClick={downgradeCityHandler}
-            className="flex-1"
-          >
-            שנמך ל{downgradedCityLevelText}
-          </Button>
-        )}
+        <Button
+          variant="primary"
+          disabled={!canUpgrade}
+          onClick={upgradeCityHandler}
+          className="flex-1"
+        >
+          {upgradedCityLevelText
+            ? `שדרג ל ${upgradedCityLevelText}`
+            : "במקסימום"}
+        </Button>
+        <Button
+          variant="warning"
+          disabled={!canDowngrade}
+          onClick={downgradeCityHandler}
+          className="flex-1"
+        >
+          {downgradedCityLevelText
+            ? `שנמך ל ${downgradedCityLevelText}`
+            : "במינימום"}
+        </Button>
       </div>
     )
   );

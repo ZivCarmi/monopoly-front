@@ -3,7 +3,7 @@ import { setPlayerProperties } from "@/slices/trade-slice";
 import { isPurchasable } from "@backend/types/Board";
 import { useMemo } from "react";
 import BoardRow from "../board/BoardRow";
-import { BoardRowTile } from "../board/BoardRowTile";
+import BoardRowTile from "../board/BoardRowTile";
 import { useGameBoard } from "../board/GameBoardProvider";
 import OwnerIndicator from "../board/OwnerIndicator";
 import Tile from "../board/Tile";

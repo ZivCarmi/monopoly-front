@@ -33,7 +33,7 @@ app.get("/", (req, res) => res.status(200).json("Monopoly server is running"));
 
 io.on("connection", (socket) => {
   console.log(
-    `New connection ${socket.id}, Clients count: ${io.engine.clientsCount}`
+    `New connection: ${socket.id}, Clients count: ${io.engine.clientsCount}`
   );
 
   socket.on("get_room", ({ roomId }: { roomId: string }) => {
@@ -58,6 +58,12 @@ io.on("connection", (socket) => {
 
   socket.on("disconnecting", () => {
     playerDisconnecting(socket);
+  });
+
+  socket.on("disconnect", () => {
+    console.log(
+      `Socket left: ${socket.id}, Clients count: ${io.engine.clientsCount}`
+    );
   });
 
   socket.on("start_game", () => {

@@ -58,9 +58,9 @@ const DrawnGameCard: React.FC<DrawnGameCardProps> = ({ children, row }) => {
         isYAxis && "left-1/2 -translate-x-1/2",
         isXAxis && "top-1/2 -translate-y-1/2",
         row === "top" && "top-full",
-        row === "right" && "right-full",
+        row === "right" && "left-full [writing-mode:initial] rotate-180",
         row === "bottom" && "bottom-full",
-        row === "left" && "left-full"
+        row === "left" && "left-full [writing-mode:initial]"
       )}
     >
       {children}

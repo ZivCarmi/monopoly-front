@@ -2,7 +2,6 @@ import { RootState } from "@/app/store";
 import Player from "@backend/types/Player";
 import Room from "@backend/classes/Room";
 import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
-import { TURN_TIMES } from "@/utils/constants";
 import {
   Board,
   IProperty,
@@ -39,7 +38,6 @@ export interface GameState {
   isLanded: boolean;
   canPerformTurnActions: boolean;
   doublesInARow: number;
-  forceEndTurn: boolean;
   suspendedPlayers: {
     [playerId: string]: SuspensionProps;
   };
@@ -47,7 +45,6 @@ export interface GameState {
     tileIndex: number | null;
     card: GameCard | null;
   };
-  counter: number;
   winner: Player | null;
 }
 
@@ -78,13 +75,11 @@ const initialState: GameState = {
   isLanded: false,
   canPerformTurnActions: true,
   doublesInARow: 0,
-  forceEndTurn: false,
   suspendedPlayers: {},
   drawnGameCard: {
     tileIndex: null,
     card: null,
   },
-  counter: TURN_TIMES.rollDices,
   winner: null,
 };
 
@@ -336,9 +331,6 @@ export const gameSlice = createSlice({
         current(state.suspendedPlayers)
       );
     },
-    endPlayerTurn: (state) => {
-      state.forceEndTurn = true;
-    },
     freePlayer: (state, action: PayloadAction<{ playerId: string }>) => {
       const { playerId } = action.payload;
 
@@ -391,7 +383,6 @@ export const gameSlice = createSlice({
       state.currentPlayerTurnId = nextPlayerId;
       state.isLanded = false;
       state.canPerformTurnActions = true;
-      state.forceEndTurn = false;
       state.cubesRolledInTurn = false;
       state.doublesInARow = 0;
     },
@@ -442,7 +433,6 @@ export const {
   setCityLevel,
   suspendPlayer,
   staySuspendedTurn,
-  endPlayerTurn,
   freePlayer,
   resetCards,
   drawGameCard,
@@ -453,7 +443,6 @@ export const {
 
 export const selectGameBoard = (state: RootState) => state.game.map.board;
 export const selectPlayers = (state: RootState) => state.game.players;
-export const selectDices = (state: RootState) => state.game.dices;
 export const selectCurrentPlayerTurn = (state: RootState) =>
   state.game.players.find(
     (player) => player.id === state.game.currentPlayerTurnId

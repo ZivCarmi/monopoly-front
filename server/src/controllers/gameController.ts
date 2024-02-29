@@ -11,6 +11,7 @@ import {
   advanceToTileTypeGameCard,
   getCityLevelText,
   getJailTileIndex,
+  getVacationTileIndex,
   hasBuildings,
   hasMonopoly,
   paymentGameCard,
@@ -18,6 +19,7 @@ import {
 import {
   IJail,
   ITax,
+  IVacation,
   PurchasableTile,
   RentIndexes,
   TileTypes,
@@ -140,71 +142,30 @@ export function payTax(roomId: string, payerId: string, tile: ITax) {
   }
 }
 
-export function onPlayerLanding(socket: Socket) {
-  const roomId = getSocketRoomId(socket);
+export function sendPlayerToVacation(playerId: string) {
+  const roomId = getSocketRoomId(playerId);
 
-  if (!roomId) return;
+  if (!rooms[roomId]) return;
 
-  const room = rooms[roomId];
-  const currentPlayerPosition = room.players[socket.id].tilePos;
-  const landedTile = room.map.board[currentPlayerPosition];
-  const playerName = room.players[socket.id].name;
-  const goRewardOnLand = room.map.goRewards.land;
+  const vacationTileIndex = getVacationTileIndex(rooms[roomId].map.board);
+  const vacationTile = rooms[roomId].map.board[vacationTileIndex] as IVacation;
 
-  if (isGo(landedTile)) {
-    rooms[roomId].players[socket.id].money += goRewardOnLand;
+  if (!vacationTile) return;
 
-    writeLogToRoom(
-      roomId,
-      `${playerName} נחת על ${landedTile.name} והרוויח $${goRewardOnLand}`
-    );
-  } else if (isPurchasable(landedTile)) {
-    if (landedTile.owner && landedTile.owner !== socket.id) {
-      payRent(roomId, socket.id, landedTile);
-    }
-  } else if (isChanceCard(landedTile)) {
-    handleGameCard(socket, room.map.chances);
-    rooms[roomId].map.chances.currentIndex += 1;
-  } else if (isTax(landedTile)) {
-    payTax(roomId, socket.id, landedTile);
-  } else if (isSurpriseCard(landedTile)) {
-    handleGameCard(socket, room.map.surprises);
-    rooms[roomId].map.surprises.currentIndex += 1;
-  } else if (isJail(landedTile)) {
-    // Maybe do here something? not sure
-  } else if (isVacation(landedTile)) {
-    rooms[roomId].suspendedPlayers[socket.id] = {
-      reason: TileTypes.VACATION,
-      left: landedTile.suspensionAmount,
-    };
-
-    writeLogToRoom(roomId, `${playerName} יצא לחופשה`);
-  } else if (isGoToJail(landedTile)) {
-    sendPlayerToJail(roomId, socket.id);
-  }
-
-  const timeToLand = (room.dices[0] + room.dices[1]) * MS_TO_MOVE_ON_TILES;
-
-  if (isPlayerInDebt(socket.id)) {
-    setTimeout(() => {
-      if (hasProperties(socket.id)) {
-        io.in(roomId).emit("player_in_debt", { playerId: socket.id });
-      } else {
-        bankruptPlayer(socket);
-      }
-    }, timeToLand);
-  }
-
-  console.log("Player state after landing", rooms[roomId].players[socket.id]);
+  rooms[roomId].players[playerId].tilePos = vacationTileIndex;
+  rooms[roomId].suspendedPlayers[playerId] = {
+    reason: TileTypes.VACATION,
+    left: vacationTile.suspensionAmount,
+  };
 }
 
-export function sendPlayerToJail(roomId: string, playerId: string) {
-  const room = rooms[roomId];
+export function sendPlayerToJail(playerId: string) {
+  const roomId = getSocketRoomId(playerId);
 
-  if (!room) return;
+  if (!rooms[roomId]) return;
 
-  const jailTileIndex = getJailTileIndex(room.map.board);
-  const jailTile = room.map.board[jailTileIndex] as IJail;
+  const jailTileIndex = getJailTileIndex(rooms[roomId].map.board);
+  const jailTile = rooms[roomId].map.board[jailTileIndex] as IJail;
 
   if (!jailTile) return;
 
@@ -213,6 +174,8 @@ export function sendPlayerToJail(roomId: string, playerId: string) {
     reason: TileTypes.JAIL,
     left: jailTile.suspensionAmount,
   };
+
+  console.log("Player sent to jail", rooms[roomId].suspendedPlayers[playerId]);
 }
 
 export function handleGameCard(socket: Socket, roomGameCards: RoomGameCards) {
@@ -258,7 +221,7 @@ export function handleGameCard(socket: Socket, roomGameCards: RoomGameCards) {
     case GameCardTypes.WALK:
       return walkPlayer(socket, drawnGameCard.event.steps);
     case GameCardTypes.GO_TO_JAIL:
-      return sendPlayerToJail(roomId, playerId);
+      return sendPlayerToJail(playerId);
     default:
       return;
   }
@@ -355,6 +318,9 @@ export function rollDice(socket: Socket) {
   const roomId = getSocketRoomId(socket);
 
   console.log("--------------------------------------");
+  console.log(
+    `${rooms[roomId].players[socket.id].character} is Rolling dices.....`
+  );
 
   if (!roomId || !isPlayerHasTurn(socket.id) || isPlayerInDebt(socket.id))
     return;
@@ -365,9 +331,9 @@ export function rollDice(socket: Socket) {
   // const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
   // const firstPlayerId = getPlayerIds(roomId)[0];
   // if (firstPlayerId === currentPlayerTurnId) {
-  //   rooms[roomId].dices = [4, 3];
+  //   rooms[roomId].dices = [1, 1];
   // } else {
-  //   rooms[roomId].dices = [4, 3];
+  //   rooms[roomId].dices = [6, 4];
   // }
 
   const isDouble = rooms[roomId].dices[0] === rooms[roomId].dices[1];
@@ -379,11 +345,20 @@ export function rollDice(socket: Socket) {
 
   io.in(roomId).emit("dice_rolled", { dices: rooms[roomId].dices });
 
-  if (isPlayerInJail(socket.id)) {
-    const suspensionTurnsLeft = rooms[roomId].suspendedPlayers[socket.id]
-      .left--;
+  console.log(rooms[roomId].suspendedPlayers);
 
-    if (isDouble || suspensionTurnsLeft === 0) {
+  if (isPlayerInJail(socket.id)) {
+    const suspensionTurnsLeft = --rooms[roomId].suspendedPlayers[socket.id]
+      .left;
+
+    console.log(
+      "Player in jail switching turn, Suspended player:",
+      rooms[roomId].suspendedPlayers[socket.id],
+      "Turns left:",
+      suspensionTurnsLeft
+    );
+
+    if (isDouble || suspensionTurnsLeft <= 0) {
       delete rooms[roomId].suspendedPlayers[socket.id];
     }
 
@@ -392,10 +367,12 @@ export function rollDice(socket: Socket) {
 
   // send player to jail
   if (rooms[roomId].doublesInARow === 3) {
-    sendPlayerToJail(roomId, socket.id);
+    sendPlayerToJail(socket.id);
 
     return switchTurn(socket);
   }
+
+  console.log("before walking...");
 
   walkPlayer(socket, dicesSum);
 }
@@ -421,15 +398,59 @@ export function walkPlayer(socket: Socket, steps: number) {
   return onPlayerLanding(socket);
 }
 
+export function onPlayerLanding(socket: Socket) {
+  const roomId = getSocketRoomId(socket);
+
+  if (!roomId) return;
+
+  const room = rooms[roomId];
+  const currentPlayerPosition = room.players[socket.id].tilePos;
+  const landedTile = room.map.board[currentPlayerPosition];
+  const goRewardOnLand = room.map.goRewards.land;
+
+  if (isGo(landedTile)) {
+    rooms[roomId].players[socket.id].money += goRewardOnLand;
+  } else if (isPurchasable(landedTile)) {
+    if (landedTile.owner && landedTile.owner !== socket.id) {
+      payRent(roomId, socket.id, landedTile);
+    }
+  } else if (isChanceCard(landedTile)) {
+    handleGameCard(socket, room.map.chances);
+    rooms[roomId].map.chances.currentIndex += 1;
+  } else if (isTax(landedTile)) {
+    payTax(roomId, socket.id, landedTile);
+  } else if (isSurpriseCard(landedTile)) {
+    handleGameCard(socket, room.map.surprises);
+    rooms[roomId].map.surprises.currentIndex += 1;
+  } else if (isJail(landedTile)) {
+    // Maybe do here something? not sure
+  } else if (isVacation(landedTile)) {
+    sendPlayerToVacation(socket.id);
+    // can switch turn here.
+  } else if (isGoToJail(landedTile)) {
+    sendPlayerToJail(socket.id);
+  }
+
+  const timeToLand = (room.dices[0] + room.dices[1]) * MS_TO_MOVE_ON_TILES;
+
+  if (isPlayerInDebt(socket.id)) {
+    setTimeout(() => {
+      if (hasProperties(socket.id)) {
+        io.in(roomId).emit("player_in_debt", { playerId: socket.id });
+      } else {
+        bankruptPlayer(socket);
+      }
+    }, timeToLand);
+  }
+}
+
 export function switchTurn(socket: Socket): void {
   const roomId = getSocketRoomId(socket);
 
   console.log("--------------------------------------");
+  console.log("Switching turn...");
 
   if (!roomId) return;
-
-  console.log("Attempting to switch turn...");
-  console.log("Player state", rooms[roomId].players[socket.id]);
 
   if (!isPlayerHasTurn(socket.id) || isPlayerInDebt(socket.id)) return;
 
@@ -446,12 +467,12 @@ export function switchTurn(socket: Socket): void {
   });
 
   console.log(
-    `Turn before switch belongs to - `,
-    rooms[roomId].players[socket.id].character
+    "Turn before switch belongs to -",
+    rooms[roomId]?.players[socket.id]?.character
   );
   console.log(
-    `Turn after switch belongs to - `,
-    rooms[roomId].players[nextPlayerTurnId].character
+    "Turn after switch belongs to -",
+    rooms[roomId]?.players[nextPlayerTurnId]?.character
   );
 
   // update current player turn
@@ -471,7 +492,7 @@ export function switchTurn(socket: Socket): void {
       nextSuspendedPlayer
     );
 
-    if (nextSuspendedPlayer.left === 0) {
+    if (nextSuspendedPlayer.left <= 0) {
       // can safely remove the player from suspension
       delete rooms[roomId].suspendedPlayers[nextPlayerTurnId];
     } else {
@@ -499,6 +520,8 @@ export function switchTurn(socket: Socket): void {
   io.in(roomId).emit("switched_turn", {
     nextPlayerId: nextPlayerTurnId,
   });
+
+  console.log("Turn switched");
 }
 
 export function payOutOfJail(socket: Socket) {

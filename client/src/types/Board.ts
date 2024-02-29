@@ -17,5 +17,5 @@ export type BoardRaw = RowTilesRaw[];
 export const rowClassname: BoardRow[] = ["top", "right", "bottom", "left"];
 
 export type MappedPlayersByTiles = {
-  [tileIndex: number]: Player[];
+  [tileIndex: string]: Player[];
 };

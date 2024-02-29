@@ -1,8 +1,8 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { selectPlayers } from "@/slices/game-slice";
-import Icon from "./ui/icon";
+import Icon from "../ui/icon";
 import { Play } from "lucide-react";
 import {
   Tooltip,

@@ -9,6 +9,7 @@ import {
   isProperty,
   isPurchasable,
 } from "@backend/types/Board";
+import { SuspensionProps } from "@backend/types/Game";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -59,10 +60,10 @@ export const isPlayer = (playerId: string) => {
   return player;
 };
 
-export const isPlayerSuspended = (playerId: string) => {
-  const suspendedPlayer = store.getState().game.suspendedPlayers[playerId];
-
-  return Boolean(suspendedPlayer);
+export const isPlayerSuspended = (
+  playerId: string
+): SuspensionProps | undefined => {
+  return store.getState().game.suspendedPlayers[playerId];
 };
 
 export const isPlayerInJail = (playerId: string) => {

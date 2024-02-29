@@ -7,7 +7,7 @@ export interface CenterProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const BoardCenter = ({ children, className, ...props }: CenterProps) => {
   return (
-    <div {...props} className={cn("p-8 grid center rtl", className)}>
+    <div {...props} className={cn("p-8 grid center z-0 rtl", className)}>
       {children}
     </div>
   );

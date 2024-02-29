@@ -2,7 +2,7 @@ import { useSocket } from "@/app/socket-context";
 import { ArrowRight, PlusSquare, RefreshCcw } from "lucide-react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import CreateRoom from "../CreateRoom";
+import CreateRoomButton from "./CreateRoomButton";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
 
@@ -37,10 +37,10 @@ const LobbyGameRoomsActions = () => {
         <Button variant="outline" onClick={fetchAllRooms}>
           <RefreshCcw className="h-4 w-4" />
         </Button>
-        <CreateRoom>
+        <CreateRoomButton>
           <Icon icon={PlusSquare} />
           חדר חדש
-        </CreateRoom>
+        </CreateRoomButton>
       </div>
     </div>
   );

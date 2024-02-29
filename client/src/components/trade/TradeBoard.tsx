@@ -12,11 +12,7 @@ const TradeBoard = ({ playerId }: TradeBoardProps) => {
   const isDisabled = status === "sent" || status === "recieved";
 
   return (
-    <Board
-      cornerSize={50}
-      tileSize={30}
-      className={`tradeBoard ${isDisabled ? "opacity-50" : ""}`}
-    >
+    <Board className={`tradeBoard ${isDisabled ? "opacity-50" : ""}`}>
       <BoardCenter className="min-w-[15rem] min-h-[15rem]" />
       <TradeBoardRows playerId={playerId} />
     </Board>

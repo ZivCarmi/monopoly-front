@@ -7,7 +7,7 @@ import Icon from "../ui/icon";
 
 const RollDices = () => {
   const dispatch = useAppDispatch();
-  const { cubesRolledInTurn, doublesInARow, forceEndTurn } = useAppSelector(
+  const { cubesRolledInTurn, doublesInARow } = useAppSelector(
     (state) => state.game
   );
   const hasExtraTurn = doublesInARow > 0 && doublesInARow < 3;
@@ -27,7 +27,7 @@ const RollDices = () => {
     socket.emit("switch_turn");
   };
 
-  if (forceEndTurn || (cubesRolledInTurn && !hasExtraTurn)) {
+  if (cubesRolledInTurn && !hasExtraTurn) {
     return (
       <Button variant="primary" onClick={switchTurnHandler}>
         <Icon icon={RefreshCcw} />

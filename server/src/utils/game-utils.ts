@@ -106,7 +106,7 @@ export async function backToLobby(socket: Socket) {
       roomHostId,
     });
 
-    socket.leave(roomId);
+    await socket.leave(roomId);
   }
 
   writeLogToRoom(roomId, messages);
@@ -164,6 +164,8 @@ export const isPlayerInJail = (playerId: string) => {
   const roomId = getSocketRoomId(playerId);
 
   if (!rooms[roomId]) return false;
+
+  console.log("isPlayerInJail", rooms[roomId]?.suspendedPlayers[playerId]);
 
   return (
     rooms[roomId]?.suspendedPlayers[playerId] &&

@@ -7,10 +7,12 @@ type CornerTileProps = {
 };
 
 const CornerTile = ({ tile }: CornerTileProps) => {
-  return (
-    <Tile tile={tile} className="justify-center items-center">
-      {isJail(tile) && <JailTile />}
+  return isJail(tile) ? (
+    <Tile tile={tile} hideTileName={true}>
+      <JailTile />
     </Tile>
+  ) : (
+    <Tile tile={tile} className="justify-center items-center" />
   );
 };
 

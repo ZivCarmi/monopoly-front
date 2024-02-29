@@ -1,8 +1,8 @@
-import { Button } from "./ui/button";
+import { Button } from "../ui/button";
 import { useSocket } from "@/app/socket-context";
 import { v4 as uuidv4 } from "uuid";
 
-const CreateRoom = ({ children }: { children: React.ReactNode }) => {
+const CreateRoomButton = ({ children }: { children: React.ReactNode }) => {
   const socket = useSocket();
 
   const createRoomHandler = () => {
@@ -16,4 +16,4 @@ const CreateRoom = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
-export default CreateRoom;
+export default CreateRoomButton;

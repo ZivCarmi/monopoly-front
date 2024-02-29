@@ -1,6 +1,6 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import GameRoom from "@/components/GameRoom";
+import GameRoom from "@/components/game-room/GameRoom";
 import GameBoardProvider from "@/components/board/GameBoardProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useRef } from "react";

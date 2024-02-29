@@ -1,9 +1,21 @@
+import TileName from "./TileName";
+
 const JailTile = () => {
   return (
-    <div className="absolute w-full h-full grid grid-cols-8">
-      {[...Array(8)].map((_, idx) => (
-        <span className="border-x border-neutral-600" key={idx} />
-      ))}
+    <div className="w-full flex flex-col">
+      <div className="grow flex items-center justify-center">
+        <TileName>ביקורים</TileName>
+      </div>
+      <div className="relative basis-[60%] w-[75%] rounded-bl-md rounded-tr-md border-t-2 border-r-2 border-neutral-500">
+        <div className="w-full h-full grid grid-cols-6">
+          {[...Array(6)].map((_, idx) => (
+            <span key={idx} className="border-l-2 border-neutral-500" />
+          ))}
+        </div>
+        <span className="absolute bottom-0 left-1/2 -translate-x-1/2">
+          <TileName>כלא</TileName>
+        </span>
+      </div>
     </div>
   );
 };

@@ -9,7 +9,7 @@ import {
   tradeDeclinedThunk,
   tradeUpdatedThunk,
 } from "@/actions/socket-actions";
-import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import {
   bankruptPlayer,
@@ -25,17 +25,13 @@ import Room from "@backend/classes/Room";
 import { TradeType } from "@backend/types/Game";
 import Player from "@backend/types/Player";
 import { useEffect } from "react";
-import PlayersForm from "./PlayersForm";
-import GameBoard from "./board/GameBoard";
-import GameScoreboard from "./game-scoreboard/GameScoreboard";
-import GameSidebar from "./game-sidebar/GameSidebar";
-import WinnerScreen from "./winner/WinnerScreen";
+import GameSidebar from "../game-panels/GameSidebar";
+import GameInfo from "../game-panels/general/GameInfo";
+import GameInvitation from "../game-panels/general/GameInvitation";
+import GameScoreboard from "../game-panels/scoreboard/GameScoreboard";
+import MainBoard from "./MainBoard";
 
 const GameRoom = () => {
-  const { isReady, started } = useAppSelector((state) => state.game);
-  // const boardRef = useRef<HTMLDivElement>(null);
-  // const boardSizeRef = useRef([0, 0]);
-  // const scaleRef = useRef(1);
   const socket = useSocket();
   const dispatch = useAppDispatch();
 
@@ -149,49 +145,7 @@ const GameRoom = () => {
     dispatch(setWinner({ winnerId }));
   };
 
-  // const onResize = useCallback(() => {
-  //   if (!boardRef.current) return;
-
-  //   // const boardPadding = window.getComputedStyle(boardSizeRef.current).padding;
-  //   if (
-  //     boardSizeRef.current[0] !== boardRef.current.offsetWidth ||
-  //     boardSizeRef.current[1] !== boardRef.current.offsetHeight
-  //   ) {
-  //     boardSizeRef.current = [
-  //       boardRef.current.offsetWidth,
-  //       boardRef.current.offsetHeight,
-  //     ];
-
-  //     const windowWidth = window.innerWidth;
-  //     const windowHeight = window.innerHeight;
-
-  //     console.log(windowWidth, windowHeight);
-
-  //     console.log(
-  //       boardSizeRef.current[0] / windowWidth,
-  //       boardSizeRef.current[1] / windowHeight
-  //     );
-
-  //     // const isMax =
-  //     //   boardSizeRef.current[0] >= windowWidth &&
-  //     //   boardSizeRef.current[1] >= windowHeight;
-  //     // const scale = Math.min(
-  //     //   boardSizeRef.current[0] / windowWidth,
-  //     //   boardSizeRef.current[1] / windowHeight
-  //     // );
-  //     // boardSizeRef.current[0] = !isMax ? windowWidth * scale : boardSizeRef.current[0];
-  //     // boardSizeRef.current[1] = !isMax ? windowHeight * scale : boardSizeRef.current[1];
-
-  //     // console.log(scaleRef.current);
-  //     // console.log(boardSizeRef.current);
-
-  //     // scaleRef.current = !isMax ? scale : 1;
-  //   }
-  // }, []);
-
   useEffect(() => {
-    // onResize();
-    // window.addEventListener("resize", onResize);
     socket.on("player_created", onPlayerCreated);
     socket.on("update_players", onUpdatePlayers);
     socket.on("game_started", onGameStarted);
@@ -210,7 +164,6 @@ const GameRoom = () => {
     socket.on("game_ended", onGameEnded);
 
     return () => {
-      // window.removeEventListener("resize", onResize);
       socket.off("player_created", onPlayerCreated);
       socket.off("update_players", onUpdatePlayers);
       socket.off("game_started", onGameStarted);
@@ -231,27 +184,17 @@ const GameRoom = () => {
   }, []);
 
   return (
-    <>
-      {!started && !isReady && <PlayersForm />}
-      <div className="grid min-h-screen grid-cols-[minmax(20rem,1fr)_auto_minmax(20rem,1fr)]">
-        <GameSidebar />
-        <div
-          className="relative p-4"
-          // style={{
-          //   transform: `scale(${scaleRef.current})`,
-          //   width:
-          //     scaleRef.current < 0 ? `${boardSizeRef.current[0]}px` : "auto",
-          //   height:
-          //     scaleRef.current < 0 ? `${boardSizeRef.current[1]}px` : "auto",
-          // }}
-          // ref={boardRef}
-        >
-          <GameBoard />
-          <WinnerScreen />
-        </div>
-        <GameScoreboard />
+    <div className="room-container">
+      <div className="game-general">
+        <GameInfo />
+        <GameInvitation />
       </div>
-    </>
+      <MainBoard className="main-board" />
+      <div className="game-sidebar">
+        <GameScoreboard />
+        <GameSidebar />
+      </div>
+    </div>
   );
 };
 

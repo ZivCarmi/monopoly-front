@@ -8,7 +8,7 @@ export interface BoardRowProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const BoardRow = ({ area, children, ...props }: BoardRowProps) => {
   return (
-    <div {...props} className={`flex gap-1 row row_${area}`}>
+    <div {...props} className={`flex gap-1 row row-${area}`}>
       {children}
     </div>
   );

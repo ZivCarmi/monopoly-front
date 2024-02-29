@@ -110,27 +110,47 @@
 }
 
 :root {
-  --board-corner-size: 100px;
-  --board-tile-size: 80px;
-
   --flag-icon-size: 34px;
   --flag-icon-center: var(--flag-icon-size) / 2;
   --city-tile-spacing: calc(var(--flag-icon-center) + 3px);
 }
 
-.board .row .tile {
-  display: flex;
-}
-
 @layer base {
-  .board .row_left .badge,
-  .board .row_right .badge {
+  .board .row-left .badge,
+  .board .row-right .badge {
     @apply px-0.5 py-2.5;
   }
 }
 
-.row_right .cityBuilding svg,
-.row_left .cityBuilding svg {
+.room-container {
+  display: grid;
+  grid-template-columns: minmax(20rem, 1fr) auto minmax(20rem, 1fr);
+  grid-template-areas: "left center right";
+  align-items: flex-start;
+  @apply p-4 gap-4;
+}
+
+.game-general,
+.game-sidebar {
+  @apply space-y-4;
+}
+
+.game-general {
+  grid-area: left;
+}
+
+.main-board {
+  grid-area: center;
+  height: calc(100vh - 2rem);
+  margin: auto;
+}
+
+.game-sidebar {
+  grid-area: right;
+}
+
+.row-right .cityBuilding svg,
+.row-left .cityBuilding svg {
   transform: rotate(90deg);
 }
 
@@ -140,14 +160,14 @@
   position: absolute;
 }
 
-.row_top .flagIcon,
-.row_bottom .flagIcon {
+.row-top .flagIcon,
+.row-bottom .flagIcon {
   left: 50%;
   transform: translateX(-50%);
 }
 
-.row_right .flagIcon,
-.row_left .flagIcon {
+.row-right .flagIcon,
+.row-left .flagIcon {
   top: 50%;
   transform: translateY(-50%) rotate(90deg);
   left: calc(100% - var(--flag-icon-center));
@@ -158,53 +178,66 @@
   background-size: 130%;
 }
 
-.row_right .tileImg,
-.row_left .tileImg {
+.row-right .tileImg,
+.row-left .tileImg {
   background-size: 90%;
   transform: rotate(90deg);
 }
 
-.tradeBoard .row_right .tileImg,
-.tradeBoard .row_left .tileImg {
+.tradeBoard .row-right .tileImg,
+.tradeBoard .row-left .tileImg {
   scale: 2.25;
   background-size: 50%;
 }
 
-.row_top .flagIcon {
+.row-top .flagIcon {
   top: calc(100% - var(--flag-icon-center));
 }
 
-.row_bottom .flagIcon {
+.row-bottom .flagIcon {
   bottom: calc(100% - var(--flag-icon-center));
 }
 
-.row_top .mapped_player,
-.row_bottom .mapped_player {
-  top: 50%;
+.row-right .tile:not(.corner) .player,
+.row-left .tile:not(.corner) .player {
+  transform: scaleY(-1) rotate(90deg);
 }
 
-.row_right .mapped_player,
-.row_left .mapped_player {
-  left: 50%;
+.row-bottom .tile .player,
+.row-left .corner .player {
+  transform: scaleX(-1);
 }
 
-.row_top .mapped_player {
-  transform: translateY(-50%);
+.row-top .mapped-players,
+.jail .mapped-players {
+  justify-content: flex-start;
 }
 
-.row_right .mapped_player {
-  transform: scaleX(-1) rotate(90deg) translateY(-50%);
+.jail .mapped-players {
+  align-items: flex-start;
 }
 
-.row_bottom .mapped_player {
-  transform: scaleX(-1) translateY(-50%);
+.jail .mapped-players:not(.jail-players) {
+  bottom: 60%;
 }
 
-.row_left .mapped_player {
-  transform: scaleX(-1) rotate(-90deg) translateY(50%);
+.jail .jail-players {
+  top: 40%;
+  right: 25%;
+  z-index: -1;
 }
 
-/* NEW CSS FOR BOARD */
+.row-top .mapped-players .player:not(:first-child),
+.row-right .corner .mapped-players .player:not(:first-child),
+.row-bottom .mapped-players .player:not(:first-child) {
+  @apply -ml-6;
+}
+
+.row-right .tile:not(.corner) .mapped-players .player:not(:first-child),
+.row-left .tile:not(.corner) .mapped-players .player:not(:first-child) {
+  @apply -mt-6;
+}
+
 .board {
   display: grid;
   grid-template-columns: repeat(11, auto);
@@ -215,86 +248,107 @@
   grid-area: 2/2 / span 9 / span 9;
 }
 
-.row_top {
+.row-top {
   grid-area: 1 / 1/1/11;
 }
 
-.row_right {
+.row-right {
   grid-area: 1/11 / span 10/11;
 }
 
-.row_bottom {
+.row-bottom {
   grid-area: 11/2/11 / span 10;
 }
 
-.row_left {
+.row-left {
   grid-area: 2/1 / span 10/1;
 }
 
-.row_bottom {
+.row-bottom {
   flex-direction: row-reverse;
-}
-
-.corner {
-  block-size: 7rem;
-  inline-size: 0;
-  min-inline-size: 7rem;
 }
 
 .tile {
   min-inline-size: 5rem;
+  block-size: 7rem;
   inline-size: 0;
 }
 
-.tradeBoard .corner {
-  block-size: 2.5rem;
-  min-inline-size: 2.5rem;
+.corner {
+  inline-size: 7rem;
 }
 
 .tradeBoard .tile {
+  display: flex;
   min-inline-size: 1.5rem;
+  block-size: 2.5rem;
 }
 
-.row_top .tileContent {
+.tradeBoard .corner {
+  inline-size: 2.5rem;
+}
+
+.row-top .tileContent {
   flex-direction: column-reverse;
   padding-bottom: var(--city-tile-spacing);
 }
 
-.row_top .badgeWrapper {
+.row-top .badgeWrapper {
   padding-top: 0.25rem;
 }
 
-.row_right .badgeWrapper,
-.row_left .badgeWrapper {
+.row-right .badgeWrapper,
+.row-left .badgeWrapper {
   padding-left: 0.25rem;
 }
 
-.row_bottom .badgeWrapper {
+.row-bottom .badgeWrapper {
   padding-bottom: 0.25rem;
 }
 
-.row_right .tileContent,
-.row_left .tileContent {
+.row-right .tileContent,
+.row-left .tileContent {
   padding-right: var(--city-tile-spacing);
 }
 
-.row_bottom .tileContent {
+.row-bottom .tileContent {
   padding-top: var(--city-tile-spacing);
 }
 
-.row_right .tile {
+.row-right .tile:not(.corner) {
   transform: rotate(180deg);
   writing-mode: vertical-rl;
 }
 
-.row_left .tile {
+.row-left .tile:not(.corner) {
   writing-mode: vertical-rl;
 }
 
-.row_right {
+.row-right {
   flex-direction: column;
 }
 
-.row_left {
+.row-left {
   flex-direction: column-reverse;
+}
+
+@media (max-width: 1600px) {
+  .room-container {
+    grid-template-columns: auto 1fr;
+    grid-template-areas: "center right" "left right";
+  }
+}
+
+@media (max-width: 1200px) {
+  .room-container {
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: "center center" "left right";
+  }
+}
+
+@media (max-width: 600px) {
+  .room-container {
+    grid-template-columns: 1fr;
+    grid-template-areas: "center" "right" "left";
+  }
 }

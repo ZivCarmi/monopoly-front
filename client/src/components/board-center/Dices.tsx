@@ -1,11 +1,10 @@
 import { useAppSelector } from "@/app/hooks";
-import { selectDices } from "@/slices/game-slice";
 import { Dice1, Dice2, Dice3, Dice4, Dice5, Dice6 } from "lucide-react";
 
 const DICE_ICONS = [Dice1, Dice2, Dice3, Dice4, Dice5, Dice6];
 
 const Dices = () => {
-  const dices = useAppSelector(selectDices);
+  const { dices } = useAppSelector((state) => state.game);
 
   return (
     <div className="flex justify-center">
