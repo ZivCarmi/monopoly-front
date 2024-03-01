@@ -65,51 +65,51 @@ export function writeLogToRoom(roomId: string, message: string | string[]) {
   }
 }
 
-export async function backToLobby(socket: Socket) {
-  const roomId = getSocketRoomId(socket);
+// export async function backToLobby(socket: Socket) {
+//   const roomId = getSocketRoomId(socket);
 
-  if (!roomId) return;
+//   if (!roomId) return;
 
-  socket.emit("on_lobby");
+//   socket.emit("on_lobby");
 
-  const roomPlayersCount = getPlayersCount(roomId);
-  const connectedSockets = io.sockets.adapter.rooms.get(roomId);
-  let messages: string[] = [];
+//   const roomPlayersCount = getPlayersCount(roomId);
+//   const connectedSockets = io.sockets.adapter.rooms.get(roomId);
+//   let messages: string[] = [];
 
-  if (rooms[roomId].players[socket.id] !== undefined) {
-    messages.push(`${rooms[roomId].players[socket.id].name} עזב את המשחק`);
-  } else {
-    messages.push("צופה עזב את המשחק");
-  }
+//   if (rooms[roomId].players[socket.id] !== undefined) {
+//     messages.push(`${rooms[roomId].players[socket.id].name} עזב את המשחק`);
+//   } else {
+//     messages.push("צופה עזב את המשחק");
+//   }
 
-  if (connectedSockets?.size === 1) {
-    deleteRoom(socket);
-  } else {
-    let roomHostId = rooms[roomId].hostId;
-    const isMoreThanOnePlayer = roomPlayersCount > 1;
+//   if (connectedSockets?.size === 1) {
+//     deleteRoom(socket);
+//   } else {
+//     let roomHostId = rooms[roomId].hostId;
+//     const isMoreThanOnePlayer = roomPlayersCount > 1;
 
-    // Decrease room participants count by 1
-    delete rooms[roomId].players[socket.id];
+//     // Decrease room participants count by 1
+//     delete rooms[roomId].players[socket.id];
 
-    // nominate new host id for the room
-    if (rooms[roomId].hostId === socket.id && isMoreThanOnePlayer) {
-      roomHostId = updateHostId(socket);
-      const hostPlayer = rooms[roomId].players[roomHostId];
+//     // nominate new host id for the room
+//     if (rooms[roomId].hostId === socket.id && isMoreThanOnePlayer) {
+//       roomHostId = updateHostId(socket);
+//       const hostPlayer = rooms[roomId].players[roomHostId];
 
-      messages.push(`${hostPlayer.name} מונה למארח החדר`);
-    }
+//       messages.push(`${hostPlayer.name} מונה למארח החדר`);
+//     }
 
-    socket.to(roomId).emit("update_players", {
-      players: rooms[roomId].players,
-      message: messages,
-      roomHostId,
-    });
+//     socket.to(roomId).emit("update_players", {
+//       players: rooms[roomId].players,
+//       message: messages,
+//       roomHostId,
+//     });
 
-    await socket.leave(roomId);
-  }
+//     await socket.leave(roomId);
+//   }
 
-  writeLogToRoom(roomId, messages);
-}
+//   writeLogToRoom(roomId, messages);
+// }
 
 export function updateHostId(socket: Socket, newHostId?: string): string {
   newHostId = "";

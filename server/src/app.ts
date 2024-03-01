@@ -14,7 +14,6 @@ import { getRoomData, joinRoom } from "./controllers/roomController";
 import app from "./services/expressService";
 import io from "./services/socketService";
 import { getLobbyRooms } from "./controllers/lobbyController";
-import { backToLobby } from "./utils/game-utils";
 import {
   addPlayer,
   bankruptPlayer,
@@ -49,7 +48,6 @@ io.on("connection", (socket) => {
   });
 
   socket.on("back_to_lobby", () => {
-    // backToLobby(socket);
     playerDisconnecting(socket);
   });
 

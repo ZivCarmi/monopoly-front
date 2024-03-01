@@ -63,7 +63,7 @@ export function startGame(socket: Socket) {
   if (socket.id !== rooms[roomId].hostId || players.length < 2) return;
 
   // randomize the players array (IF COMMENTED IT'S FOR TESTING)
-  // shuffleArray(players);
+  shuffleArray(players);
 
   const startingPlayer = players[0].id;
   const gameStartMessage = "המשחק התחיל!";
@@ -325,14 +325,14 @@ export function rollDice(socket: Socket) {
 
   rooms[roomId].dices = randomizeDices();
 
-  // FOR TESTING
-  const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
-  const firstPlayerId = getPlayerIds(roomId)[0];
-  if (firstPlayerId === currentPlayerTurnId) {
-    rooms[roomId].dices = [4, 3];
-  } else {
-    rooms[roomId].dices = [2, 1];
-  }
+  // // FOR TESTING
+  // const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
+  // const firstPlayerId = getPlayerIds(roomId)[0];
+  // if (firstPlayerId === currentPlayerTurnId) {
+  //   rooms[roomId].dices = [4, 3];
+  // } else {
+  //   rooms[roomId].dices = [2, 1];
+  // }
 
   const isDouble = rooms[roomId].dices[0] === rooms[roomId].dices[1];
   const dicesSum = rooms[roomId].dices[0] + rooms[roomId].dices[1];

@@ -449,38 +449,38 @@ export const initializeMap = () => {
   ];
 
   const surpriseCards = [
-    // new GameCards.PaymentCard({
-    //   message: "מצאת ארנק עם כסף. הרווחת $200.",
-    //   type: GameCardTypes.PAYMENT,
-    //   event: {
-    //     amount: 200,
-    //     paymentType: PaymentTypes.EARN,
-    //   },
-    // }),
-    // new GameCards.PaymentCard({
-    //   message: "חנוכה הגיע וסבתא החליטה לפנק אותך ב $30.",
-    //   type: GameCardTypes.PAYMENT,
-    //   event: {
-    //     amount: 30,
-    //     paymentType: PaymentTypes.EARN,
-    //   },
-    // }),
-    // new GameCards.PaymentCard({
-    //   message: "הטלפון שלך הלך קפוט. שלם $200 לתיקון.",
-    //   type: GameCardTypes.PAYMENT,
-    //   event: {
-    //     amount: 200,
-    //     paymentType: PaymentTypes.PAY,
-    //   },
-    // }),
-    // new GameCards.PaymentCard({
-    //   message: "נתקעת עם הרכב. שלם $50 לגרר.",
-    //   type: GameCardTypes.PAYMENT,
-    //   event: {
-    //     amount: 50,
-    //     paymentType: PaymentTypes.PAY,
-    //   },
-    // }),
+    new GameCards.PaymentCard({
+      message: "מצאת ארנק עם כסף. הרווחת $200.",
+      type: GameCardTypes.PAYMENT,
+      event: {
+        amount: 200,
+        paymentType: PaymentTypes.EARN,
+      },
+    }),
+    new GameCards.PaymentCard({
+      message: "חנוכה הגיע וסבתא החליטה לפנק אותך ב $30.",
+      type: GameCardTypes.PAYMENT,
+      event: {
+        amount: 30,
+        paymentType: PaymentTypes.EARN,
+      },
+    }),
+    new GameCards.PaymentCard({
+      message: "הטלפון שלך הלך קפוט. שלם $200 לתיקון.",
+      type: GameCardTypes.PAYMENT,
+      event: {
+        amount: 200,
+        paymentType: PaymentTypes.PAY,
+      },
+    }),
+    new GameCards.PaymentCard({
+      message: "נתקעת עם הרכב. שלם $50 לגרר.",
+      type: GameCardTypes.PAYMENT,
+      event: {
+        amount: 50,
+        paymentType: PaymentTypes.PAY,
+      },
+    }),
     new GameCards.PaymentCard({
       message: "הרמת חפלה בבית. גבה מכל משתמש $50.",
       type: GameCardTypes.GROUP_PAYMENT,
@@ -489,31 +489,31 @@ export const initializeMap = () => {
         paymentType: PaymentTypes.EARN,
       },
     }),
-    // new GameCards.PaymentCard({
-    //   message: "הפסדת בהתערבות עם החבר'ה. שלם לכל אחד $50.",
-    //   type: GameCardTypes.GROUP_PAYMENT,
-    //   event: {
-    //     amount: 50,
-    //     paymentType: PaymentTypes.PAY,
-    //   },
-    // }),
-    // new GameCards.AdvancedToTileCard({
-    //   message: `התקדם ל${board[0].name}`,
-    //   event: {
-    //     tileIndex: 0,
-    //     shouldGetGoReward: true,
-    //   },
-    // }),
-    // new GameCards.AdvancedToTileCard({
-    //   message: `התקדם ל${board[1].name}`,
-    //   event: {
-    //     tileIndex: 1,
-    //     shouldGetGoReward: true,
-    //   },
-    // }),
-    // new GameCards.GoToJailCard({
-    //   message: "הכנס לכלא!",
-    // }),
+    new GameCards.PaymentCard({
+      message: "הפסדת בהתערבות עם החבר'ה. שלם לכל אחד $50.",
+      type: GameCardTypes.GROUP_PAYMENT,
+      event: {
+        amount: 50,
+        paymentType: PaymentTypes.PAY,
+      },
+    }),
+    new GameCards.AdvancedToTileCard({
+      message: `התקדם ל${board[0].name}`,
+      event: {
+        tileIndex: 0,
+        shouldGetGoReward: true,
+      },
+    }),
+    new GameCards.AdvancedToTileCard({
+      message: `התקדם ל${board[1].name}`,
+      event: {
+        tileIndex: 1,
+        shouldGetGoReward: true,
+      },
+    }),
+    new GameCards.GoToJailCard({
+      message: "הכנס לכלא!",
+    }),
   ];
 
   shuffleArray(chanceCards);
