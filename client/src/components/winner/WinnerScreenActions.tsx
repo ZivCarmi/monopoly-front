@@ -8,7 +8,7 @@ const WinnerScreenActions = () => {
   const backToLobby = useBackToLobby();
 
   return (
-    <div className="space-x-2">
+    <div className="flex gap-2">
       <NewGameButton />
       <Button onClick={backToLobby}>
         <Icon icon={X} />

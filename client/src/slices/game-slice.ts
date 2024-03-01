@@ -144,8 +144,8 @@ export const gameSlice = createSlice({
       state,
       action: PayloadAction<{ playerId: string; incrementor: number }>
     ) => {
-      const boardLength = state.map.board.length;
       const { playerId, incrementor } = action.payload;
+      const boardLength = state.map.board.length;
       const playerIndex = state.players.findIndex(
         (player) => player.id === playerId
       );
@@ -205,9 +205,19 @@ export const gameSlice = createSlice({
       const offerorProfit = -offeror.money + offeree.money;
       const offereeProfit = -offeree.money + offeror.money;
 
-      // update traded players
+      // update offerror
       state.players[offerorIndex].money += offerorProfit;
+      state.players[offerorIndex].debtTo =
+        state.players[offerorIndex].money >= 0
+          ? null
+          : state.players[offerorIndex].debtTo;
+
+      // update offeree
       state.players[offereeIndex].money += offereeProfit;
+      state.players[offereeIndex].debtTo =
+        state.players[offereeIndex].money >= 0
+          ? null
+          : state.players[offereeIndex].debtTo;
 
       // update board
       state.map.board = state.map.board.map((tile, tileIndex) => {
@@ -258,6 +268,10 @@ export const gameSlice = createSlice({
       // update player
       if (playerIndex >= 0) {
         state.players[playerIndex].money += tile.cost / 2;
+        state.players[playerIndex].debtTo =
+          state.players[playerIndex].money >= 0
+            ? null
+            : state.players[playerIndex].debtTo;
       }
 
       // update board
@@ -296,6 +310,10 @@ export const gameSlice = createSlice({
           state.players[playerIndex].money -= transactionAmount;
         } else {
           state.players[playerIndex].money += transactionAmount / 2;
+          state.players[playerIndex].debtTo =
+            state.players[playerIndex].money >= 0
+              ? null
+              : state.players[playerIndex].debtTo;
         }
       }
     },
@@ -386,24 +404,45 @@ export const gameSlice = createSlice({
       state.cubesRolledInTurn = false;
       state.doublesInARow = 0;
     },
-    bankruptPlayer: (state, action: PayloadAction<{ playerId: string }>) => {
-      const { playerId } = action.payload;
+    setPlayerInDebt: (
+      state,
+      action: PayloadAction<{ playerId: string; debtTo: Player["debtTo"] }>
+    ) => {
+      const { playerId, debtTo } = action.payload;
 
-      state.players = state.players.filter((player) => player.id !== playerId);
-
-      // reset owned properties
-      state.map.board = state.map.board.map((tile) => {
-        if (isPurchasable(tile) && tile.owner === playerId) {
-          tile.owner = null;
-
-          if (isProperty(tile)) {
-            tile.rentIndex = RentIndexes.BLANK;
-          }
+      state.players.map((player) => {
+        if (player.id === playerId) {
+          player.debtTo = debtTo;
         }
 
-        return tile;
+        return player;
       });
     },
+    bankruptPlayer: (state, action: PayloadAction<{ playerId: string }>) => {
+      const { playerId } = action.payload;
+      const player = state.players.find((player) => player.id === playerId);
+
+      if (player) {
+        // reset owned properties
+        state.map.board.map((tile) => {
+          if (isPurchasable(tile) && tile.owner === playerId) {
+            const newOwner = player.debtTo === "bank" ? null : player.debtTo;
+            tile.owner = newOwner;
+
+            if (isProperty(tile)) {
+              tile.rentIndex = RentIndexes.BLANK;
+            }
+          }
+
+          return tile;
+        });
+
+        state.players = state.players.filter(
+          (player) => player.id !== playerId
+        );
+      }
+    },
+
     setWinner: (state, action: PayloadAction<{ winnerId: string }>) => {
       const winner = state.players.find(
         (player) => action.payload.winnerId === player.id
@@ -437,6 +476,7 @@ export const {
   resetCards,
   drawGameCard,
   switchTurn,
+  setPlayerInDebt,
   bankruptPlayer,
   setWinner,
 } = gameSlice.actions;

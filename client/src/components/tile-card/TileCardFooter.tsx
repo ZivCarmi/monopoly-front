@@ -1,8 +1,10 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import TileCardActions from "./TileCardActions";
-import { Separator } from "../ui/separator";
 import PlayerNamePlate from "../player/PlayerNamePlate";
+import PlayerCharacter from "../player/PlayerCharacter";
+import PlayerName from "../player/PlayerName";
+import { Separator } from "../ui/separator";
+import TileCardActions from "./TileCardActions";
 
 const TileCardFooter = () => {
   const socket = useSocket();
@@ -22,11 +24,10 @@ const TileCardFooter = () => {
           <Separator className="my-4" />
           <div className="flex items-center justify-center gap-4">
             <span className="text-muted-foreground text-sm">בבעלות</span>
-            <PlayerNamePlate
-              name={tileOwner.name}
-              character={tileOwner.character}
-              color={tileOwner.color}
-            />
+            <PlayerNamePlate>
+              <PlayerCharacter character={tileOwner.character} />
+              <PlayerName name={tileOwner.name} color={tileOwner.color} />
+            </PlayerNamePlate>
           </div>
         </>
       )}

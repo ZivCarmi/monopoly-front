@@ -13,6 +13,7 @@ import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import {
   bankruptPlayer,
+  setPlayerInDebt,
   setPlayers,
   setRoomHostId,
   setSelfPlayerReady,
@@ -124,10 +125,14 @@ const GameRoom = () => {
     dispatch(tradeUpdatedThunk(trade));
   };
 
-  const onPlayerInDebt = ({ playerId }: { playerId: string }) => {
-    // handle in debt turn
-    // maybe increase turn timer to allow the player to cover the debt
-    console.log(`Player ID: ${playerId} in debt`);
+  const onPlayerInDebt = ({
+    playerId,
+    debtTo,
+  }: {
+    playerId: string;
+    debtTo: Player["debtTo"];
+  }) => {
+    dispatch(setPlayerInDebt({ playerId, debtTo }));
   };
 
   const onPlayerBankrupted = ({

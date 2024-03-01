@@ -1,16 +1,24 @@
 import { useAppSelector } from "@/app/hooks";
 import { selectCurrentPlayerTurn } from "@/slices/game-slice";
+import PlayerNamePlate from "../player/PlayerNamePlate";
+import PlayerCharacter from "../player/PlayerCharacter";
+import PlayerName from "../player/PlayerName";
 
 const PlayerIsPlayingNotice = () => {
-  const currentPlayerTurn = useAppSelector(selectCurrentPlayerTurn);
+  const currentPlayer = useAppSelector(selectCurrentPlayerTurn);
+
+  if (!currentPlayer) {
+    return null;
+  }
 
   return (
-    <>
-      <img src={`/${currentPlayerTurn?.character}.png`} width={32} />
+    <PlayerNamePlate>
+      <PlayerCharacter character={currentPlayer.character} />
       <h2 className="text-sm">
-        <span className="font-medium">{currentPlayerTurn?.name}</span> משחק...
+        <PlayerName name={currentPlayer.name} color={currentPlayer.color} />{" "}
+        משחק...
       </h2>
-    </>
+    </PlayerNamePlate>
   );
 };
 

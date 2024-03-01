@@ -83,7 +83,6 @@ export async function backToLobby(socket: Socket) {
   }
 
   if (connectedSockets?.size === 1) {
-    // Delete room
     deleteRoom(socket);
   } else {
     let roomHostId = rooms[roomId].hostId;
@@ -136,8 +135,6 @@ export function updateHostId(socket: Socket, newHostId?: string): string {
 
 export function isPlayerInDebt(playerId: string) {
   const roomId = getSocketRoomId(playerId);
-
-  if (!rooms[roomId]) return null;
 
   return rooms[roomId]?.players[playerId]?.debtTo;
 }
@@ -225,16 +222,21 @@ export const isValidTrade = (socket: Socket, trade: TradeType) => {
     return false;
   });
 
+  console.log("isAnOffer", isAnOffer);
+
   // check if both players can fulfill the offer
-  const IsValidPlayers = players.every((player) => {
+  const IsValidPlayers = players.every((tradePlayer) => {
+    const player = rooms[roomId].players[tradePlayer.id];
+    const didOfferMoney = tradePlayer.money > 0;
+
     // check if player exist
-    if (!rooms[roomId].players[player.id]) return false;
+    if (!player) return false;
 
     // check if player has enough money
-    if (rooms[roomId].players[player.id].money < player.money) return false;
+    if (didOfferMoney && player.money < tradePlayer.money) return false;
 
     // check if player has all the properties
-    if (!isOwner(player.id, player.properties)) return false;
+    if (!isOwner(tradePlayer.id, tradePlayer.properties)) return false;
 
     return true;
   });

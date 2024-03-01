@@ -1,9 +1,11 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
+import PlayerNamePlate from "@/components/player/PlayerNamePlate";
+import PlayerCharacter from "@/components/player/PlayerCharacter";
+import PlayerName from "@/components/player/PlayerName";
 import { cn, getPlayerColor } from "@/utils";
 import Player from "@backend/types/Player";
 import { Crown } from "lucide-react";
-import PlayerNamePlate from "../../player/PlayerNamePlate";
 import { Button } from "../../ui/button";
 import {
   Tooltip,
@@ -11,6 +13,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../../ui/tooltip";
+import PlayerMoney from "@/components/player/PlayerMoney";
 
 const PlayerRow = ({ player }: { player: Player }) => {
   const { started } = useAppSelector((state) => state.game);
@@ -25,17 +28,19 @@ const PlayerRow = ({ player }: { player: Player }) => {
     >
       <TurnIndicator playerId={player.id} />
       <div className="flex items-center gap-3">
-        <PlayerNamePlate
-          name={player.name}
-          character={player.character}
-          color={player.color}
-          className="text-sm"
-        />
+        <PlayerNamePlate>
+          <PlayerCharacter character={player.character} />
+          <PlayerName
+            name={player.name}
+            color={player.color}
+            className="text-sm"
+          />
+        </PlayerNamePlate>
         <HostIndicator playerId={player.id} />
       </div>
       <div className="grow text-end px-4">
         {started ? (
-          <>${player.money}</>
+          <PlayerMoney money={player.money} />
         ) : (
           <ChangeAppearanceButton playerId={player.id} />
         )}

@@ -3,6 +3,7 @@ import Room from "../api/classes/Room";
 import io from "../services/socketService";
 import { getSocketRoomId } from "../utils/game-utils";
 import { rooms } from "./gameController";
+import { CountryIds, RentIndexes, isProperty } from "../api/types/Board";
 
 export async function joinRoom(socket: Socket, roomId: string) {
   if (roomId.length !== 5) return;
@@ -36,61 +37,59 @@ export async function joinRoom(socket: Socket, roomId: string) {
     room = rooms[roomId];
 
     // FOR TESTING
-    // const testMap = room.map.board.map((tile) => {
-    //   if (isProperty(tile)) {
-    //     // tile.owner = socket.id;
+    const testMap = room.map.board.map((tile) => {
+      if (isProperty(tile)) {
+        // tile.owner = socket.id;
 
-    //     if (tile.country.id === CountryIds.UK) {
-    //       tile.owner = socket.id;
-    //     }
-    //     if (tile.country.id === CountryIds.ISRAEL) {
-    //       tile.owner = socket.id;
-    //     }
-    //     if (tile.country.id === CountryIds.ITALY) {
-    //       tile.owner = socket.id;
-    //     }
+        if (tile.country.id === CountryIds.UK) {
+          tile.owner = socket.id;
+        }
+        if (tile.country.id === CountryIds.ISRAEL) {
+          tile.owner = socket.id;
+        }
+        if (tile.country.id === CountryIds.ITALY) {
+          tile.owner = socket.id;
+        }
 
-    //     if (tile.country.id === CountryIds.AUSTRALIA) {
-    //       tile.rentIndex = RentIndexes.HOTEL;
-    //       tile.owner = socket.id;
-    //     }
-    //   }
+        if (tile.country.id === CountryIds.AUSTRALIA) {
+          tile.rentIndex = RentIndexes.HOTEL;
+          tile.owner = socket.id;
+        }
+      }
 
-    //   return tile;
-    // });
+      return tile;
+    });
 
-    // rooms[roomId].map.board = testMap;
+    rooms[roomId].map.board = testMap;
   } else {
     // Set new room
     rooms[roomId] = room;
 
     // FOR TESTING
-    // const testMap = room.map.board.map((tile) => {
-    //   if (isProperty(tile)) {
-    //     // tile.owner = socket.id;
+    const testMap = room.map.board.map((tile) => {
+      if (isProperty(tile)) {
+        if (tile.country.id === CountryIds.USA) {
+          tile.owner = socket.id;
+        }
+        if (tile.country.id === CountryIds.RUSSIA) {
+          tile.owner = socket.id;
+        }
+        if (tile.country.id === CountryIds.CHINA) {
+          tile.owner = socket.id;
+        }
 
-    //     if (tile.country.id === CountryIds.USA) {
-    //       tile.owner = socket.id;
-    //     }
-    //     if (tile.country.id === CountryIds.RUSSIA) {
-    //       tile.owner = socket.id;
-    //     }
-    //     if (tile.country.id === CountryIds.CHINA) {
-    //       tile.owner = socket.id;
-    //     }
+        if (tile.country.id === CountryIds.EGYPT) {
+          tile.rentIndex = RentIndexes.HOTEL;
+          tile.owner = socket.id;
+        } else {
+          tile.rentIndex = RentIndexes.ONE_HOUSE;
+        }
+      }
 
-    //     if (tile.country.id === CountryIds.EGYPT) {
-    //       tile.rentIndex = RentIndexes.HOTEL;
-    //       tile.owner = socket.id;
-    //     } else {
-    //       tile.rentIndex = RentIndexes.ONE_HOUSE;
-    //     }
-    //   }
+      return tile;
+    });
 
-    //   return tile;
-    // });
-
-    // rooms[roomId].map.board = testMap;
+    rooms[roomId].map.board = testMap;
   }
 
   console.log("joining room normally joinRom...");

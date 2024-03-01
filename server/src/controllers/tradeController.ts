@@ -41,19 +41,27 @@ export function acceptTrade(socket: Socket, tradeId: string) {
 
   if (!trade) return;
 
-  const message = `${room.players[trade.offeror.id].name} ביצע עסקה עם ${
-    room.players[trade.offeree.id].name
-  }`;
-  const fromPlayerProfit = -trade.offeror.money + trade.offeree.money;
+  const offerorPlayer = room.players[trade.offeror.id];
+  const offereePlayer = room.players[trade.offeree.id];
+  const message = `${offerorPlayer.name} ביצע עסקה עם ${offereePlayer.name}`;
 
-  // update trade creator player
-  rooms[roomId].players[trade.offeror.id].money += fromPlayerProfit;
+  // update trade offeror player
+  const offerorPlayerProfit = -trade.offeror.money + trade.offeree.money;
+  rooms[roomId].players[trade.offeror.id].money += offerorPlayerProfit;
+  rooms[roomId].players[trade.offeror.id].debtTo =
+    rooms[roomId].players[trade.offeror.id].money >= 0
+      ? null
+      : offerorPlayer.debtTo;
 
-  const toPlayerProfit = -trade.offeree.money + trade.offeror.money;
+  // update trade offeree player
+  const offereePlayerProfit = -trade.offeree.money + trade.offeror.money;
+  rooms[roomId].players[trade.offeree.id].money += offereePlayerProfit;
+  rooms[roomId].players[trade.offeree.id].debtTo =
+    rooms[roomId].players[trade.offeree.id].money >= 0
+      ? null
+      : offereePlayer.debtTo;
 
-  // update trade recieved player
-  rooms[roomId].players[trade.offeree.id].money += toPlayerProfit;
-
+  // NEED TO IMPROVE - could fail on one of the if's but the 2nd if will success. behaviour we want is if one of the if's fails, then both should fail.
   rooms[roomId].map.board.map((tile, tileIndex) => {
     if (isPurchasable(tile) && tile.owner) {
       // check if from player is owner & tile is on his offer
@@ -76,14 +84,10 @@ export function acceptTrade(socket: Socket, tradeId: string) {
     return tile;
   });
 
-  // console.log(rooms[roomId].map.board);
   console.log(rooms[roomId].players[trade.offeror.id].money);
   console.log(rooms[roomId].players[trade.offeree.id].money);
 
-  io.in(roomId).emit("accepted_trade", {
-    tradeId,
-    message,
-  });
+  io.in(roomId).emit("accepted_trade", { tradeId, message });
 
   writeLogToRoom(roomId, message);
 }

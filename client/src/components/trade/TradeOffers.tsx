@@ -3,6 +3,8 @@ import { selectOffereePlayer, selectOfferorPlayer } from "@/slices/trade-slice";
 import { getPlayerCharacter, getPlayerColor, getPlayerName } from "@/utils";
 import { InTradePlayer } from "@backend/types/Game";
 import PlayerNamePlate from "../player/PlayerNamePlate";
+import PlayerCharacter from "../player/PlayerCharacter";
+import PlayerName from "../player/PlayerName";
 import MoneySlider from "./MoneySlider";
 import TradeBoard from "./TradeBoard";
 
@@ -30,12 +32,13 @@ const TradeOffers = () => {
     <div className="grid grid-cols-2 gap-10 justify-items-center">
       {tradedPlayers.map((player) => (
         <div key={player.id}>
-          <PlayerNamePlate
-            className="mb-2"
-            character={getPlayerCharacter(player.id)}
-            name={getPlayerName(player.id)}
-            color={getPlayerColor(player.id)}
-          />
+          <PlayerNamePlate className="mb-2">
+            <PlayerCharacter character={getPlayerCharacter(player.id)!} />
+            <PlayerName
+              name={getPlayerName(player.id)}
+              color={getPlayerColor(player.id)!}
+            />
+          </PlayerNamePlate>
           <TradeBoard playerId={player.id} />
           {player.maxMoney > 0 && <MoneySlider player={player} />}
         </div>

@@ -49,7 +49,8 @@ io.on("connection", (socket) => {
   });
 
   socket.on("back_to_lobby", () => {
-    backToLobby(socket);
+    // backToLobby(socket);
+    playerDisconnecting(socket);
   });
 
   socket.on("create_player", ({ player }) => {

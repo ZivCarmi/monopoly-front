@@ -1,18 +1,18 @@
 import { Socket } from "socket.io";
+import { RentIndexes, isProperty, isPurchasable } from "../api/types/Board";
 import Player, { NewPlayer } from "../api/types/Player";
+import { PLAYER_MONEY } from "../config";
+import io from "../services/socketService";
 import {
   deleteRoom,
   getPlayersCount,
   getSocketRoomId,
-  isPlayerInDebt,
   isPlayerHasTurn,
+  isPlayerInDebt,
   updateHostId,
   writeLogToRoom,
 } from "../utils/game-utils";
-import { PLAYER_MONEY } from "../config";
 import { rooms, switchTurn } from "./gameController";
-import io from "../services/socketService";
-import { RentIndexes, isProperty, isPurchasable } from "../api/types/Board";
 
 export function addPlayer(socket: Socket, player: NewPlayer) {
   const roomId = getSocketRoomId(socket);
@@ -95,7 +95,7 @@ export function bankruptPlayer(socket: Socket) {
 
   delete rooms[roomId].players[socket.id];
   rooms[roomId].participants[socket.id].bankrupted = true;
-  rooms[roomId].map.board = rooms[roomId].map.board.map((tile) => {
+  rooms[roomId].map.board.map((tile) => {
     if (isPurchasable(tile) && tile.owner === socket.id) {
       const newOwner = debtTo === "bank" ? null : debtTo;
       tile.owner = newOwner;

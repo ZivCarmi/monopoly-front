@@ -43,7 +43,6 @@ import {
   checkForWinner,
   getPlayerIds,
   getSocketRoomId,
-  hasProperties,
   isOwner,
   isPlayerHasTurn,
   isPlayerInDebt,
@@ -51,7 +50,6 @@ import {
   randomizeDices,
   writeLogToRoom,
 } from "../utils/game-utils";
-import { bankruptPlayer } from "./playerController";
 
 export const rooms: { [roomId: string]: Room } = {};
 
@@ -65,7 +63,7 @@ export function startGame(socket: Socket) {
   if (socket.id !== rooms[roomId].hostId || players.length < 2) return;
 
   // randomize the players array (IF COMMENTED IT'S FOR TESTING)
-  shuffleArray(players);
+  // shuffleArray(players);
 
   const startingPlayer = players[0].id;
   const gameStartMessage = "המשחק התחיל!";
@@ -101,6 +99,8 @@ export function payRent(
       hasMonopoly(board, tile.country.id);
 
     rentAmount = doubleRent ? tile.rent[0] * 2 : tile.rent[tile.rentIndex];
+
+    console.log("paying rent, amount:", rentAmount);
   } else if (isAirport(tile)) {
     const ownedAirportsCount = board.filter(
       (_tile) => isAirport(_tile) && _tile.owner === owner.id
@@ -136,10 +136,6 @@ export function payTax(roomId: string, payerId: string, tile: ITax) {
   rooms[roomId].players[payerId].money -= taxAmount;
 
   writeLogToRoom(roomId, `${payingPlayer.name} שילם מס בסך $${taxAmount}`);
-
-  if (rooms[roomId].players[payerId].money < 0) {
-    rooms[roomId].players[payerId].debtTo = "bank";
-  }
 }
 
 export function sendPlayerToVacation(playerId: string) {
@@ -299,6 +295,8 @@ export function sellProperty(socket: Socket, propertyIndex: number) {
 
   // update player
   rooms[roomId].players[socket.id].money += tile.cost / 2;
+  rooms[roomId].players[socket.id].debtTo =
+    rooms[roomId].players[socket.id].money >= 0 ? null : player.debtTo;
 
   // update board
   tile.owner = null;
@@ -328,13 +326,13 @@ export function rollDice(socket: Socket) {
   rooms[roomId].dices = randomizeDices();
 
   // FOR TESTING
-  // const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
-  // const firstPlayerId = getPlayerIds(roomId)[0];
-  // if (firstPlayerId === currentPlayerTurnId) {
-  //   rooms[roomId].dices = [1, 1];
-  // } else {
-  //   rooms[roomId].dices = [6, 4];
-  // }
+  const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
+  const firstPlayerId = getPlayerIds(roomId)[0];
+  if (firstPlayerId === currentPlayerTurnId) {
+    rooms[roomId].dices = [4, 3];
+  } else {
+    rooms[roomId].dices = [2, 1];
+  }
 
   const isDouble = rooms[roomId].dices[0] === rooms[roomId].dices[1];
   const dicesSum = rooms[roomId].dices[0] + rooms[roomId].dices[1];
@@ -433,18 +431,15 @@ export function onPlayerLanding(socket: Socket) {
 
   const timeToLand = (room.dices[0] + room.dices[1]) * MS_TO_MOVE_ON_TILES;
 
-  if (isPlayerInDebt(socket.id)) {
-    setTimeout(() => {
-      if (hasProperties(socket.id)) {
-        io.in(roomId).emit("player_in_debt", { playerId: socket.id });
-      } else {
-        bankruptPlayer(socket);
-      }
-    }, timeToLand);
-  }
+  setTimeout(() => {
+    if (isPlayerInDebt(socket.id)) {
+      const { debtTo } = rooms[roomId].players[socket.id];
+      io.in(roomId).emit("player_in_debt", { playerId: socket.id, debtTo });
+    }
+  }, timeToLand);
 }
 
-export function switchTurn(socket: Socket): void {
+export function switchTurn(socket: Socket) {
   const roomId = getSocketRoomId(socket);
 
   console.log("--------------------------------------");
@@ -452,13 +447,12 @@ export function switchTurn(socket: Socket): void {
 
   if (!roomId) return;
 
-  if (!isPlayerHasTurn(socket.id) || isPlayerInDebt(socket.id)) return;
+  if (!isPlayerHasTurn(socket.id) && isPlayerInDebt(socket.id)) return;
 
   const winnerId = checkForWinner(roomId);
 
   if (winnerId) {
-    io.in(roomId).emit("game_ended", { winnerId });
-    return;
+    return io.in(roomId).emit("game_ended", { winnerId });
   }
 
   const nextPlayerTurnId = cycleNextItem({
@@ -480,11 +474,8 @@ export function switchTurn(socket: Socket): void {
 
   const nextSuspendedPlayer = rooms[roomId].suspendedPlayers[nextPlayerTurnId];
 
-  // check if next player is suspended
-  if (
-    nextSuspendedPlayer &&
-    nextSuspendedPlayer.reason === TileTypes.VACATION
-  ) {
+  // switch turn if next player is on vacation or free him from vacation
+  if (nextSuspendedPlayer?.reason === TileTypes.VACATION) {
     console.log(
       `Next suspended player is`,
       rooms[roomId].players[nextPlayerTurnId].character,
@@ -514,12 +505,24 @@ export function switchTurn(socket: Socket): void {
     }
   }
 
+  // check if next player owes money from 3rd source (could be after surprise/chance cards)
+  if (rooms[roomId].players[nextPlayerTurnId].money < 0) {
+    let debtTo = isPlayerInDebt(nextPlayerTurnId);
+
+    if (debtTo === null) {
+      rooms[roomId].players[nextPlayerTurnId].debtTo = "bank";
+    }
+
+    io.in(roomId).emit("player_in_debt", {
+      playerId: nextPlayerTurnId,
+      debtTo: rooms[roomId].players[nextPlayerTurnId].debtTo,
+    });
+  }
+
   // update room
   rooms[roomId].doublesInARow = 0;
 
-  io.in(roomId).emit("switched_turn", {
-    nextPlayerId: nextPlayerTurnId,
-  });
+  io.in(roomId).emit("switched_turn", { nextPlayerId: nextPlayerTurnId });
 
   console.log("Turn switched");
 }
@@ -625,6 +628,8 @@ export function downgradeCity(socket: Socket, propertyIndex: number) {
   tile.rentIndex -= 1;
   rooms[roomId].map.board[propertyIndex] = tile;
   rooms[roomId].players[socket.id].money += transactionAmount / 2;
+  rooms[roomId].players[socket.id].debtTo =
+    rooms[roomId].players[socket.id].money >= 0 ? null : player.debtTo;
 
   io.in(roomId).emit("city_level_change", {
     propertyIndex: propertyIndex,
@@ -642,7 +647,5 @@ export function endGame(socket: Socket) {
 
   const winnerId = getPlayerIds(roomId)[0];
 
-  io.in(roomId).emit("game_ended", {
-    winnerId,
-  });
+  io.in(roomId).emit("game_ended", { winnerId });
 }
