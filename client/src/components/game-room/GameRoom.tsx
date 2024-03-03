@@ -12,9 +12,10 @@ import {
 import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import {
+  addPlayer,
   bankruptPlayer,
+  removePlayer,
   setPlayerInDebt,
-  setPlayers,
   setRoomHostId,
   setSelfPlayerReady,
   setWinner,
@@ -22,7 +23,6 @@ import {
   switchTurn,
 } from "@/slices/game-slice";
 import { writeLog } from "@/slices/ui-slice";
-import Room from "@backend/classes/Room";
 import { TradeType } from "@backend/types/Game";
 import Player from "@backend/types/Player";
 import { useEffect } from "react";
@@ -36,32 +36,36 @@ const GameRoom = () => {
   const socket = useSocket();
   const dispatch = useAppDispatch();
 
-  const onPlayerCreated = () => {
+  const onPlayerCreated = ({ player }: { player: Player }) => {
+    dispatch(addPlayer(player));
     dispatch(setSelfPlayerReady());
   };
 
-  const onUpdatePlayers = ({
-    players,
+  const onPlayerJoined = ({
+    player,
+    message,
+  }: {
+    player: Player;
+    message: string;
+  }) => {
+    dispatch(addPlayer(player));
+    dispatch(writeLog(message));
+  };
+
+  const onPlayerLeave = ({
+    playerId,
     message,
     roomHostId,
   }: {
-    players: Room["players"];
-    message: string | string[];
+    playerId: string;
+    message: string;
     roomHostId?: string;
   }) => {
-    const updatedPlayers = Object.values(players).map((player) => player);
-    dispatch(setPlayers(updatedPlayers));
+    dispatch(removePlayer({ playerId }));
+    dispatch(writeLog(message));
 
     if (roomHostId) {
       dispatch(setRoomHostId(roomHostId));
-    }
-
-    if (Array.isArray(message)) {
-      for (let i = 0; i < message.length; i++) {
-        dispatch(writeLog(message[i]));
-      }
-    } else {
-      dispatch(writeLog(message));
     }
   };
 
@@ -152,7 +156,8 @@ const GameRoom = () => {
 
   useEffect(() => {
     socket.on("player_created", onPlayerCreated);
-    socket.on("update_players", onUpdatePlayers);
+    socket.on("player_joined", onPlayerJoined);
+    socket.on("player_leave", onPlayerLeave);
     socket.on("game_started", onGameStarted);
     socket.on("switched_turn", onSwitchedTurn);
     socket.on("dice_rolled", onDiceRolled);
@@ -170,7 +175,8 @@ const GameRoom = () => {
 
     return () => {
       socket.off("player_created", onPlayerCreated);
-      socket.off("update_players", onUpdatePlayers);
+      socket.off("player_joined", onPlayerJoined);
+      socket.off("player_leave", onPlayerLeave);
       socket.off("game_started", onGameStarted);
       socket.off("switched_turn", onSwitchedTurn);
       socket.off("dice_rolled", onDiceRolled);
@@ -189,7 +195,7 @@ const GameRoom = () => {
   }, []);
 
   return (
-    <div className="room-container">
+    <div className="room-container" id="main-board">
       <div className="game-general">
         <GameInfo />
         <GameInvitation />

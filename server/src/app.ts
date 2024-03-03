@@ -16,6 +16,7 @@ import io from "./services/socketService";
 import { getLobbyRooms } from "./controllers/lobbyController";
 import {
   addPlayer,
+  backToLobby,
   bankruptPlayer,
   playerDisconnecting,
 } from "./controllers/playerController";
@@ -48,7 +49,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("back_to_lobby", () => {
-    playerDisconnecting(socket);
+    backToLobby(socket);
   });
 
   socket.on("create_player", ({ player }) => {

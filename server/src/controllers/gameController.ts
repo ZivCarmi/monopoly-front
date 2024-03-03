@@ -208,11 +208,6 @@ export function handleGameCard(socket: Socket, roomGameCards: RoomGameCards) {
         room
       );
 
-      console.log(
-        "on advanceToTileTypeGameCard, player after update...",
-        rooms[roomId].players[playerId]
-      );
-
       return onPlayerLanding(socket);
     case GameCardTypes.WALK:
       return walkPlayer(socket, drawnGameCard.event.steps);
@@ -317,7 +312,7 @@ export function rollDice(socket: Socket) {
 
   console.log("--------------------------------------");
   console.log(
-    `${rooms[roomId].players[socket.id].character} is Rolling dices.....`
+    `${rooms[roomId]?.players[socket.id]?.character} is Rolling dices.....`
   );
 
   if (!roomId || !isPlayerHasTurn(socket.id) || isPlayerInDebt(socket.id))
@@ -447,13 +442,13 @@ export function switchTurn(socket: Socket) {
 
   if (!roomId) return;
 
-  if (!isPlayerHasTurn(socket.id) && isPlayerInDebt(socket.id)) return;
-
   const winnerId = checkForWinner(roomId);
 
   if (winnerId) {
     return io.in(roomId).emit("game_ended", { winnerId });
   }
+
+  if (!isPlayerHasTurn(socket.id) && isPlayerInDebt(socket.id)) return;
 
   const nextPlayerTurnId = cycleNextItem({
     currentValue: socket.id,
@@ -462,9 +457,7 @@ export function switchTurn(socket: Socket) {
 
   console.log(
     "Turn before switch belongs to -",
-    rooms[roomId]?.players[socket.id]?.character
-  );
-  console.log(
+    rooms[roomId]?.players[socket.id]?.character,
     "Turn after switch belongs to -",
     rooms[roomId]?.players[nextPlayerTurnId]?.character
   );
@@ -638,14 +631,4 @@ export function downgradeCity(socket: Socket, propertyIndex: number) {
   });
 
   writeLogToRoom(roomId, message);
-}
-
-export function endGame(socket: Socket) {
-  const roomId = getSocketRoomId(socket);
-
-  if (!roomId) return;
-
-  const winnerId = getPlayerIds(roomId)[0];
-
-  io.in(roomId).emit("game_ended", { winnerId });
 }

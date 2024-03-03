@@ -26,6 +26,9 @@ export const tradeSlice = createSlice({
   name: "trade",
   initialState,
   reducers: {
+    resetTrades: () => {
+      return initialState;
+    },
     setInTrade: (state, action: PayloadAction<boolean>) => {
       state.inTrade = action.payload;
     },
@@ -122,6 +125,7 @@ export const tradeSlice = createSlice({
 });
 
 export const {
+  resetTrades,
   setInTrade,
   resetTrade,
   setTradeId,

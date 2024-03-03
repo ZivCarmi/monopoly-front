@@ -2,6 +2,7 @@ import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import { resetRoom, setRoom } from "@/slices/game-slice";
 import { resetUi, setRoomUi } from "@/slices/ui-slice";
+import { resetTrades } from "@/slices/trade-slice";
 import Room from "@backend/classes/Room";
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
@@ -15,7 +16,7 @@ const MainLayout = () => {
 
   const onRoomJoined = ({ room }: { room: Room }) => {
     dispatch(setRoom(room));
-    dispatch(setRoomUi(room.logs));
+    dispatch(setRoomUi([`הצטרפת לחדר ${room.id}`, ...room.logs]));
     navigate(`/rooms/${room.id}`);
   };
 
@@ -38,6 +39,7 @@ const MainLayout = () => {
   const onReturnedToLobby = () => {
     dispatch(resetRoom());
     dispatch(resetUi());
+    dispatch(resetTrades());
   };
 
   useEffect(() => {

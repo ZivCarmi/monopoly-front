@@ -17,38 +17,17 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { selectPlayers } from "@/slices/game-slice";
-import { Characters, Colors, NewPlayer } from "@backend/types/Player";
+import { playerSchema } from "@backend/schemas/player";
+import { Characters, Colors } from "@backend/types/Player";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import {
-  AlertDialog,
-  AlertDialogContentRelatived,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../ui/alert-dialog";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-
-const formSchema = z.object({
-  name: z
-    .string({
-      required_error: "Username is required",
-    })
-    .min(2, {
-      message: "Username must contain at least 2 characters",
-    })
-    .max(30, {
-      message: "Username must contain at most 30 characters",
-    }),
-  character: z.nativeEnum(Characters),
-  color: z.nativeEnum(Colors),
-});
 
 export function PlayersForm() {
   const socket = useSocket();
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
+  const form = useForm<z.infer<typeof playerSchema>>({
+    resolver: zodResolver(playerSchema),
     defaultValues: {
       name: "",
       character: undefined,
@@ -59,31 +38,14 @@ export function PlayersForm() {
   const colorWatch = form.watch("color");
   const players = useAppSelector(selectPlayers);
 
-  const submitHandler = async (player: z.infer<typeof formSchema>) => {
-    const existUsername = players.find(
-      (existPlayer) => existPlayer.name === player.name
-    );
-
-    if (existUsername) {
-      return form.setError("name", {
-        message: "Name is already taken, please choose another one",
-      });
-    }
-
-    const newPlayer: NewPlayer = {
-      id: socket.id,
-      ...player,
-    };
-
-    socket.emit("create_player", { player: newPlayer });
+  const submitHandler = (player: z.infer<typeof playerSchema>) => {
+    socket.emit("create_player", { player });
   };
 
   return (
-    <AlertDialog defaultOpen>
-      <AlertDialogContentRelatived className="sm:max-w-[425px]">
-        <AlertDialogHeader>
-          <AlertDialogTitle>צור שחקן</AlertDialogTitle>
-        </AlertDialogHeader>
+    <>
+      <div className="absolute inset-0 z-50 bg-background/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+      <div className="rtl absolute left-[50%] top-[50%] z-50 grid w-full max-w-lg translate-x-[-50%] translate-y-[-50%] gap-4 border  p-6 shadow-lg duration-200 rounded-lg md:w-full">
         <Form {...form}>
           <form
             onSubmit={form.handleSubmit(submitHandler)}
@@ -129,7 +91,7 @@ export function PlayersForm() {
                                 />
                               </FormControl>
                               <FormLabel className="block text-center">
-                                <TooltipProvider>
+                                <TooltipProvider delayDuration={0}>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
                                       <img
@@ -200,15 +162,15 @@ export function PlayersForm() {
                 </FormItem>
               )}
             />
-            <AlertDialogFooter className="sm:flex-col sm:space-x-0 space-y-2">
-              <Button type="submit" variant="secondary" className="w-full">
+            <div className="flex items-center justify-center">
+              <Button type="submit" variant="primaryFancy">
                 הכנס למשחק
               </Button>
-            </AlertDialogFooter>
+            </div>
           </form>
         </Form>
-      </AlertDialogContentRelatived>
-    </AlertDialog>
+      </div>
+    </>
   );
 }
 

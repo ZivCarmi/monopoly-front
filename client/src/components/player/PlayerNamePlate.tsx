@@ -9,7 +9,7 @@ const PlayerNamePlate = ({
   ...props
 }: PlayerNamePlateProps) => {
   return (
-    <div {...props} className={cn("flex items-center gap-2", className)}>
+    <div {...props} className={cn("inline-flex items-center gap-2", className)}>
       {children}
     </div>
   );

@@ -34,7 +34,7 @@ export const getPlayersCount = (roomId: string) => {
 };
 
 export const checkForWinner = (roomId: string): string => {
-  if (!rooms[roomId]) return "";
+  if (!rooms[roomId] || !rooms[roomId].gameStarted) return "";
 
   const playerIds = getPlayerIds(roomId);
 
@@ -65,68 +65,19 @@ export function writeLogToRoom(roomId: string, message: string | string[]) {
   }
 }
 
-// export async function backToLobby(socket: Socket) {
-//   const roomId = getSocketRoomId(socket);
-
-//   if (!roomId) return;
-
-//   socket.emit("on_lobby");
-
-//   const roomPlayersCount = getPlayersCount(roomId);
-//   const connectedSockets = io.sockets.adapter.rooms.get(roomId);
-//   let messages: string[] = [];
-
-//   if (rooms[roomId].players[socket.id] !== undefined) {
-//     messages.push(`${rooms[roomId].players[socket.id].name} עזב את המשחק`);
-//   } else {
-//     messages.push("צופה עזב את המשחק");
-//   }
-
-//   if (connectedSockets?.size === 1) {
-//     deleteRoom(socket);
-//   } else {
-//     let roomHostId = rooms[roomId].hostId;
-//     const isMoreThanOnePlayer = roomPlayersCount > 1;
-
-//     // Decrease room participants count by 1
-//     delete rooms[roomId].players[socket.id];
-
-//     // nominate new host id for the room
-//     if (rooms[roomId].hostId === socket.id && isMoreThanOnePlayer) {
-//       roomHostId = updateHostId(socket);
-//       const hostPlayer = rooms[roomId].players[roomHostId];
-
-//       messages.push(`${hostPlayer.name} מונה למארח החדר`);
-//     }
-
-//     socket.to(roomId).emit("update_players", {
-//       players: rooms[roomId].players,
-//       message: messages,
-//       roomHostId,
-//     });
-
-//     await socket.leave(roomId);
-//   }
-
-//   writeLogToRoom(roomId, messages);
-// }
-
-export function updateHostId(socket: Socket, newHostId?: string): string {
-  newHostId = "";
+export function updateHostId(socket: Socket): string {
   const roomId = getSocketRoomId(socket);
 
-  if (!rooms[roomId]) return newHostId;
+  if (!rooms[roomId]) return "";
 
-  if (!newHostId) {
-    const availablePlayers = getPlayerIds(roomId).filter(
-      (playerId) => playerId !== socket.id
-    );
+  const availablePlayers = getPlayerIds(roomId).filter(
+    (playerId) => playerId !== socket.id
+  );
 
-    if (availablePlayers.length > 0) {
-      // assign the first player from the available players in the room
-      newHostId = availablePlayers[0];
-    }
-  }
+  if (availablePlayers.length < 1) return "";
+
+  // assign the first player from the available players in the room
+  const newHostId = availablePlayers[0];
 
   rooms[roomId].hostId = newHostId;
 
@@ -221,8 +172,6 @@ export const isValidTrade = (socket: Socket, trade: TradeType) => {
 
     return false;
   });
-
-  console.log("isAnOffer", isAnOffer);
 
   // check if both players can fulfill the offer
   const IsValidPlayers = players.every((tradePlayer) => {

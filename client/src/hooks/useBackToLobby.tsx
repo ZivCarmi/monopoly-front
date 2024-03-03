@@ -5,7 +5,7 @@ const useBackToLobby = () => {
   const socket = useSocket();
   const navigate = useNavigate();
 
-  const backToLobbyHandler = async () => {
+  const backToLobbyHandler = () => {
     socket.emit("back_to_lobby");
     navigate("/");
   };

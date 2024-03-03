@@ -1,6 +1,8 @@
 import { Socket } from "socket.io";
+import { z } from "zod";
+import { playerSchema } from "../api/schemas/player";
 import { RentIndexes, isProperty, isPurchasable } from "../api/types/Board";
-import Player, { NewPlayer } from "../api/types/Player";
+import Player from "../api/types/Player";
 import { PLAYER_MONEY } from "../config";
 import io from "../services/socketService";
 import {
@@ -14,7 +16,10 @@ import {
 } from "../utils/game-utils";
 import { rooms, switchTurn } from "./gameController";
 
-export function addPlayer(socket: Socket, player: NewPlayer) {
+export function addPlayer(
+  socket: Socket,
+  player: z.infer<typeof playerSchema>
+) {
   const roomId = getSocketRoomId(socket);
 
   console.log("Adding player", roomId);
@@ -25,27 +30,43 @@ export function addPlayer(socket: Socket, player: NewPlayer) {
     });
   }
 
-  const joinedMessage = `${player.name} נכנס למשחק`;
+  const playerResult = playerSchema.safeParse(player);
+
+  if (playerResult.success === false) {
+    return playerResult.error;
+  }
+
+  const existCharacter = Object.values(rooms[roomId].players).find(
+    (_player) => _player.character === playerResult.data.character
+  );
+  const existColor = Object.values(rooms[roomId].players).find(
+    (_player) => _player.color === playerResult.data.color
+  );
+
+  if (existCharacter || existColor) {
+    return;
+  }
 
   const newPlayer: Player = {
-    ...player,
+    ...playerResult.data,
+    id: socket.id,
     money: PLAYER_MONEY,
     tilePos: 0,
     bankrupted: false,
     debtTo: null,
   };
 
-  // add the player
   rooms[roomId].players[newPlayer.id] = newPlayer;
 
-  socket.emit("player_created");
-
-  io.in(roomId).emit("update_players", {
-    players: rooms[roomId].players,
-    message: joinedMessage,
+  socket.emit("player_created", {
+    player: newPlayer,
   });
 
-  writeLogToRoom(roomId, joinedMessage);
+  // send to all players except sender
+  socket.to(roomId).emit("player_joined", {
+    player: newPlayer,
+    message: `${player.name} נכנס למשחק`,
+  });
 }
 
 export function playerDisconnecting(socket: Socket) {
@@ -73,14 +94,17 @@ export function playerDisconnecting(socket: Socket) {
   } else {
     const roomHostId = updateHostId(socket);
 
-    // Decrease room participants count by 1
     delete rooms[roomId].players[socket.id];
 
-    socket.to(roomId).emit("update_players", {
-      players: rooms[roomId].players,
+    socket.to(roomId).emit("player_leave", {
+      playerId: socket.id,
       message: leaveMessage,
       roomHostId,
     });
+
+    if (isPlayerHasTurn(socket.id)) {
+      switchTurn(socket);
+    }
 
     socket.leave(roomId);
   }
@@ -116,4 +140,14 @@ export function bankruptPlayer(socket: Socket) {
   if (isPlayerHasTurn(socket.id)) {
     switchTurn(socket);
   }
+}
+
+export async function backToLobby(socket: Socket) {
+  const roomId = getSocketRoomId(socket);
+
+  if (!roomId) return;
+
+  socket.emit("on_lobby");
+
+  playerDisconnecting(socket);
 }

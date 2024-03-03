@@ -18,13 +18,13 @@ export enum Colors {
 }
 
 export type NewPlayer = {
-  id: string;
   name: string;
   character: Characters;
   color: Colors;
 };
 
 type Player = NewPlayer & {
+  id: string;
   money: number;
   tilePos: number;
   bankrupted: boolean;

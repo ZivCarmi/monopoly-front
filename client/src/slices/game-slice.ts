@@ -114,6 +114,15 @@ export const gameSlice = createSlice({
     setSelfPlayerReady: (state) => {
       state.isReady = true;
     },
+    addPlayer: (state, action: PayloadAction<Player>) => {
+      state.players.push(action.payload);
+    },
+    removePlayer: (state, action: PayloadAction<{ playerId: string }>) => {
+      const player = state.players.filter(
+        (player) => player.id !== action.payload.playerId
+      );
+      state.players = player;
+    },
     setPlayers: (state, action: PayloadAction<Player[]>) => {
       state.players = action.payload;
     },
@@ -458,6 +467,8 @@ export const {
   resetRoom,
   setRoomHostId,
   setSelfPlayerReady,
+  addPlayer,
+  removePlayer,
   setPlayers,
   startGame,
   setDices,

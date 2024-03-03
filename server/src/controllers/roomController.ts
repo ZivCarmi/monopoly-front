@@ -13,17 +13,15 @@ export async function joinRoom(socket: Socket, roomId: string) {
   // Maximum of 6 players + 4 spectators
   if (connectedSockets && connectedSockets.size >= 10) {
     return socket.emit("room_join_error", {
-      error: "Room is full, please choose another room.",
+      error: "Room is full, please choose another room",
     });
   }
 
-  if (existRoomId === roomId) {
-    console.log("joining room inside if joinRom...");
-
-    return socket.emit("room_joined");
-  }
-
   if (existRoomId) {
+    if (existRoomId === roomId) {
+      return socket.emit("room_joined", { room: rooms[roomId] });
+    }
+
     return socket.emit("room_join_error", {
       error: "Cannot join a room while on another room",
     });
@@ -90,8 +88,6 @@ export async function joinRoom(socket: Socket, roomId: string) {
 
     // rooms[roomId].map.board = testMap;
   }
-
-  console.log("joining room normally joinRom...");
 
   await socket.join(roomId);
 
