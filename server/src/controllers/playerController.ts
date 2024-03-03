@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { z } from "zod";
+import * as z from "zod";
 import { playerSchema } from "../api/schemas/player";
 import { RentIndexes, isProperty, isPurchasable } from "../api/types/Board";
 import Player from "../api/types/Player";

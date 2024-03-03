@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { Characters, Colors, NewPlayer } from "../types/Player";
 
 export const playerSchema: z.ZodType<NewPlayer> = z.object({
