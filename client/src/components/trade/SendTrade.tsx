@@ -6,7 +6,7 @@ import {
   setTradeId,
   setTradeStatus,
 } from "@/slices/trade-slice";
-import { TradeType } from "@backend/types/Game";
+import { TradeType } from "@ziv-carmi/monopoly-utils";
 import { AlertDialogCancel } from "../ui/alert-dialog";
 import SubmitTradeButton from "./SubmitTradeButton";
 

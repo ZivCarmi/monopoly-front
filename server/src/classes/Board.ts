@@ -10,7 +10,7 @@ import {
   RentIndexes,
   SuspensionTileTypes,
   TileTypes,
-} from "../types/Board";
+} from "@ziv-carmi/monopoly-utils";
 
 class BasicTile implements ITile {
   name: string;

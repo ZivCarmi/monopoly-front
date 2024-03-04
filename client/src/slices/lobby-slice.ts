@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { LobbyRoom } from "@backend/classes/Room";
+import { LobbyRoom } from "@ziv-carmi/monopoly-utils";
 
 export interface LobbyState {
   lobbyRooms: LobbyRoom[];

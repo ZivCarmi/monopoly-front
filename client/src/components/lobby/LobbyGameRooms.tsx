@@ -3,7 +3,7 @@ import LobbyGameRoomsActions from "./LobbyGameRoomsActions";
 import LobbyGameRoomsList from "./LobbyGameRoomsList";
 import NoRoomsAvailable from "./NoRoomsAvailable";
 import { useSocket } from "@/app/socket-context";
-import { LobbyRoom } from "@backend/classes/Room";
+import { LobbyRoom } from "@ziv-carmi/monopoly-utils";
 import { setLobbyRooms } from "@/slices/lobby-slice";
 import { useEffect } from "react";
 

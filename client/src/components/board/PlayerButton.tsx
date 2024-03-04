@@ -1,6 +1,6 @@
 import { useAppSelector } from "@/app/hooks";
 import { cn } from "@/utils";
-import Player from "@backend/types/Player";
+import { Player } from "@ziv-carmi/monopoly-utils";
 
 type PlayerButtonProps = {
   player: Player;

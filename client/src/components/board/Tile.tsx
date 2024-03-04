@@ -1,5 +1,5 @@
 import { cn } from "@/utils";
-import { ITile } from "@backend/types/Board";
+import { ITile } from "@ziv-carmi/monopoly-utils";
 import TileName from "./TileName";
 
 interface TileProps extends React.HTMLAttributes<HTMLDivElement> {

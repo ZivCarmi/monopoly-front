@@ -3,7 +3,7 @@ import { useSocket } from "@/app/socket-context";
 import { resetRoom, setRoom } from "@/slices/game-slice";
 import { resetUi, setRoomUi } from "@/slices/ui-slice";
 import { resetTrades } from "@/slices/trade-slice";
-import Room from "@backend/classes/Room";
+import { Room } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";

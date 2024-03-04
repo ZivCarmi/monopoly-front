@@ -1,11 +1,12 @@
 import { AppThunk } from "@/app/store";
 import { movePlayer, transferMoney } from "@/slices/game-slice";
-import { GameCardTypes, PaymentTypes } from "@backend/types/Cards";
 import {
+  GameCardTypes,
+  PaymentTypes,
   AdvancedToTileCard,
   AdvancedToTileTypeCard,
   PaymentCard,
-} from "@backend/classes/Cards";
+} from "@ziv-carmi/monopoly-utils";
 
 export const paymentGameCard = (
   playerId: string,

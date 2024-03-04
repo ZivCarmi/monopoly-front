@@ -1,6 +1,9 @@
-import { IProperty, RentIndexes } from "@backend/types/Board";
-import { getCityLevelText } from "@backend/helpers";
-import { hasMonopoly } from "@backend/helpers";
+import {
+  IProperty,
+  RentIndexes,
+  getCityLevelText,
+  hasMonopoly,
+} from "@ziv-carmi/monopoly-utils";
 import { Button } from "../ui/button";
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";

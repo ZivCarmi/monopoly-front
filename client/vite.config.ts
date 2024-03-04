@@ -1,5 +1,5 @@
-import path, { resolve } from "path";
 import react from "@vitejs/plugin-react-swc";
+import path from "path";
 import { defineConfig } from "vite";
 
 export default defineConfig({
@@ -7,7 +7,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
-      "@backend": resolve(__dirname, "../server/src/api/"),
     },
   },
 });

@@ -1,5 +1,5 @@
 import { RootState } from "@/app/store";
-import { TradePlayer, TradeStatus, TradeType } from "@backend/types/Game";
+import { TradePlayer, TradeStatus, TradeType } from "@ziv-carmi/monopoly-utils";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 
 export interface TradeState {

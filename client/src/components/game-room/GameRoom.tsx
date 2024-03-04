@@ -23,8 +23,7 @@ import {
   switchTurn,
 } from "@/slices/game-slice";
 import { writeLog } from "@/slices/ui-slice";
-import { TradeType } from "@backend/types/Game";
-import Player from "@backend/types/Player";
+import { TradeType, Player } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
 import GameSidebar from "../game-panels/GameSidebar";
 import GameInfo from "../game-panels/general/GameInfo";

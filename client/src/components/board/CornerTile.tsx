@@ -1,4 +1,4 @@
-import { CornerGameTile, isJail } from "@backend/types/Board";
+import { CornerGameTile, isJail } from "@ziv-carmi/monopoly-utils";
 import JailTile from "./JailTile";
 import Tile from "./Tile";
 

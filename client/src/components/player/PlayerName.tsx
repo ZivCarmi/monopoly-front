@@ -1,5 +1,5 @@
 import { cn } from "@/utils";
-import { Colors } from "@backend/types/Player";
+import { Colors } from "@ziv-carmi/monopoly-utils";
 
 export interface PlayerNameProps
   extends React.ImgHTMLAttributes<HTMLImageElement> {

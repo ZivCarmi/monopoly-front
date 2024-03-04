@@ -1,5 +1,5 @@
 import { useSocket } from "@/app/socket-context";
-import { LobbyRoom } from "@backend/classes/Room";
+import { LobbyRoom } from "@ziv-carmi/monopoly-utils";
 import { User } from "lucide-react";
 import { Badge } from "../ui/badge";
 

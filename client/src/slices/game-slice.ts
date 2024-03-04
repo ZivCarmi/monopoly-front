@@ -1,8 +1,7 @@
 import { RootState } from "@/app/store";
-import Player from "@backend/types/Player";
-import Room from "@backend/classes/Room";
-import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
 import {
+  Player,
+  Room,
   Board,
   IProperty,
   isProperty,
@@ -11,11 +10,14 @@ import {
   RentIndexes,
   SuspensionTileTypes,
   TileTypes,
-} from "@backend/types/Board";
-import { GameCard } from "@backend/types/Cards";
-import { SuspensionProps, TradeType } from "@backend/types/Game";
-import { cycleNextItem, cyclicRangeNumber } from "@backend/utils";
-import { RoomGameCards } from "@backend/types/Game";
+  GameCard,
+  SuspensionProps,
+  TradeType,
+  cycleNextItem,
+  cyclicRangeNumber,
+  RoomGameCards,
+} from "@ziv-carmi/monopoly-utils";
+import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
 
 export interface GameState {
   isInRoom: boolean;

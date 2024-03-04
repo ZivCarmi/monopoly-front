@@ -1,5 +1,5 @@
 import { rowClassname } from "@/types/Board";
-import { isCorner } from "@backend/types/Board";
+import { isCorner } from "@ziv-carmi/monopoly-utils";
 import BoardRow from "./BoardRow";
 import BoardRowTile from "./BoardRowTile";
 import CornerTile from "./CornerTile";

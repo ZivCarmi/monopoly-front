@@ -1,5 +1,5 @@
 import { RootState } from "@/app/store";
-import { PurchasableTile } from "@backend/types/Board";
+import { PurchasableTile } from "@ziv-carmi/monopoly-utils";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 export interface UiState {

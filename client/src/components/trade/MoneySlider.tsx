@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { Slider } from "../ui/slider";
 import { setPlayerMoney } from "@/slices/trade-slice";
-import { InTradePlayer } from "@backend/types/Game";
+import { InTradePlayer } from "@ziv-carmi/monopoly-utils";
 
 type MoneySliderProps = {
   player: InTradePlayer;

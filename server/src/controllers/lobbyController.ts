@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import { LobbyRoom } from "../api/classes/Room";
+import { LobbyRoom } from "@ziv-carmi/monopoly-utils";
 import { rooms } from "./gameController";
 import io from "../services/socketService";
 

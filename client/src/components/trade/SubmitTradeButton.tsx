@@ -1,6 +1,6 @@
 import { useAppSelector } from "@/app/hooks";
 import { Button, buttonVariants } from "../ui/button";
-import { TradeStatus } from "@backend/types/Game";
+import { TradeStatus } from "@ziv-carmi/monopoly-utils";
 import { VariantProps } from "class-variance-authority";
 import { cn } from "@/utils";
 

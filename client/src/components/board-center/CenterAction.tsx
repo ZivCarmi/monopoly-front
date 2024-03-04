@@ -1,8 +1,10 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import { selectCurrentPlayerTurn, selectGameBoard } from "@/slices/game-slice";
-import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constants";
-import { isPurchasable } from "@backend/types/Board";
+import {
+  PAY_OUT_FROM_JAIL_AMOUNT,
+  isPurchasable,
+} from "@ziv-carmi/monopoly-utils";
 import { isPlayerInJail } from "../../utils";
 import PayOutOfJailButton from "./PayOutOfJailButton";
 import PlayerIsPlayingNotice from "./PlayerIsPlayingNotice";

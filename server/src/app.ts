@@ -1,5 +1,5 @@
 import cors from "cors";
-import { TradeType } from "./api/types/Game";
+import { TradeType } from "@ziv-carmi/monopoly-utils";
 import {
   downgradeCity,
   payOutOfJail,

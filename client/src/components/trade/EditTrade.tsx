@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { Button } from "../ui/button";
 import { setTradeStatus } from "@/slices/trade-slice";
 import { useSocket } from "@/app/socket-context";
-import { TradeType } from "@backend/types/Game";
+import { TradeType } from "@ziv-carmi/monopoly-utils";
 import SubmitTradeButton from "./SubmitTradeButton";
 
 const EditTrade = () => {

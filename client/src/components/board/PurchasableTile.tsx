@@ -1,6 +1,10 @@
 import { useAppDispatch } from "@/app/hooks";
 import { setSelectedTile } from "@/slices/ui-slice";
-import { PurchasableTile, RentIndexes, isProperty } from "@backend/types/Board";
+import {
+  PurchasableTile,
+  RentIndexes,
+  isProperty,
+} from "@ziv-carmi/monopoly-utils";
 import { Home, Hotel } from "lucide-react";
 import TileCard from "../tile-card/TileCard";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";

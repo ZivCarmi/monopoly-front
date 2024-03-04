@@ -1,4 +1,4 @@
-import { GameTile, isCorner } from "@backend/types/Board";
+import { GameTile, isCorner } from "@ziv-carmi/monopoly-utils";
 import { ReactNode } from "react";
 import TileBackgroundImage from "./TileBackgroundImage";
 import { cn } from "@/utils";

@@ -1,8 +1,8 @@
 import { Socket } from "socket.io";
-import Room from "../api/classes/Room";
 import io from "../services/socketService";
 import { getSocketRoomId } from "../utils/game-utils";
 import { rooms } from "./gameController";
+import CreateRoom from "../classes/Room";
 
 export async function joinRoom(socket: Socket, roomId: string) {
   if (roomId.length !== 5) return;
@@ -27,7 +27,7 @@ export async function joinRoom(socket: Socket, roomId: string) {
     });
   }
 
-  let room = new Room(roomId, socket.id);
+  let room = new CreateRoom(roomId, socket.id);
 
   if (rooms[roomId]) {
     // Update room

@@ -2,7 +2,7 @@ import { useSocket } from "@/app/socket-context";
 import { Button } from "../ui/button";
 import PropertyActions from "./PropertyActions";
 import { useAppSelector } from "@/app/hooks";
-import { PurchasableTile, isProperty } from "@backend/types/Board";
+import { PurchasableTile, isProperty } from "@ziv-carmi/monopoly-utils";
 import { selectPurchasableTileIndex } from "@/slices/ui-slice";
 import { Separator } from "../ui/separator";
 import { hasBuildings, isPlayerSuspended } from "@/utils";

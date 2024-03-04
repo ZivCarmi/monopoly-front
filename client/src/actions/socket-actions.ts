@@ -19,9 +19,12 @@ import {
   updateTradeInQueue,
 } from "@/slices/trade-slice";
 import { setSelectedTile, writeLog } from "@/slices/ui-slice";
-import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constants";
-import { IProperty, PurchasableTile } from "@backend/types/Board";
-import { TradeType } from "@backend/types/Game";
+import {
+  PAY_OUT_FROM_JAIL_AMOUNT,
+  IProperty,
+  PurchasableTile,
+  TradeType,
+} from "@ziv-carmi/monopoly-utils";
 
 export const purchasedPropertyThunk = ({
   propertyIndex,

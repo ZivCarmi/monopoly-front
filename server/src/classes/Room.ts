@@ -1,11 +1,14 @@
-import Player from "../types/Player";
-import { Board, SuspensionTileTypes } from "../types/Board";
-import { initializeMap } from "../helpers";
-import { RoomGameCards, TradeType } from "../types/Game";
+import {
+  Board,
+  PlayersObject,
+  Room,
+  RoomGameCards,
+  SuspensionTileTypes,
+  TradeType,
+} from "@ziv-carmi/monopoly-utils";
+import { initializeMap } from "../utils/game-utils";
 
-type PlayersObject = { [playerId: string]: Player };
-
-class Room {
+class CreateRoom implements Room {
   id: string;
   players: PlayersObject;
   participants: PlayersObject;
@@ -48,11 +51,4 @@ class Room {
   }
 }
 
-export type LobbyRoom = {
-  id: string;
-  players: Player[];
-  connectedSockets: number;
-  started: boolean;
-};
-
-export default Room;
+export default CreateRoom;

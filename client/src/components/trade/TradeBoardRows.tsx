@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { setPlayerProperties } from "@/slices/trade-slice";
-import { isPurchasable } from "@backend/types/Board";
+import { isPurchasable } from "@ziv-carmi/monopoly-utils";
 import { useMemo } from "react";
 import BoardRow from "../board/BoardRow";
 import BoardRowTile from "../board/BoardRowTile";

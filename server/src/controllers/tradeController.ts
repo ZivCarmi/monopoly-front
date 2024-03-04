@@ -1,14 +1,16 @@
+import {
+  TradeType,
+  cycleNextItem,
+  isPurchasable,
+} from "@ziv-carmi/monopoly-utils";
 import { Socket } from "socket.io";
-import { TradeType } from "../api/types/Game";
+import io from "../services/socketService";
 import {
   getSocketRoomId,
   isValidTrade,
   writeLogToRoom,
 } from "../utils/game-utils";
 import { rooms } from "./gameController";
-import io from "../services/socketService";
-import { isPurchasable } from "../api/types/Board";
-import { cycleNextItem } from "../api/utils";
 
 export function createTrade(socket: Socket, trade: TradeType) {
   const roomId = getSocketRoomId(socket);

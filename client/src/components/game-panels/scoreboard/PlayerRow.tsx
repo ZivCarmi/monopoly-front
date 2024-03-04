@@ -4,7 +4,7 @@ import PlayerNamePlate from "@/components/player/PlayerNamePlate";
 import PlayerCharacter from "@/components/player/PlayerCharacter";
 import PlayerName from "@/components/player/PlayerName";
 import { cn, getPlayerColor } from "@/utils";
-import Player from "@backend/types/Player";
+import { Player } from "@ziv-carmi/monopoly-utils";
 import { Crown } from "lucide-react";
 import { Button } from "../../ui/button";
 import {

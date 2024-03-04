@@ -17,8 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { selectPlayers } from "@/slices/game-slice";
-import { playerSchema } from "@backend/schemas/player";
-import { Characters, Colors } from "@backend/types/Player";
+import { playerSchema, Characters, Colors } from "@ziv-carmi/monopoly-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";

@@ -8,8 +8,8 @@ import {
   TileTypes,
   isProperty,
   isPurchasable,
-} from "@backend/types/Board";
-import { SuspensionProps } from "@backend/types/Game";
+  SuspensionProps,
+} from "@ziv-carmi/monopoly-utils";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 

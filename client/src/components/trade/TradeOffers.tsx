@@ -1,7 +1,7 @@
 import { useAppSelector } from "@/app/hooks";
 import { selectOffereePlayer, selectOfferorPlayer } from "@/slices/trade-slice";
 import { getPlayerCharacter, getPlayerColor, getPlayerName } from "@/utils";
-import { InTradePlayer } from "@backend/types/Game";
+import { InTradePlayer } from "@ziv-carmi/monopoly-utils";
 import PlayerNamePlate from "../player/PlayerNamePlate";
 import PlayerCharacter from "../player/PlayerCharacter";
 import PlayerName from "../player/PlayerName";

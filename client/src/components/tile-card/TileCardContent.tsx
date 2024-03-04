@@ -1,10 +1,11 @@
-import { AIRPORT_RENTS, COMPANY_RENTS } from "@backend/constants";
 import {
+  AIRPORT_RENTS,
+  COMPANY_RENTS,
   PurchasableTile,
   isAirport,
   isCompany,
   isProperty,
-} from "@backend/types/Board";
+} from "@ziv-carmi/monopoly-utils";
 import { Factory, Home, Hotel, Plane } from "lucide-react";
 import IndustryPricing from "./IndustryPricing";
 import TileCardPrice from "./TileCardPrice";

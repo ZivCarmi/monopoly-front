@@ -1,4 +1,8 @@
-import { NormalGameTile, isCard, isPurchasable } from "@backend/types/Board";
+import {
+  NormalGameTile,
+  isCard,
+  isPurchasable,
+} from "@ziv-carmi/monopoly-utils";
 import GameCard from "./GameCard";
 import PurchasableTile from "./PurchasableTile";
 import Tile from "./Tile";

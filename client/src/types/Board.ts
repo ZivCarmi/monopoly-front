@@ -1,5 +1,4 @@
-import { GameTile } from "@backend/types/Board";
-import Player from "@backend/types/Player";
+import { GameTile, Player } from "@ziv-carmi/monopoly-utils";
 
 enum BoardRows {
   "top",

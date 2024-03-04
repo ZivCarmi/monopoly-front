@@ -16,15 +16,11 @@ import {
   AIRPORT_RENTS,
   COMPANY_RENTS,
   MS_TO_MOVE_ON_TILES,
-} from "@backend/constants";
-import {
   getGoTile,
   getJailTileIndex,
   getVacationTileIndex,
   hasBuildings,
   hasMonopoly,
-} from "@backend/helpers";
-import {
   IJail,
   ITax,
   IVacation,
@@ -39,9 +35,9 @@ import {
   isPurchasable,
   isTax,
   isVacation,
-} from "@backend/types/Board";
-import { GameCardTypes } from "@backend/types/Cards";
-import Player from "@backend/types/Player";
+  GameCardTypes,
+  Player,
+} from "@ziv-carmi/monopoly-utils";
 import { isPlayerSuspended } from "../utils";
 import {
   advanceToTileGameCard,

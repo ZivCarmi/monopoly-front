@@ -1,5 +1,5 @@
 import { cn } from "@/utils";
-import { Characters } from "@backend/types/Player";
+import { Characters } from "@ziv-carmi/monopoly-utils";
 
 export interface PlayerCharacterProps
   extends React.ImgHTMLAttributes<HTMLImageElement> {

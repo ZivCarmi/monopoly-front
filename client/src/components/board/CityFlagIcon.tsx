@@ -1,4 +1,4 @@
-import { CountryIds } from "@backend/types/Board";
+import { CountryIds } from "@ziv-carmi/monopoly-utils";
 
 type CityFlagIconProps = {
   countryId: CountryIds;

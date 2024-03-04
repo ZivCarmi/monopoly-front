@@ -1,4 +1,4 @@
-import { GameTile, isProperty } from "@backend/types/Board";
+import { GameTile, isProperty } from "@ziv-carmi/monopoly-utils";
 
 type TileBackgroundImageProps = {
   tile: GameTile;

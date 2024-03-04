@@ -1,28 +1,24 @@
-import { Socket } from "socket.io";
-import Room from "../api/classes/Room";
 import {
   AIRPORT_RENTS,
   COMPANY_RENTS,
+  GameCardTypes,
+  IJail,
+  ITax,
+  IVacation,
   MS_TO_MOVE_ON_TILES,
   PAY_OUT_FROM_JAIL_AMOUNT,
-} from "../api/constants";
-import {
-  advanceToTileGameCard,
-  advanceToTileTypeGameCard,
+  PurchasableTile,
+  RentIndexes,
+  Room,
+  RoomGameCards,
+  TileTypes,
+  cycleNextItem,
+  cyclicRangeNumber,
   getCityLevelText,
   getJailTileIndex,
   getVacationTileIndex,
   hasBuildings,
   hasMonopoly,
-  paymentGameCard,
-} from "../api/helpers";
-import {
-  IJail,
-  ITax,
-  IVacation,
-  PurchasableTile,
-  RentIndexes,
-  TileTypes,
   isAirport,
   isChanceCard,
   isCompany,
@@ -34,12 +30,13 @@ import {
   isSurpriseCard,
   isTax,
   isVacation,
-} from "../api/types/Board";
-import { GameCardTypes } from "../api/types/Cards";
-import { RoomGameCards } from "../api/types/Game";
-import { cycleNextItem, cyclicRangeNumber, shuffleArray } from "../api/utils";
+  shuffleArray,
+} from "@ziv-carmi/monopoly-utils";
+import { Socket } from "socket.io";
 import io from "../services/socketService";
 import {
+  advanceToTileGameCard,
+  advanceToTileTypeGameCard,
   checkForWinner,
   getPlayerIds,
   getSocketRoomId,
@@ -47,6 +44,7 @@ import {
   isPlayerHasTurn,
   isPlayerInDebt,
   isPlayerInJail,
+  paymentGameCard,
   randomizeDices,
   writeLogToRoom,
 } from "../utils/game-utils";
@@ -321,13 +319,13 @@ export function rollDice(socket: Socket) {
   rooms[roomId].dices = randomizeDices();
 
   // // FOR TESTING
-  // const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
-  // const firstPlayerId = getPlayerIds(roomId)[0];
-  // if (firstPlayerId === currentPlayerTurnId) {
-  //   rooms[roomId].dices = [4, 3];
-  // } else {
-  //   rooms[roomId].dices = [2, 1];
-  // }
+  const currentPlayerTurnId = rooms[roomId].currentPlayerTurnId;
+  const firstPlayerId = getPlayerIds(roomId)[0];
+  if (firstPlayerId === currentPlayerTurnId) {
+    rooms[roomId].dices = [5, 5];
+  } else {
+    rooms[roomId].dices = [2, 1];
+  }
 
   const isDouble = rooms[roomId].dices[0] === rooms[roomId].dices[1];
   const dicesSum = rooms[roomId].dices[0] + rooms[roomId].dices[1];
@@ -382,13 +380,14 @@ export function walkPlayer(socket: Socket, steps: number) {
   const tileToWalk = player.tilePos + steps;
   const newPlayerPosition = cyclicRangeNumber(tileToWalk, board.length);
   const passedGo = tileToWalk > board.length && newPlayerPosition !== 0;
+  const timeToLand = (room.dices[0] + room.dices[1]) * MS_TO_MOVE_ON_TILES;
 
   rooms[roomId].players[playerId].tilePos = newPlayerPosition;
   rooms[roomId].players[playerId].money = passedGo
     ? player.money + goRewards.pass
     : player.money;
 
-  return onPlayerLanding(socket);
+  return setTimeout(() => onPlayerLanding(socket), timeToLand);
 }
 
 export function onPlayerLanding(socket: Socket) {
@@ -415,23 +414,18 @@ export function onPlayerLanding(socket: Socket) {
   } else if (isSurpriseCard(landedTile)) {
     handleGameCard(socket, room.map.surprises);
     rooms[roomId].map.surprises.currentIndex += 1;
-  } else if (isJail(landedTile)) {
-    // Maybe do here something? not sure
   } else if (isVacation(landedTile)) {
     sendPlayerToVacation(socket.id);
-    // can switch turn here.
+    return switchTurn(socket);
   } else if (isGoToJail(landedTile)) {
     sendPlayerToJail(socket.id);
+    return switchTurn(socket);
   }
 
-  const timeToLand = (room.dices[0] + room.dices[1]) * MS_TO_MOVE_ON_TILES;
-
-  setTimeout(() => {
-    if (isPlayerInDebt(socket.id)) {
-      const { debtTo } = rooms[roomId].players[socket.id];
-      io.in(roomId).emit("player_in_debt", { playerId: socket.id, debtTo });
-    }
-  }, timeToLand);
+  if (isPlayerInDebt(socket.id)) {
+    const { debtTo } = rooms[roomId].players[socket.id];
+    io.in(roomId).emit("player_in_debt", { playerId: socket.id, debtTo });
+  }
 }
 
 export function switchTurn(socket: Socket) {

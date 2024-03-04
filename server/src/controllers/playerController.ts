@@ -1,8 +1,12 @@
+import {
+  Player,
+  RentIndexes,
+  isProperty,
+  isPurchasable,
+  playerSchema,
+} from "@ziv-carmi/monopoly-utils";
 import { Socket } from "socket.io";
 import * as z from "zod";
-import { playerSchema } from "../api/schemas/player";
-import { RentIndexes, isProperty, isPurchasable } from "../api/types/Board";
-import Player from "../api/types/Player";
 import { PLAYER_MONEY } from "../config";
 import io from "../services/socketService";
 import {

@@ -1,7 +1,7 @@
 import { useSocket } from "@/app/socket-context";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
-import { PAY_OUT_FROM_JAIL_AMOUNT } from "@backend/constants";
+import { PAY_OUT_FROM_JAIL_AMOUNT } from "@ziv-carmi/monopoly-utils";
 import { ShoppingCart } from "lucide-react";
 
 const PayOutOfJailButton = ({ isDisabled }: { isDisabled: boolean }) => {
