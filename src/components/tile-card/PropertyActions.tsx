@@ -8,26 +8,19 @@ import { Button } from "../ui/button";
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import { selectPurchasableTileIndex } from "@/slices/ui-slice";
-import { isPlayerSuspended } from "@/utils";
+import { isPlayerSuspended, isPlayerTurn } from "@/utils";
 import { selectGameBoard } from "@/slices/game-slice";
 
-type PropertyActionsProps = {
-  property: IProperty;
-};
-
-const PropertyActions: React.FC<PropertyActionsProps> = ({ property }) => {
+const PropertyActions = ({ property }: { property: IProperty }) => {
   const socket = useSocket();
-  const { currentPlayerTurnId, players, suspendedPlayers } = useAppSelector(
-    (state) => state.game
-  );
+  const { selfPlayer } = useAppSelector((state) => state.game);
   const board = useAppSelector(selectGameBoard);
-  const selectedTileIndex = useAppSelector(selectPurchasableTileIndex);
-  const selfPlayer = players.find((player) => player.id === socket.id);
-  const selfPlayerHasTurn = currentPlayerTurnId === socket.id;
-  const isSuspended = isPlayerSuspended(socket.id);
+  const propertyIndex = useAppSelector(selectPurchasableTileIndex);
 
   if (!selfPlayer) return null;
 
+  const selfPlayerHasTurn = isPlayerTurn(selfPlayer.id);
+  const isSuspended = isPlayerSuspended(selfPlayer.id);
   const upgradeCost =
     property.rentIndex === RentIndexes.FOUR_HOUSES
       ? property.hotelCost
@@ -44,18 +37,12 @@ const PropertyActions: React.FC<PropertyActionsProps> = ({ property }) => {
   const upgradedCityLevelText = getCityLevelText(property.rentIndex + 1);
   const downgradedCityLevelText = getCityLevelText(property.rentIndex - 1);
 
-  console.log(suspendedPlayers);
-
   const upgradeCityHandler = () => {
-    socket.emit("upgrade_city", {
-      tileIndex: selectedTileIndex,
-    });
+    socket.emit("upgrade_city", propertyIndex);
   };
 
   const downgradeCityHandler = () => {
-    socket.emit("downgrade_city", {
-      tileIndex: selectedTileIndex,
-    });
+    socket.emit("downgrade_city", propertyIndex);
   };
 
   return (
@@ -68,7 +55,7 @@ const PropertyActions: React.FC<PropertyActionsProps> = ({ property }) => {
           className="flex-1"
         >
           {upgradedCityLevelText
-            ? `שדרג ל ${upgradedCityLevelText}`
+            ? `שדרג ל${upgradedCityLevelText}`
             : "במקסימום"}
         </Button>
         <Button
@@ -78,7 +65,7 @@ const PropertyActions: React.FC<PropertyActionsProps> = ({ property }) => {
           className="flex-1"
         >
           {downgradedCityLevelText
-            ? `שנמך ל ${downgradedCityLevelText}`
+            ? `שנמך ל${downgradedCityLevelText}`
             : "במינימום"}
         </Button>
       </div>

@@ -1,11 +1,12 @@
 import { useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context";
-import PlayerNamePlate from "@/components/player/PlayerNamePlate";
 import PlayerCharacter from "@/components/player/PlayerCharacter";
+import PlayerMoney from "@/components/player/PlayerMoney";
 import PlayerName from "@/components/player/PlayerName";
-import { cn, getPlayerColor } from "@/utils";
-import { Player } from "@ziv-carmi/monopoly-utils";
-import { Crown } from "lucide-react";
+import PlayerNamePlate from "@/components/player/PlayerNamePlate";
+import { cn, getTimeValues, isPlayerTurn } from "@/utils";
+import { Player, isGameNotStarted } from "@ziv-carmi/monopoly-utils";
+import { Crown, FlagTriangleRight, WifiOff } from "lucide-react";
+import { useEffect, useState } from "react";
 import { Button } from "../../ui/button";
 import {
   Tooltip,
@@ -13,36 +14,37 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../../ui/tooltip";
-import PlayerMoney from "@/components/player/PlayerMoney";
 
 const PlayerRow = ({ player }: { player: Player }) => {
-  const { started } = useAppSelector((state) => state.game);
-  const socket = useSocket();
+  const { state, selfPlayer } = useAppSelector((state) => state.game);
 
   return (
     <div
       className={cn(
         "flex items-center text-center p-2 relative rounded-lg",
-        socket.id === player.id && "bg-background/50"
+        selfPlayer?.id === player.id && "bg-background/50"
       )}
     >
-      <TurnIndicator playerId={player.id} />
-      <div className="flex items-center gap-3">
-        <PlayerNamePlate>
-          <PlayerCharacter character={player.character} />
-          <PlayerName
-            name={player.name}
-            color={player.color}
-            className="text-sm"
-          />
-        </PlayerNamePlate>
+      <TurnIndicator player={player} />
+      <PlayerNamePlate>
+        <PlayerCharacter character={player.character} />
+        <PlayerName
+          name={player.name}
+          color={player.color}
+          className="text-sm"
+        />
         <HostIndicator playerId={player.id} />
-      </div>
+        {!player.isConnected && player.connectionKickAt && (
+          <NotConnectedIndicator connectionKickAt={player.connectionKickAt} />
+        )}
+      </PlayerNamePlate>
       <div className="grow text-end px-4">
-        {started ? (
-          <PlayerMoney money={player.money} />
-        ) : (
+        {isGameNotStarted(state) ? (
           <ChangeAppearanceButton playerId={player.id} />
+        ) : player.bankrupted ? (
+          <BankruptedIndicator />
+        ) : (
+          <PlayerMoney money={player.money} />
         )}
       </div>
     </div>
@@ -50,9 +52,9 @@ const PlayerRow = ({ player }: { player: Player }) => {
 };
 
 const ChangeAppearanceButton = ({ playerId }: { playerId: string }) => {
-  const socket = useSocket();
+  const { selfPlayer } = useAppSelector((state) => state.game);
 
-  if (socket.id !== playerId) {
+  if (selfPlayer?.id !== playerId) {
     return null;
   }
 
@@ -63,23 +65,34 @@ const ChangeAppearanceButton = ({ playerId }: { playerId: string }) => {
   );
 };
 
-const TurnIndicator = ({ playerId }: { playerId: string }) => {
-  const { currentPlayerTurnId } = useAppSelector((state) => state.game);
-  const playerColor = getPlayerColor(playerId);
-  const isPlayerTurn = currentPlayerTurnId === playerId;
+const BankruptedIndicator = () => {
+  return (
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <FlagTriangleRight className="w-4 h-4 text-red-500 mr-auto" />
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>פשט רגל</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
 
+const TurnIndicator = ({ player }: { player: Player }) => {
   return (
     <div
       className="w-1 rounded-tl-full rounded-bl-full absolute top-0 bottom-0 -right-4"
-      style={isPlayerTurn ? { backgroundColor: playerColor } : {}}
+      style={isPlayerTurn(player.id) ? { backgroundColor: player.color } : {}}
     />
   );
 };
 
 const HostIndicator = ({ playerId }: { playerId: string }) => {
-  const { roomHostId } = useAppSelector((state) => state.game);
+  const { hostId } = useAppSelector((state) => state.game);
 
-  if (playerId !== roomHostId) {
+  if (playerId !== hostId) {
     return null;
   }
 
@@ -91,6 +104,45 @@ const HostIndicator = ({ playerId }: { playerId: string }) => {
         </TooltipTrigger>
         <TooltipContent>
           <p>מארח החדר</p>
+        </TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
+  );
+};
+
+const NotConnectedIndicator = ({
+  connectionKickAt,
+}: {
+  connectionKickAt: Date;
+}) => {
+  const [countdown, setCountdown] = useState(
+    new Date(connectionKickAt).getTime() - new Date().getTime()
+  );
+  const { minutes, seconds } = getTimeValues(countdown);
+
+  useEffect(() => {
+    if (countdown <= 1000) return;
+
+    const interval = setInterval(() => {
+      setCountdown((prevTime) => prevTime - 1000);
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [countdown]);
+
+  return (
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <div className="inline-flex items-center gap-1 text-red-500 animate-pulse duration-[1500]">
+            <WifiOff className="w-4 h-4" />
+            <time>
+              {minutes}:{seconds}
+            </time>
+          </div>
+        </TooltipTrigger>
+        <TooltipContent>
+          <p>שחקן לא מחובר</p>
         </TooltipContent>
       </Tooltip>
     </TooltipProvider>

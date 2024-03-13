@@ -1,10 +1,9 @@
-import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import { setIsLanded } from "@/slices/game-slice";
+import { isPlayerInDebt } from "@/utils";
 import { Dices, RefreshCcw } from "lucide-react";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
-import { isPlayerInDebt } from "@/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -13,21 +12,15 @@ import {
 } from "../ui/tooltip";
 
 const RollDices = () => {
-  const dispatch = useAppDispatch();
-  const { cubesRolledInTurn, doublesInARow } = useAppSelector(
+  const { cubesRolledInTurn, doublesInARow, selfPlayer } = useAppSelector(
     (state) => state.game
   );
   const hasExtraTurn = doublesInARow > 0 && doublesInARow < 3;
   const socket = useSocket();
-  const isInDebt = !!isPlayerInDebt(socket.id);
+  const isInDebt = !!selfPlayer && isPlayerInDebt(selfPlayer.id);
 
   const rollDiceHandler = () => {
-    if (hasExtraTurn) {
-      dispatch(setIsLanded(false));
-    }
-
     console.log("Rolling dice...");
-
     socket.emit("rolling_dice");
   };
 

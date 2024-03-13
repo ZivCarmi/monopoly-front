@@ -1,12 +1,11 @@
-import { Button } from "../ui/button";
 import { useSocket } from "@/app/socket-context";
-import { v4 as uuidv4 } from "uuid";
+import { Button } from "../ui/button";
 
 const CreateRoomButton = ({ children }: { children: React.ReactNode }) => {
   const socket = useSocket();
 
   const createRoomHandler = () => {
-    socket.emit("join_room", { roomId: uuidv4().substring(0, 5) });
+    socket.emit("join_room");
   };
 
   return (

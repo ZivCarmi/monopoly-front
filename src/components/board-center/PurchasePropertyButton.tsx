@@ -17,9 +17,7 @@ const PurchasePropertyButton: React.FC<PurchasePropertyButtonProps> = ({
   const socket = useSocket();
 
   const purchasePropertyHandler = () => {
-    socket.emit("purchase_property", {
-      propertyIndex,
-    });
+    socket.emit("purchase_property", propertyIndex);
   };
 
   return (

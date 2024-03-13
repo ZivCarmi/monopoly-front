@@ -25,7 +25,7 @@ const GameRoomPage = () => {
 
   useEffect(() => {
     if (roomId && !isInRoom && isFirstRender.current) {
-      socket.emit("join_room", { roomId });
+      socket.emit("join_room", roomId);
       isFirstRender.current = false;
     }
 

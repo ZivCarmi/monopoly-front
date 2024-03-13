@@ -1,5 +1,4 @@
 import { useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context";
 import { selectCurrentPlayerTurn, selectGameBoard } from "@/slices/game-slice";
 import {
   PAY_OUT_FROM_JAIL_AMOUNT,
@@ -12,10 +11,8 @@ import PurchasePropertyButton from "./PurchasePropertyButton";
 import RollDices from "./RollDices";
 
 const CenterAction = () => {
-  const socket = useSocket();
-  const { canPerformTurnActions, cubesRolledInTurn } = useAppSelector(
-    (state) => state.game
-  );
+  const { canPerformTurnActions, cubesRolledInTurn, selfPlayer } =
+    useAppSelector((state) => state.game);
   const currentPlayer = useAppSelector(selectCurrentPlayerTurn);
   const board = useAppSelector(selectGameBoard);
 
@@ -23,7 +20,7 @@ const CenterAction = () => {
     return null;
   }
 
-  if (currentPlayer.id !== socket.id) {
+  if (currentPlayer.id !== selfPlayer?.id) {
     return <PlayerIsPlayingNotice />;
   }
 
@@ -43,7 +40,7 @@ const CenterAction = () => {
           price={tile.cost}
         />
       )}
-      {isPlayerInJail(socket.id) && !cubesRolledInTurn && (
+      {selfPlayer && isPlayerInJail(selfPlayer.id) && !cubesRolledInTurn && (
         <PayOutOfJailButton
           isDisabled={currentPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
         />

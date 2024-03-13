@@ -1,5 +1,4 @@
 import { useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context";
 import { AlertDialogFooter } from "../ui/alert-dialog";
 import EditTrade from "./EditTrade";
 import SendTrade from "./SendTrade";
@@ -7,7 +6,7 @@ import SubmitTradeButton from "./SubmitTradeButton";
 import TradeRecieved from "./TradeRecieved";
 
 const TradeActions = () => {
-  const socket = useSocket();
+  const { selfPlayer } = useAppSelector((state) => state.game);
   const { offeror, offeree, status, isPublished } = useAppSelector(
     (state) => state.trade
   );
@@ -17,10 +16,10 @@ const TradeActions = () => {
 
   return (
     <AlertDialogFooter>
-      {offeror?.id === socket.id && (
+      {offeror?.id === selfPlayer?.id && (
         <>{isIdle && <>{!isPublished ? <SendTrade /> : <EditTrade />}</>}</>
       )}
-      {offeree?.id === socket.id && (
+      {offeree?.id === selfPlayer?.id && (
         <>{isIdle && isPublished && <EditTrade />}</>
       )}
       {isRecieved && isPublished && <TradeRecieved />}

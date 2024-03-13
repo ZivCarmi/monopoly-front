@@ -6,7 +6,6 @@ import {
   incrementPlayerPosition,
   movePlayer,
   setDices,
-  setIsLanded,
   staySuspendedTurn,
   suspendPlayer,
   transferMoney,
@@ -15,17 +14,19 @@ import { writeLog } from "@/slices/ui-slice";
 import {
   AIRPORT_RENTS,
   COMPANY_RENTS,
+  GameCardTypes,
+  IJail,
+  ITax,
+  IVacation,
   MS_TO_MOVE_ON_TILES,
+  Player,
+  PurchasableTile,
+  TileTypes,
   getGoTile,
   getJailTileIndex,
   getVacationTileIndex,
   hasBuildings,
   hasMonopoly,
-  IJail,
-  ITax,
-  IVacation,
-  PurchasableTile,
-  TileTypes,
   isAirport,
   isCard,
   isCompany,
@@ -35,8 +36,6 @@ import {
   isPurchasable,
   isTax,
   isVacation,
-  GameCardTypes,
-  Player,
 } from "@ziv-carmi/monopoly-utils";
 import { isPlayerSuspended } from "../utils";
 import {
@@ -122,7 +121,6 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
         if (steps === 0) {
           dispatch(allowTurnActions(true));
           dispatch(handlePlayerLanding(playerId));
-          dispatch(setIsLanded(true));
         } else {
           requestAnimationFrame(update);
         }
@@ -272,14 +270,15 @@ export const handleGameCard = (player: Player): AppThunk => {
 
 export const handleTaxPayment = (player: Player, tile: ITax): AppThunk => {
   return (dispatch) => {
-    const rentAmount = Math.ceil((player.money * tile.taxRate) / 100);
+    const taxAmount = Math.ceil((player.money * tile.taxRate) / 100);
 
     dispatch(
       transferMoney({
         payerId: player.id,
-        amount: rentAmount,
+        amount: taxAmount,
       })
     );
+    dispatch(writeLog(`${player.name} שילם מס בסך $${taxAmount}`));
   };
 };
 

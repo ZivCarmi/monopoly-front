@@ -1,19 +1,19 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { useSocket } from "@/app/socket-context";
+import { setLobbyRooms } from "@/slices/lobby-slice";
+import { LobbyRoom } from "@ziv-carmi/monopoly-utils";
+import { useEffect } from "react";
 import LobbyGameRoomsActions from "./LobbyGameRoomsActions";
 import LobbyGameRoomsList from "./LobbyGameRoomsList";
 import NoRoomsAvailable from "./NoRoomsAvailable";
-import { useSocket } from "@/app/socket-context";
-import { LobbyRoom } from "@ziv-carmi/monopoly-utils";
-import { setLobbyRooms } from "@/slices/lobby-slice";
-import { useEffect } from "react";
 
 const LobbyGameRooms = () => {
   const { lobbyRooms } = useAppSelector((state) => state.lobby);
   const socket = useSocket();
   const dispatch = useAppDispatch();
 
-  const setRooms = ({ rooms }: { rooms: LobbyRoom[] }) => {
-    dispatch(setLobbyRooms(rooms));
+  const setRooms = (lobbyRooms: LobbyRoom[]) => {
+    dispatch(setLobbyRooms(lobbyRooms));
   };
 
   useEffect(() => {

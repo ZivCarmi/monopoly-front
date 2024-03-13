@@ -6,7 +6,9 @@ import WinnerScreenActions from "./WinnerScreenActions";
 import PlayerNamePlate from "../player/PlayerNamePlate";
 
 const WinnerScreen = () => {
-  const { winner } = useAppSelector((state) => state.game);
+  const {
+    stats: { winner },
+  } = useAppSelector((state) => state.game);
 
   if (!winner) {
     return null;

@@ -1,9 +1,9 @@
+import { resetGameRoom } from "@/actions/lobby-actions";
 import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import { resetRoom, setRoom } from "@/slices/game-slice";
-import { resetUi, setRoomUi } from "@/slices/ui-slice";
-import { resetTrades } from "@/slices/trade-slice";
-import { Room } from "@ziv-carmi/monopoly-utils";
+import { setRoom, setSelfPlayer } from "@/slices/game-slice";
+import { writeLog } from "@/slices/ui-slice";
+import { Player, Room } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
@@ -14,17 +14,37 @@ const MainLayout = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
 
-  const onRoomJoined = ({ room }: { room: Room }) => {
+  const onRoomJoined = ({
+    room,
+    selfPlayer,
+  }: {
+    room: Room;
+    selfPlayer?: Player;
+  }) => {
     dispatch(setRoom(room));
-    dispatch(setRoomUi([`הצטרפת לחדר ${room.id}`, ...room.logs]));
+    dispatch(writeLog(`הצטרפת לחדר ${room.id}`));
+    if (selfPlayer) {
+      dispatch(setSelfPlayer(selfPlayer));
+    }
     navigate(`/rooms/${room.id}`);
   };
 
-  const onRoomJoinError = ({ error }: { error: string }) => {
+  const onRoomJoinErrorFull = () => {
     navigate("/");
     toast({
       variant: "destructive",
-      title: error,
+      title: "חדר מלא",
+      description: "באפשרותך להיכנס לחדר אחר או ליצור אחד.",
+    });
+  };
+
+  const onRoomJoinErrorDuplication = () => {
+    navigate("/");
+    toast({
+      variant: "destructive",
+      title: "כבר פתחת את החדר הזה בחלון אחר",
+      description:
+        "אם הינך רוצה להיכנס לחדר מעוד חלון, יש להיכנס מחלון גלישה בסתר.",
     });
   };
 
@@ -32,25 +52,26 @@ const MainLayout = () => {
     navigate("/");
     toast({
       variant: "destructive",
-      title: "Room was deleted due to no active players",
+      title: "חדר נמחק או הסתיים",
     });
   };
 
   const onReturnedToLobby = () => {
-    dispatch(resetRoom());
-    dispatch(resetUi());
-    dispatch(resetTrades());
+    dispatch(resetGameRoom());
+    navigate("/");
   };
 
   useEffect(() => {
     socket.on("room_joined", onRoomJoined);
-    socket.on("room_join_error", onRoomJoinError);
+    socket.on("room_join_error_full", onRoomJoinErrorFull);
+    socket.on("room_join_error_duplication", onRoomJoinErrorDuplication);
     socket.on("room_deleted", onRoomDeleted);
     socket.on("on_lobby", onReturnedToLobby);
 
     return () => {
       socket.off("room_joined", onRoomJoined);
-      socket.off("room_join_error", onRoomJoinError);
+      socket.off("room_join_error_full", onRoomJoinErrorFull);
+      socket.off("room_join_error_duplication", onRoomJoinErrorDuplication);
       socket.off("room_deleted", onRoomDeleted);
       socket.off("on_lobby", onReturnedToLobby);
     };

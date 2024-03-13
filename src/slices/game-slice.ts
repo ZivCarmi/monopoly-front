@@ -1,60 +1,46 @@
 import { RootState } from "@/app/store";
+import { PayloadAction, createSlice, current } from "@reduxjs/toolkit";
 import {
-  Player,
-  Room,
-  Board,
+  GameCard,
+  GameState,
   IProperty,
-  isProperty,
-  isPurchasable,
+  Player,
   PurchasableTile,
   RentIndexes,
+  Room,
   SuspensionTileTypes,
   TileTypes,
-  GameCard,
-  SuspensionProps,
   TradeType,
   cycleNextItem,
   cyclicRangeNumber,
-  RoomGameCards,
+  isProperty,
+  isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
-import { createSlice, current, PayloadAction } from "@reduxjs/toolkit";
 
-export interface GameState {
+type RoomWithoutParticipants = Omit<Room["stats"], "participants">;
+
+type RoomBase = Omit<Room, "players" | "stats" | "id" | "trades"> &
+  RoomWithoutParticipants;
+
+export interface GameRoom extends RoomBase {
+  players: Player[];
   isInRoom: boolean;
   isReady: boolean;
-  roomHostId: string | null;
-  players: Player[];
-  map: {
-    board: Board;
-    chances: RoomGameCards;
-    surprises: RoomGameCards;
-    goRewards: {
-      pass: number;
-      land: number;
-    };
-  };
-  started: boolean;
-  dices: number[];
-  cubesRolledInTurn: boolean;
-  currentPlayerTurnId: string | null;
-  isLanded: boolean;
+  selfPlayer: Player | null;
   canPerformTurnActions: boolean;
-  doublesInARow: number;
-  suspendedPlayers: {
-    [playerId: string]: SuspensionProps;
-  };
   drawnGameCard: {
     tileIndex: number | null;
     card: GameCard | null;
   };
-  winner: Player | null;
+  stats: RoomWithoutParticipants & { participants: Player[] };
 }
 
-const initialState: GameState = {
+const initialState: GameRoom = {
   isInRoom: false,
   isReady: false,
-  roomHostId: null,
+  hostId: null,
   players: [],
+  selfPlayer: null,
   map: {
     board: [],
     chances: {
@@ -70,11 +56,10 @@ const initialState: GameState = {
       land: 300,
     },
   },
-  started: false,
+  state: GameState.NOT_STARTED,
   dices: [],
   cubesRolledInTurn: false,
   currentPlayerTurnId: null,
-  isLanded: false,
   canPerformTurnActions: true,
   doublesInARow: 0,
   suspendedPlayers: {},
@@ -82,7 +67,9 @@ const initialState: GameState = {
     tileIndex: null,
     card: null,
   },
-  winner: null,
+  stats: {
+    participants: [],
+  },
 };
 
 export type TransferMoneyArgs = {
@@ -99,34 +86,65 @@ export const gameSlice = createSlice({
       const room = action.payload;
 
       state.isInRoom = true;
-      state.roomHostId = room.hostId;
+      state.hostId = room.hostId;
       state.players = Object.values(room.players);
       state.map = room.map;
-      state.started = room.gameStarted;
+      state.state = room.state;
       state.dices = room.dices;
       state.currentPlayerTurnId = room.currentPlayerTurnId;
+      state.cubesRolledInTurn = room.cubesRolledInTurn;
       state.doublesInARow = room.doublesInARow;
+      state.suspendedPlayers = room.suspendedPlayers;
+      state.stats = {
+        ...state.stats,
+        participants: Object.values(room.stats.participants),
+      };
     },
     resetRoom: () => {
       return initialState;
     },
-    setRoomHostId: (state, action: PayloadAction<string>) => {
-      state.roomHostId = action.payload;
+    setHostId: (state, action: PayloadAction<string>) => {
+      state.hostId = action.payload;
     },
     setSelfPlayerReady: (state) => {
       state.isReady = true;
     },
-    addPlayer: (state, action: PayloadAction<Player>) => {
-      state.players.push(action.payload);
+    setSelfPlayer: (state, action: PayloadAction<Player>) => {
+      state.selfPlayer = action.payload;
+    },
+    setPlayerConnection: (
+      state,
+      action: PayloadAction<{
+        playerId: string;
+        isConnected: boolean;
+        kickAt: Player["connectionKickAt"];
+      }>
+    ) => {
+      const { playerId, isConnected, kickAt } = action.payload;
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === playerId
+      );
+
+      if (playerIndex !== -1) {
+        state.players[playerIndex].isConnected = isConnected;
+        state.players[playerIndex].connectionKickAt = kickAt;
+      }
+    },
+    addPlayer: (
+      state,
+      action: PayloadAction<{ player: Player; isSelf?: boolean }>
+    ) => {
+      const { player, isSelf } = action.payload;
+      state.players.push(player);
+      if (isSelf) {
+        state.selfPlayer = player;
+      }
     },
     removePlayer: (state, action: PayloadAction<{ playerId: string }>) => {
       const player = state.players.filter(
         (player) => player.id !== action.payload.playerId
       );
       state.players = player;
-    },
-    setPlayers: (state, action: PayloadAction<Player[]>) => {
-      state.players = action.payload;
     },
     startGame: (
       state,
@@ -137,7 +155,7 @@ export const gameSlice = createSlice({
     ) => {
       state.players = action.payload.generatedPlayers;
       state.currentPlayerTurnId = action.payload.currentPlayerTurn;
-      state.started = true;
+      state.state = GameState.STARTED;
     },
     setDices: (state, action: PayloadAction<{ dices: number[] }>) => {
       const { dices } = action.payload;
@@ -147,9 +165,6 @@ export const gameSlice = createSlice({
       state.canPerformTurnActions = false;
       state.cubesRolledInTurn = true;
       state.doublesInARow = isDouble ? ++state.doublesInARow : 0;
-    },
-    setIsLanded: (state, action: PayloadAction<boolean>) => {
-      state.isLanded = action.payload;
     },
     incrementPlayerPosition: (
       state,
@@ -410,7 +425,6 @@ export const gameSlice = createSlice({
       const { nextPlayerId } = action.payload;
 
       state.currentPlayerTurnId = nextPlayerId;
-      state.isLanded = false;
       state.canPerformTurnActions = true;
       state.cubesRolledInTurn = false;
       state.doublesInARow = 0;
@@ -431,9 +445,13 @@ export const gameSlice = createSlice({
     },
     bankruptPlayer: (state, action: PayloadAction<{ playerId: string }>) => {
       const { playerId } = action.payload;
-      const player = state.players.find((player) => player.id === playerId);
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === playerId
+      );
 
-      if (player) {
+      if (playerIndex !== -1) {
+        const player = state.players[playerIndex];
+
         // reset owned properties
         state.map.board.map((tile) => {
           if (isPurchasable(tile) && tile.owner === playerId) {
@@ -448,18 +466,13 @@ export const gameSlice = createSlice({
           return tile;
         });
 
-        state.players = state.players.filter(
-          (player) => player.id !== playerId
-        );
+        state.players[playerIndex].bankrupted = true;
       }
     },
-
-    setWinner: (state, action: PayloadAction<{ winnerId: string }>) => {
-      const winner = state.players.find(
-        (player) => action.payload.winnerId === player.id
-      );
-
-      state.winner = winner || null;
+    setWinner: (state, action: PayloadAction<{ winner: Player }>) => {
+      state.stats.winner = action.payload.winner;
+      state.stats.endedAt = new Date();
+      state.state = GameState.ENDED;
     },
   },
 });
@@ -467,14 +480,14 @@ export const gameSlice = createSlice({
 export const {
   setRoom,
   resetRoom,
-  setRoomHostId,
+  setHostId,
   setSelfPlayerReady,
+  setSelfPlayer,
+  setPlayerConnection,
   addPlayer,
   removePlayer,
-  setPlayers,
   startGame,
   setDices,
-  setIsLanded,
   incrementPlayerPosition,
   movePlayer,
   allowTurnActions,

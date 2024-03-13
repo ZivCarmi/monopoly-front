@@ -21,7 +21,7 @@ const EditTrade = () => {
 
     console.log(tradeObject);
 
-    socket.emit("trade_update", { trade: tradeObject });
+    socket.emit("trade_update", tradeObject);
 
     dispatch(setTradeStatus("sent"));
   };

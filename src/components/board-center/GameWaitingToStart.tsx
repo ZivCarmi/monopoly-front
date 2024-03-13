@@ -1,14 +1,12 @@
 import { useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context";
-import StartGameButton from "./StartGameButton";
-import PlayerNamePlate from "../player/PlayerNamePlate";
-import PlayerName from "../player/PlayerName";
 import PlayerCharacter from "../player/PlayerCharacter";
+import PlayerName from "../player/PlayerName";
+import PlayerNamePlate from "../player/PlayerNamePlate";
+import StartGameButton from "./StartGameButton";
 
 const GameWaitingToStart = () => {
-  const socket = useSocket();
-  const { roomHostId } = useAppSelector((state) => state.game);
-  const isSocketHost = roomHostId === socket.id;
+  const { hostId, selfPlayer } = useAppSelector((state) => state.game);
+  const isSocketHost = hostId === selfPlayer?.id;
 
   return (
     <div className="text-center min-h-12 flex items-center justify-center">
@@ -18,8 +16,8 @@ const GameWaitingToStart = () => {
 };
 
 const WaitingToStartNotice = () => {
-  const { roomHostId, players } = useAppSelector((state) => state.game);
-  const hostPlayer = players.find((player) => player.id === roomHostId);
+  const { hostId, players } = useAppSelector((state) => state.game);
+  const hostPlayer = players.find((player) => player.id === hostId);
 
   if (!hostPlayer) {
     return null;

@@ -1,13 +1,13 @@
-import { useSocket } from "@/app/socket-context";
+import { useAppSelector } from "@/app/hooks";
 import { isPlayer } from "@/utils";
 import Trade from "../../trade/Trade";
 import GamePanel from "../../ui/game-panel";
 import BankruptcyButton from "./BankruptcyButton";
 
 const GameActions = () => {
-  const socket = useSocket();
+  const { selfPlayer } = useAppSelector((state) => state.game);
 
-  if (!isPlayer(socket.id)) {
+  if (selfPlayer && !isPlayer(selfPlayer.id)) {
     return null;
   }
 

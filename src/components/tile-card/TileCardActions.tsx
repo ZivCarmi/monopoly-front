@@ -5,7 +5,7 @@ import { useAppSelector } from "@/app/hooks";
 import { PurchasableTile, isProperty } from "@ziv-carmi/monopoly-utils";
 import { selectPurchasableTileIndex } from "@/slices/ui-slice";
 import { Separator } from "../ui/separator";
-import { hasBuildings, isPlayerSuspended } from "@/utils";
+import { hasBuildings, isPlayerSuspended, isPlayerTurn } from "@/utils";
 
 type TileCardActionsProps = {
   tile: PurchasableTile;
@@ -13,19 +13,19 @@ type TileCardActionsProps = {
 
 const TileCardActions: React.FC<TileCardActionsProps> = ({ tile }) => {
   const socket = useSocket();
-  const selectedTileIndex = useAppSelector(selectPurchasableTileIndex);
-  const { currentPlayerTurnId } = useAppSelector((state) => state.game);
+  const propertyIndex = useAppSelector(selectPurchasableTileIndex);
+  const { selfPlayer } = useAppSelector((state) => state.game);
 
   const canSellProperty =
-    currentPlayerTurnId === socket.id && !isPlayerSuspended(socket.id);
+    !!selfPlayer &&
+    isPlayerTurn(selfPlayer.id) &&
+    !isPlayerSuspended(selfPlayer.id);
   const canSell = isProperty(tile)
     ? canSellProperty && !hasBuildings(tile.country.id)
     : canSellProperty;
 
   const sellPropertyHandler = () => {
-    socket.emit("sell_property", {
-      propertyIndex: selectedTileIndex,
-    });
+    socket.emit("sell_property", propertyIndex);
   };
 
   return (

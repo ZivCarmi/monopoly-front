@@ -5,10 +5,10 @@ import {
   GameTile,
   IProperty,
   RentIndexes,
+  SuspensionProps,
   TileTypes,
   isProperty,
   isPurchasable,
-  SuspensionProps,
 } from "@ziv-carmi/monopoly-utils";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
@@ -60,6 +60,15 @@ export const isPlayer = (playerId: string) => {
   return player;
 };
 
+export const isPlayerTurn = (playerId: string) => {
+  const state = store.getState();
+  const player = state.game.players.find((player) => player.id === playerId);
+
+  if (!player) return false;
+
+  return state.game.currentPlayerTurnId === player.id;
+};
+
 export const isPlayerSuspended = (
   playerId: string
 ): SuspensionProps | undefined => {
@@ -77,7 +86,11 @@ export const isPlayerInJail = (playerId: string) => {
 export const isPlayerInDebt = (playerId: string) => {
   const { players } = store.getState().game;
 
-  return players.find((player) => player.id === playerId && player.debtTo);
+  const playerInDebt = players.find(
+    (player) => player.id === playerId && player.debtTo
+  );
+
+  return !!playerInDebt;
 };
 
 export const getCities = (countryId: CountryIds) => {
@@ -129,4 +142,11 @@ export const getPlayerColor = (playerId: string) => {
   const player = players.find((player) => player.id === playerId);
 
   return player?.color;
+};
+
+export const getTimeValues = (countDown: number) => {
+  const minutes = ("0" + Math.floor((countDown / 60000) % 60)).slice(-2);
+  const seconds = ("0" + Math.floor((countDown / 1000) % 60)).slice(-2);
+
+  return { minutes, seconds };
 };

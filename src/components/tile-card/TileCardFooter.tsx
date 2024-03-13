@@ -1,20 +1,19 @@
 import { useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context";
-import PlayerNamePlate from "../player/PlayerNamePlate";
 import PlayerCharacter from "../player/PlayerCharacter";
 import PlayerName from "../player/PlayerName";
+import PlayerNamePlate from "../player/PlayerNamePlate";
 import { Separator } from "../ui/separator";
 import TileCardActions from "./TileCardActions";
 
 const TileCardFooter = () => {
-  const socket = useSocket();
-  const { players } = useAppSelector((state) => state.game);
+  const { players, selfPlayer } = useAppSelector((state) => state.game);
   const { selectedTile } = useAppSelector((state) => state.ui);
+  const owner = selectedTile?.owner;
 
-  if (!selectedTile) return null;
+  if (!owner) return null;
 
-  const selfPlayerIsOwner = socket.id === selectedTile.owner;
-  const tileOwner = players.find((player) => player.id === selectedTile.owner);
+  const selfPlayerIsOwner = !!selfPlayer && selfPlayer.id === owner;
+  const tileOwner = players.find((player) => player.id === owner);
 
   return (
     <>

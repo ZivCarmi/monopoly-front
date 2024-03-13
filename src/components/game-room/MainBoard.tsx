@@ -7,11 +7,12 @@ import GameBoardRows from "../board/GameBoardRows";
 import WinnerScreen from "../winner/WinnerScreen";
 import { useAppSelector } from "@/app/hooks";
 import PlayersForm from "./PlayersForm";
+import { isGameEnded, isGameNotStarted } from "@ziv-carmi/monopoly-utils";
 
 interface MainBoardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const MainBoard = ({ className, ...props }: MainBoardProps) => {
-  const { isReady, started } = useAppSelector((state) => state.game);
+  const { isReady, state } = useAppSelector((state) => state.game);
   const boardContainerRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const boardDimensions = useRef([
@@ -71,14 +72,14 @@ const MainBoard = ({ className, ...props }: MainBoardProps) => {
       ref={boardContainerRef}
     >
       <div className="w-fit relative m-auto">
-        {!started && !isReady && <PlayersForm />}
+        {isGameNotStarted(state) && !isReady && <PlayersForm />}
+        {isGameEnded(state) && <WinnerScreen />}
         <Board className="h-fit" ref={boardRef}>
           <BoardCenter className="w-[47rem] h-[47rem]">
             <CenterContent />
           </BoardCenter>
           <GameBoardRows />
         </Board>
-        <WinnerScreen />
       </div>
     </div>
   );

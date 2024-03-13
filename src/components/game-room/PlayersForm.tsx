@@ -38,7 +38,7 @@ export function PlayersForm() {
   const players = useAppSelector(selectPlayers);
 
   const submitHandler = (player: z.infer<typeof playerSchema>) => {
-    socket.emit("create_player", { player });
+    socket.emit("create_player", player);
   };
 
   return (

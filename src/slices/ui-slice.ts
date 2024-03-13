@@ -19,12 +19,6 @@ export const uiSlice = createSlice({
     resetUi: () => {
       return initialState;
     },
-    setRoomUi: (state, action: PayloadAction<string[]>) => {
-      state.gameLog = action.payload.map((log, idx) => ({
-        id: idx,
-        message: log,
-      }));
-    },
     writeLog: (state, action: PayloadAction<string>) => {
       state.gameLog.unshift({
         id: state.gameLog.length + 1,
@@ -37,8 +31,7 @@ export const uiSlice = createSlice({
   },
 });
 
-export const { resetUi, setRoomUi, writeLog, setSelectedTile } =
-  uiSlice.actions;
+export const { resetUi, writeLog, setSelectedTile } = uiSlice.actions;
 
 export const selectPurchasableTileIndex = (state: RootState) =>
   state.game.map.board.findIndex(

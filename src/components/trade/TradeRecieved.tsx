@@ -10,11 +10,11 @@ const TradeRecieved = () => {
   const { tradeId } = useAppSelector((state) => state.trade);
 
   const declineTradeHandler = () => {
-    socket.emit("trade_decline", { tradeId });
+    socket.emit("trade_decline", tradeId);
   };
 
   const acceptTradeHandler = () => {
-    socket.emit("trade_accept", { tradeId });
+    socket.emit("trade_accept", tradeId);
   };
 
   const negotiateHandler = () => {

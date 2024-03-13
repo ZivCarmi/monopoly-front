@@ -15,109 +15,111 @@ import {
   addPlayer,
   bankruptPlayer,
   removePlayer,
+  setPlayerConnection,
   setPlayerInDebt,
-  setRoomHostId,
+  setHostId,
   setSelfPlayerReady,
   setWinner,
   startGame,
   switchTurn,
 } from "@/slices/game-slice";
 import { writeLog } from "@/slices/ui-slice";
-import { TradeType, Player } from "@ziv-carmi/monopoly-utils";
+import { Player, TradeType } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
 import GameSidebar from "../game-panels/GameSidebar";
 import GameInfo from "../game-panels/general/GameInfo";
 import GameInvitation from "../game-panels/general/GameInvitation";
 import GameScoreboard from "../game-panels/scoreboard/GameScoreboard";
 import MainBoard from "./MainBoard";
+import { getPlayerName } from "@/utils";
 
 const GameRoom = () => {
   const socket = useSocket();
   const dispatch = useAppDispatch();
 
-  const onPlayerCreated = ({ player }: { player: Player }) => {
-    dispatch(addPlayer(player));
+  const onPlayerConnectivity = ({
+    playerId,
+    isConnected,
+    kickAt,
+  }: {
+    playerId: string;
+    isConnected: boolean;
+    kickAt: Player["connectionKickAt"];
+  }) => {
+    dispatch(setPlayerConnection({ playerId, isConnected, kickAt }));
+  };
+
+  const onPlayerCreated = (player: Player) => {
+    dispatch(addPlayer({ player, isSelf: true }));
     dispatch(setSelfPlayerReady());
   };
 
-  const onPlayerJoined = ({
-    player,
-    message,
-  }: {
-    player: Player;
-    message: string;
-  }) => {
-    dispatch(addPlayer(player));
-    dispatch(writeLog(message));
+  const onPlayerJoined = (player: Player) => {
+    dispatch(addPlayer({ player }));
+    dispatch(writeLog(`${player.name} נכנס למשחק`));
   };
 
-  const onPlayerLeave = ({
+  const onPlayerLeft = ({
     playerId,
-    message,
-    roomHostId,
+    hostId,
   }: {
     playerId: string;
-    message: string;
-    roomHostId?: string;
+    hostId?: string;
   }) => {
-    dispatch(removePlayer({ playerId }));
-    dispatch(writeLog(message));
+    const player = getPlayerName(playerId);
 
-    if (roomHostId) {
-      dispatch(setRoomHostId(roomHostId));
+    dispatch(removePlayer({ playerId }));
+    dispatch(writeLog(`${player} עזב את המשחק`));
+
+    if (hostId) {
+      dispatch(setHostId(hostId));
     }
   };
 
   const onGameStarted = ({
     generatedPlayers,
     currentPlayerTurn,
-    message,
   }: {
     generatedPlayers: Player[];
     currentPlayerTurn: string;
-    message: string;
   }) => {
     dispatch(startGame({ generatedPlayers, currentPlayerTurn }));
-    dispatch(writeLog(message));
+    dispatch(writeLog("המשחק התחיל!"));
   };
 
-  const onDiceRolled = ({ dices }: { dices: number[] }) => {
+  const onDiceRolled = (dices: number[]) => {
     dispatch(handleDices(dices));
   };
 
-  const onSwitchedTurn = ({ nextPlayerId }: { nextPlayerId: string }) => {
+  const onSwitchedTurn = (nextPlayerId: string) => {
     dispatch(switchTurn({ nextPlayerId }));
   };
 
-  const onPurchasedProperty = (data: {
-    propertyIndex: number;
-    message: string;
-  }) => {
-    dispatch(purchasedPropertyThunk(data));
+  const onPurchasedProperty = (propertyIndex: number) => {
+    dispatch(purchasedPropertyThunk(propertyIndex));
   };
 
-  const onSoldProperty = (data: { propertyIndex: number; message: string }) => {
-    dispatch(soldPropertyThunk(data));
+  const onSoldProperty = (propertyIndex: number) => {
+    dispatch(soldPropertyThunk(propertyIndex));
   };
 
   const onCityLevelChange = (data: {
     propertyIndex: number;
     changeType: "upgrade" | "downgrade";
-    message: string;
   }) => {
     dispatch(cityLevelChangedThunk(data));
   };
 
-  const onPaidOutOfJail = (data: { message: string }) => {
-    dispatch(paidOutOfJailThunk(data));
+  const onPaidOutOfJail = () => {
+    dispatch(paidOutOfJailThunk());
   };
 
   const onTradeCreated = (trade: TradeType) => {
     dispatch(tradeCreatedThunk(trade));
   };
 
-  const onTradeAccepted = (data: { tradeId: string; message: string }) => {
-    dispatch(tradeAcceptedThunk(data));
+  const onTradeAccepted = (tradeId: string) => {
+    dispatch(tradeAcceptedThunk(tradeId));
   };
 
   const onTradeDeclined = ({ tradeId }: { tradeId: string }) => {
@@ -138,25 +140,20 @@ const GameRoom = () => {
     dispatch(setPlayerInDebt({ playerId, debtTo }));
   };
 
-  const onPlayerBankrupted = ({
-    playerId,
-    message,
-  }: {
-    playerId: string;
-    message: string;
-  }) => {
+  const onPlayerBankrupted = (playerId: string) => {
     dispatch(bankruptPlayer({ playerId }));
-    dispatch(writeLog(message));
+    dispatch(writeLog(`${getPlayerName(playerId)} פשט את הרגל`));
   };
 
-  const onGameEnded = ({ winnerId }: { winnerId: string }) => {
-    dispatch(setWinner({ winnerId }));
+  const onGameEnded = (winner: Player) => {
+    dispatch(setWinner({ winner }));
   };
 
   useEffect(() => {
+    socket.on("player_connectivity", onPlayerConnectivity);
     socket.on("player_created", onPlayerCreated);
     socket.on("player_joined", onPlayerJoined);
-    socket.on("player_leave", onPlayerLeave);
+    socket.on("player_left", onPlayerLeft);
     socket.on("game_started", onGameStarted);
     socket.on("switched_turn", onSwitchedTurn);
     socket.on("dice_rolled", onDiceRolled);
@@ -173,9 +170,10 @@ const GameRoom = () => {
     socket.on("game_ended", onGameEnded);
 
     return () => {
+      socket.off("player_connectivity", onPlayerConnectivity);
       socket.off("player_created", onPlayerCreated);
       socket.off("player_joined", onPlayerJoined);
-      socket.off("player_leave", onPlayerLeave);
+      socket.off("player_left", onPlayerLeft);
       socket.off("game_started", onGameStarted);
       socket.off("switched_turn", onSwitchedTurn);
       socket.off("dice_rolled", onDiceRolled);
