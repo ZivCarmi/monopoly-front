@@ -34,7 +34,13 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <SocketContext.Provider value={socket}>
-      {socket ? children : <Loader />}
+      {socket ? (
+        children
+      ) : (
+        <div className="fixed inset-1/2">
+          <Loader />
+        </div>
+      )}
     </SocketContext.Provider>
   );
 }
