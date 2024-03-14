@@ -23,8 +23,14 @@ const GameRoomPage = () => {
     });
   };
 
+  console.log("roomId", roomId);
+  console.log("!isInRoom", !isInRoom);
+  console.log("isFirstRender.current", isFirstRender.current);
+
   useEffect(() => {
     if (roomId && !isInRoom && isFirstRender.current) {
+      console.log("inside useeffect if");
+
       socket.emit("join_room", roomId);
       isFirstRender.current = false;
     }

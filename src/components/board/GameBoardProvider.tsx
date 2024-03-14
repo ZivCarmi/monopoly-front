@@ -22,6 +22,9 @@ export function GameBoardProvider({ children }: { children: React.ReactNode }) {
   } = useAppSelector((state) => state.game);
   const [gameBoard, setGameBoard] = useState<BoardRaw>([]);
 
+  console.log("inside GameBoardProvider context");
+  console.log("gameBoard.length", gameBoard.length);
+
   useEffect(() => {
     setGameBoard(createBoard());
 
