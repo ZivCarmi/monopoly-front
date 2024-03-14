@@ -28,6 +28,8 @@ export function ThemeProvider({
     () => localStorage.getItem(storageKey) || defaultTheme
   );
 
+  console.log("on ThemeProvider");
+
   useEffect(() => {
     const root = window.document.documentElement;
 

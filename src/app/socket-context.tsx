@@ -18,6 +18,8 @@ export function useSocket() {
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
 
+  console.log("on SocketProvider, socket:", socket);
+
   useEffect(() => {
     const newSocket = io(BASE_URL, {
       withCredentials: true,

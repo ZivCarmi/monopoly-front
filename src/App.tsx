@@ -10,6 +10,8 @@ import LobbyLayout from "./components/lobby/LobbyLayout";
 import GameRoomPage from "./pages/GameRoom";
 import MainLayout from "./components/MainLayout";
 
+console.log("on App");
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route element={<MainLayout />}>
