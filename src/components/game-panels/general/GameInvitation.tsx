@@ -3,13 +3,12 @@ import { Button } from "../../ui/button";
 import GamePanel from "../../ui/game-panel";
 import { Input } from "../../ui/input";
 import CopyRoomButton from "./CopyRoomButton";
+import PanelTitle from "../PanelTitle";
 
 const GameInvitation = () => {
   return (
     <GamePanel>
-      <h2 className="text-center text-pretty mb-4 text-muted-foreground">
-        שתף את המשחק
-      </h2>
+      <PanelTitle>שתף את המשחק</PanelTitle>
       <div className="flex gap-4">
         <Input
           value={location.href}

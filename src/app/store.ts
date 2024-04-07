@@ -11,6 +11,10 @@ const store = configureStore({
     ui: uiSlice,
     trade: tradeSlice,
   },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }),
 });
 
 export default store;

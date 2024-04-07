@@ -7,6 +7,7 @@ import {
   RentIndexes,
   SuspensionProps,
   TileTypes,
+  TradeType,
   isProperty,
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
@@ -144,9 +145,83 @@ export const getPlayerColor = (playerId: string) => {
   return player?.color;
 };
 
+export const getPlayerMoney = (playerId: string) => {
+  const { players } = store.getState().game;
+  const player = players.find((player) => player.id === playerId);
+
+  return player?.money;
+};
+
 export const getTimeValues = (countDown: number) => {
   const minutes = ("0" + Math.floor((countDown / 60000) % 60)).slice(-2);
   const seconds = ("0" + Math.floor((countDown / 1000) % 60)).slice(-2);
 
   return { minutes, seconds };
+};
+
+export const isParticipatingInTrade = (tradeId: string, playerId: string) => {
+  const { trades } = store.getState().game;
+  const trade = trades.find((_trade) => _trade.id === tradeId);
+
+  if (!trade) return false;
+
+  return trade.traders.some((trader) => trader.id === playerId);
+};
+
+export const isOwner = (
+  playerId: string,
+  propertyIndex: number[] | number
+): boolean => {
+  const {
+    map: { board },
+  } = store.getState().game;
+
+  // checks if every passed properties belongs to the socket
+  if (Array.isArray(propertyIndex)) {
+    return propertyIndex.every((propertyIdx) => {
+      const property = board[propertyIdx];
+
+      if (isPurchasable(property) && property.owner === playerId) {
+        return true;
+      }
+
+      return false;
+    });
+  }
+
+  const property = board[propertyIndex];
+
+  return isPurchasable(property) && property.owner === playerId;
+};
+
+export const isValidOffer = (trade: TradeType) => {
+  return trade.traders.some((trader) => {
+    if (trader.money > 0 || trader.properties.length > 0) {
+      return true;
+    }
+
+    return false;
+  });
+};
+
+// check if both players can fulfill the offer
+export const isValidTrade = (trade: TradeType) => {
+  return trade.traders.every((trader) => {
+    const playerId = trader.id;
+    const player = isPlayer(playerId);
+    const didOfferMoney = trader.money > 0;
+    const didOfferProperties = trader.properties.length > 0;
+
+    // check if player exist
+    if (!player) return false;
+
+    // check if player has enough money
+    if (didOfferMoney && player.money < trader.money) return false;
+
+    // check if player has all the properties
+    if (didOfferProperties && !isOwner(playerId, trader.properties))
+      return false;
+
+    return true;
+  });
 };

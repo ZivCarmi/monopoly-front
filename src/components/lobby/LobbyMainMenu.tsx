@@ -17,7 +17,7 @@ const LobbyMainMenu = () => {
   }, [location.state?.toast]);
 
   return (
-    <div className="flex items-center justify-center gap-2">
+    <div className="m-auto flex items-center justify-center gap-2">
       <CreateRoomButton>
         <Icon icon={Gamepad2} />
         צור חדר חדש

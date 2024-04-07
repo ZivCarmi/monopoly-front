@@ -7,7 +7,7 @@ const GameScoreboard = () => {
   const players = useAppSelector(selectPlayers);
 
   return (
-    <GamePanel className="flex flex-col">
+    <GamePanel className="gap-0">
       {players.length > 0 ? (
         players.map((player) => <PlayerRow key={player.id} player={player} />)
       ) : (

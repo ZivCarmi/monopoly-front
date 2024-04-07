@@ -1,28 +1,21 @@
 import { AppThunk } from "@/app/store";
 import {
+  addTrade,
   completeTrade,
   freePlayer,
   purchaseProperty,
+  removeTrade,
   sellProperty,
   setCityLevel,
   transferMoney,
-} from "@/slices/game-slice";
-import {
-  resetTrade,
-  setInTrade,
-  setPublished,
-  setTrade,
-  setTradeStatus,
   updateTrade,
-  addTradeToQueue,
-  removeTradeFromQueue,
-  updateTradeInQueue,
-} from "@/slices/trade-slice";
+} from "@/slices/game-slice";
+import { resetTrade, setMode, setTrade } from "@/slices/trade-slice";
 import { setSelectedTile, writeLog } from "@/slices/ui-slice";
 import { getPlayerName } from "@/utils";
 import {
-  PAY_OUT_FROM_JAIL_AMOUNT,
   IProperty,
+  PAY_OUT_FROM_JAIL_AMOUNT,
   PurchasableTile,
   TradeType,
   getCityLevelText,
@@ -139,14 +132,16 @@ export const paidOutOfJailThunk = (): AppThunk => {
 
 export const tradeCreatedThunk = (trade: TradeType): AppThunk => {
   return (dispatch, getState) => {
-    dispatch(addTradeToQueue(trade));
+    const state = getState();
+
+    dispatch(addTrade(trade));
 
     // if offeree is the socket
-    if (trade.offeree.id === getState().game.selfPlayer?.id) {
-      dispatch(setPublished());
-      dispatch(setInTrade(true));
-      dispatch(setTrade(trade));
-      dispatch(setTradeStatus("recieved"));
+    if (trade.turn === state.game.selfPlayer?.id) {
+      if (state.trade.mode === "idle") {
+        dispatch(setTrade(trade));
+        dispatch(setMode("watching"));
+      }
     }
   };
 };
@@ -154,53 +149,43 @@ export const tradeCreatedThunk = (trade: TradeType): AppThunk => {
 export const tradeAcceptedThunk = (tradeId: string): AppThunk => {
   return (dispatch, getState) => {
     const state = getState();
-    const trade = state.trade.tradesQueue.find((trade) => trade.id === tradeId);
-    const { selfPlayer } = state.game;
+    const trade = state.game.trades.find((trade) => trade.id === tradeId);
+    const isStaleTrade = state.trade.trade?.id === tradeId;
 
     if (!trade) {
       throw new Error("Trade not found on tradeAcceptedThunk");
     }
 
-    if (!selfPlayer) return;
-
-    const offerorName = getPlayerName(trade.offeror.id);
-    const offereeName = getPlayerName(trade.offeree.id);
-    const isSelfTraded = [trade.offeror.id, trade.offeree.id].some(
-      (tradedPlayerId) => tradedPlayerId === selfPlayer.id
-    );
+    const offerorName = getPlayerName(trade.lastEditBy);
+    const offereeName = getPlayerName(trade.turn);
 
     dispatch(completeTrade(trade));
-    dispatch(removeTradeFromQueue({ tradeId }));
+    dispatch(removeTrade({ tradeId }));
     dispatch(writeLog(`${offerorName} ביצע עסקה עם ${offereeName}`));
-    if (isSelfTraded) {
+
+    if (isStaleTrade) {
       dispatch(resetTrade());
     }
   };
 };
 
-export const tradeDeclinedThunk = ({
-  tradeId,
-}: {
-  tradeId: string;
-}): AppThunk => {
+export const tradeDeclinedThunk = (tradeId: string): AppThunk => {
   return (dispatch, getState) => {
     const state = getState();
-    const trade = state.trade.tradesQueue.find((trade) => trade.id === tradeId);
-    const { selfPlayer } = state.game;
+    const trade = state.game.trades.find((trade) => trade.id === tradeId);
+    const isStaleTrade = state.trade.trade?.id === tradeId;
 
     if (!trade) {
       throw new Error("Trade not found on tradeDeclinedThunk");
     }
 
-    if (!selfPlayer) return;
+    const declinerName = getPlayerName(trade.turn);
+    const otherPlayerName = getPlayerName(trade.lastEditBy);
 
-    dispatch(removeTradeFromQueue({ tradeId }));
+    dispatch(removeTrade({ tradeId }));
+    dispatch(writeLog(`${declinerName} ביטל עסקה עם ${otherPlayerName}`));
 
-    // reset trade for traded players
-    if (
-      trade.offeror.id === selfPlayer.id ||
-      trade.offeree.id === selfPlayer.id
-    ) {
+    if (isStaleTrade) {
       dispatch(resetTrade());
     }
   };
@@ -209,19 +194,36 @@ export const tradeDeclinedThunk = ({
 export const tradeUpdatedThunk = (trade: TradeType): AppThunk => {
   return (dispatch, getState) => {
     const state = getState();
-    const tradeInQueue = state.trade.tradesQueue.find(
-      (_trade) => _trade.id === trade.id
-    );
 
-    if (!tradeInQueue) {
-      throw new Error("Trade not found on tradeUpdatedThunk");
+    dispatch(updateTrade(trade));
+
+    if (trade.turn === state.game.selfPlayer?.id) {
+      if (state.trade.mode === "idle") {
+        dispatch(setTrade(trade));
+        dispatch(setMode("watching"));
+      }
+    }
+  };
+};
+
+export const tradeDeletedThunk = (tradeId: string): AppThunk => {
+  return (dispatch, getState) => {
+    const state = getState();
+    const trade = state.game.trades.find((trade) => trade.id === tradeId);
+    const isStaleTrade = state.trade.trade?.id === tradeId;
+
+    if (!trade) {
+      throw new Error("Trade not found on tradeDeletedThunk");
     }
 
-    dispatch(updateTradeInQueue(trade));
+    const deleterName = getPlayerName(trade.lastEditBy);
+    const otherPlayerName = getPlayerName(trade.turn);
 
-    if (trade.turn === getState().game.selfPlayer?.id) {
-      dispatch(updateTrade(trade));
-      dispatch(setTradeStatus("recieved"));
+    dispatch(removeTrade({ tradeId }));
+    dispatch(writeLog(`${deleterName} ביטל עסקה עם ${otherPlayerName}`));
+
+    if (isStaleTrade) {
+      dispatch(resetTrade());
     }
   };
 };

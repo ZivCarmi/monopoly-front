@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { setPlayerProperties } from "@/slices/trade-slice";
-import { isPurchasable } from "@ziv-carmi/monopoly-utils";
+import { TradePlayer, isPurchasable } from "@ziv-carmi/monopoly-utils";
 import { useMemo } from "react";
 import BoardRow from "../board/BoardRow";
 import BoardRowTile from "../board/BoardRowTile";
@@ -9,21 +9,15 @@ import OwnerIndicator from "../board/OwnerIndicator";
 import Tile from "../board/Tile";
 import TradeBoardTile from "./TradeBoardTile";
 
-type TradeBoardRowsProps = {
-  playerId: string;
-};
-
-// TRY SEPERATE THE CALL FOR { offeror, offeree, status } FROM REDUX
-// TO A SINGLE COMPONENT, MAYBE IT WILL PREVENT RERENDER
-
-const TradeBoardRows = ({ playerId }: TradeBoardRowsProps) => {
+const TradeBoardRows = ({ trader }: { trader: TradePlayer }) => {
   const dispatch = useAppDispatch();
-  const { offeror, offeree, status } = useAppSelector((state) => state.trade);
-  const tradePlayer = [offeror, offeree].find(
-    (player) => player?.id === playerId
-  );
-  const isDisabled = status === "sent" || status === "recieved";
   const gameBoard = useGameBoard();
+  const { mode } = useAppSelector((state) => state.trade);
+
+  const setPropertiesHandler = (tileIndex: number) => {
+    dispatch(setPlayerProperties({ traderId: trader.id, tileIndex }));
+  };
+
   const memoizedBoard = useMemo(
     () =>
       gameBoard.map((row, rowIndex) => (
@@ -31,19 +25,19 @@ const TradeBoardRows = ({ playerId }: TradeBoardRowsProps) => {
           {row.tiles.map((tile, tileIndexInRow) => {
             const tileIndex = 10 * rowIndex + tileIndexInRow;
             const isOwnersProperty =
-              isPurchasable(tile) && tile.owner === playerId;
+              isPurchasable(tile) && tile.owner === trader.id;
 
             return (
               <BoardRowTile key={tileIndex} tile={tile}>
                 <TradeBoardTile
                   isOwnersProperty={isOwnersProperty}
                   onClick={() => setPropertiesHandler(tileIndex)}
-                  disabled={isDisabled}
+                  disabled={mode !== "creating" && mode !== "editing"}
                   className="w-full h-full disabled:opacity-50 rounded-sm"
                   style={{
                     opacity: isOwnersProperty ? 1 : 0.2,
                     outlineOffset: 1,
-                    outline: tradePlayer?.properties.includes(tileIndex)
+                    outline: trader.properties.includes(tileIndex)
                       ? "red solid 1px"
                       : "",
                   }}
@@ -63,12 +57,8 @@ const TradeBoardRows = ({ playerId }: TradeBoardRowsProps) => {
           })}
         </BoardRow>
       )),
-    [tradePlayer?.properties]
+    [trader.properties, mode]
   );
-
-  const setPropertiesHandler = (tileIndex: number) => {
-    dispatch(setPlayerProperties({ playerId, tileIndex }));
-  };
 
   return memoizedBoard;
 };

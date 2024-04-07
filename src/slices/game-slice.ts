@@ -19,7 +19,7 @@ import {
 
 type RoomWithoutParticipants = Omit<Room["stats"], "participants">;
 
-type RoomBase = Omit<Room, "players" | "stats" | "id" | "trades"> &
+type RoomBase = Omit<Room, "players" | "stats" | "id"> &
   RoomWithoutParticipants;
 
 export interface GameRoom extends RoomBase {
@@ -70,6 +70,7 @@ const initialState: GameRoom = {
   stats: {
     participants: [],
   },
+  trades: [],
 };
 
 export type TransferMoneyArgs = {
@@ -99,6 +100,7 @@ export const gameSlice = createSlice({
         ...state.stats,
         participants: Object.values(room.stats.participants),
       };
+      state.trades = room.trades;
     },
     resetRoom: () => {
       return initialState;
@@ -220,47 +222,58 @@ export const gameSlice = createSlice({
       }
     },
     completeTrade: (state, action: PayloadAction<TradeType>) => {
-      const { offeror, offeree } = action.payload;
-      const offerorIndex = state.players.findIndex(
-        (player) => player.id === offeror.id
+      const { traders } = action.payload;
+      const firstPlayer = traders[0];
+      const secondPlayer = traders[1];
+      const wereTradingMoney = traders.some((trader) => trader.money > 0);
+      const wereTradingProperties = traders.some(
+        (trader) => trader.properties.length > 0
       );
-      const offereeIndex = state.players.findIndex(
-        (player) => player.id === offeree.id
+
+      const firstPlayerIndex = state.players.findIndex(
+        (player) => player.id === firstPlayer.id
+      );
+      const secondPlayerIndex = state.players.findIndex(
+        (player) => player.id === secondPlayer.id
       );
 
-      const offerorProfit = -offeror.money + offeree.money;
-      const offereeProfit = -offeree.money + offeror.money;
+      if (wereTradingMoney) {
+        const firstPlayerProfit = -firstPlayer.money + secondPlayer.money;
+        const secondPlayerProfit = -secondPlayer.money + firstPlayer.money;
 
-      // update offerror
-      state.players[offerorIndex].money += offerorProfit;
-      state.players[offerorIndex].debtTo =
-        state.players[offerorIndex].money >= 0
-          ? null
-          : state.players[offerorIndex].debtTo;
+        // update first player
+        state.players[firstPlayerIndex].money += firstPlayerProfit;
+        state.players[firstPlayerIndex].debtTo =
+          state.players[firstPlayerIndex].money >= 0
+            ? null
+            : state.players[firstPlayerIndex].debtTo;
 
-      // update offeree
-      state.players[offereeIndex].money += offereeProfit;
-      state.players[offereeIndex].debtTo =
-        state.players[offereeIndex].money >= 0
-          ? null
-          : state.players[offereeIndex].debtTo;
+        // update second player
+        state.players[secondPlayerIndex].money += secondPlayerProfit;
+        state.players[secondPlayerIndex].debtTo =
+          state.players[secondPlayerIndex].money >= 0
+            ? null
+            : state.players[secondPlayerIndex].debtTo;
+      }
 
       // update board
-      state.map.board = state.map.board.map((tile, tileIndex) => {
-        if (isPurchasable(tile) && tile.owner) {
-          // check if from player is owner & tile is on his offer
-          if (offeror.properties.includes(tileIndex)) {
-            tile.owner = offeree.id;
+      if (wereTradingProperties) {
+        state.map.board = state.map.board.map((tile, tileIndex) => {
+          if (isPurchasable(tile) && tile.owner) {
+            // set second player as the new owner
+            if (firstPlayer.properties.includes(tileIndex)) {
+              tile.owner = secondPlayer.id;
+            }
+
+            // set first player as the new owner
+            if (secondPlayer.properties.includes(tileIndex)) {
+              tile.owner = firstPlayer.id;
+            }
           }
 
-          // check if to player is owner & tile is on his offer
-          if (offeree.properties.includes(tileIndex)) {
-            tile.owner = offeror.id;
-          }
-        }
-
-        return tile;
-      });
+          return tile;
+        });
+      }
     },
     purchaseProperty: (
       state,
@@ -474,6 +487,24 @@ export const gameSlice = createSlice({
       state.stats.endedAt = new Date();
       state.state = GameState.ENDED;
     },
+    addTrade: (state, action: PayloadAction<TradeType>) => {
+      state.trades = [...state.trades, action.payload];
+    },
+    updateTrade: (state, action: PayloadAction<TradeType>) => {
+      const trade = action.payload;
+      const tradeIndex = state.trades.findIndex(
+        (_trade) => _trade.id === trade.id
+      );
+
+      if (tradeIndex !== -1) {
+        state.trades[tradeIndex] = trade;
+      }
+    },
+    removeTrade: (state, action: PayloadAction<{ tradeId: string }>) => {
+      state.trades = state.trades.filter(
+        (trade) => trade.id !== action.payload.tradeId
+      );
+    },
   },
 });
 
@@ -505,6 +536,9 @@ export const {
   setPlayerInDebt,
   bankruptPlayer,
   setWinner,
+  addTrade,
+  updateTrade,
+  removeTrade,
 } = gameSlice.actions;
 
 export const selectGameBoard = (state: RootState) => state.game.map.board;

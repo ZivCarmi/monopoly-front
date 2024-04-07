@@ -7,7 +7,9 @@ const BankruptcyButton = () => {
   const socket = useSocket();
 
   const bankruptcyHandler = () => {
-    socket.emit("player_bankrupt");
+    if (confirm("האם אתה בטוח שברצונך לפשוט רגל?")) {
+      socket.emit("player_bankrupt");
+    }
   };
 
   return (

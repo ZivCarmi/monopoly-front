@@ -7,6 +7,7 @@ import {
   tradeAcceptedThunk,
   tradeCreatedThunk,
   tradeDeclinedThunk,
+  tradeDeletedThunk,
   tradeUpdatedThunk,
 } from "@/actions/socket-actions";
 import { useAppDispatch } from "@/app/hooks";
@@ -32,6 +33,8 @@ import GameInvitation from "../game-panels/general/GameInvitation";
 import GameScoreboard from "../game-panels/scoreboard/GameScoreboard";
 import MainBoard from "./MainBoard";
 import { getPlayerName } from "@/utils";
+import GameTrades from "../game-panels/trades/GameTrades";
+import { resetTrade } from "@/slices/trade-slice";
 
 const GameRoom = () => {
   const socket = useSocket();
@@ -122,12 +125,20 @@ const GameRoom = () => {
     dispatch(tradeAcceptedThunk(tradeId));
   };
 
-  const onTradeDeclined = ({ tradeId }: { tradeId: string }) => {
-    dispatch(tradeDeclinedThunk({ tradeId }));
+  const onTradeDeclined = (tradeId: string) => {
+    dispatch(tradeDeclinedThunk(tradeId));
   };
 
   const onTradeUpdated = (trade: TradeType) => {
     dispatch(tradeUpdatedThunk(trade));
+  };
+
+  const onTradeDeleted = (tradeId: string) => {
+    dispatch(tradeDeletedThunk(tradeId));
+  };
+
+  const onTradeReset = () => {
+    dispatch(resetTrade());
   };
 
   const onPlayerInDebt = ({
@@ -165,6 +176,8 @@ const GameRoom = () => {
     socket.on("accepted_trade", onTradeAccepted);
     socket.on("declined_trade", onTradeDeclined);
     socket.on("updated_trade", onTradeUpdated);
+    socket.on("deleted_trade", onTradeDeleted);
+    socket.on("reset_trade", onTradeReset);
     socket.on("player_in_debt", onPlayerInDebt);
     socket.on("player_bankrupted", onPlayerBankrupted);
     socket.on("game_ended", onGameEnded);
@@ -185,6 +198,8 @@ const GameRoom = () => {
       socket.off("accepted_trade", onTradeAccepted);
       socket.off("declined_trade", onTradeDeclined);
       socket.off("updated_trade", onTradeUpdated);
+      socket.off("deleted_trade", onTradeDeleted);
+      socket.off("reset_trade", onTradeReset);
       socket.off("player_in_debt", onPlayerInDebt);
       socket.off("player_bankrupted", onPlayerBankrupted);
       socket.off("game_ended", onGameEnded);
@@ -201,6 +216,7 @@ const GameRoom = () => {
       <div className="game-sidebar">
         <GameScoreboard />
         <GameSidebar />
+        <GameTrades />
       </div>
     </div>
   );
