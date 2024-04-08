@@ -2,12 +2,13 @@ import { useSocket } from "@/app/socket-context";
 import { ArrowRight, PlusSquare, RefreshCcw } from "lucide-react";
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import CreateRoomButton from "./CreateRoomButton";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
+import useJoinRoom from "@/hooks/useJoinRoom";
 
 const LobbyGameRoomsActions = () => {
   const socket = useSocket();
+  const createRoom = useJoinRoom();
 
   const fetchAllRooms = () => {
     socket.emit("get_lobby_rooms");
@@ -37,10 +38,10 @@ const LobbyGameRoomsActions = () => {
         <Button variant="outline" onClick={fetchAllRooms}>
           <RefreshCcw className="h-4 w-4" />
         </Button>
-        <CreateRoomButton>
+        <Button onClick={() => createRoom()} variant="primaryFancy">
           <Icon icon={PlusSquare} />
           חדר חדש
-        </CreateRoomButton>
+        </Button>
       </div>
     </div>
   );

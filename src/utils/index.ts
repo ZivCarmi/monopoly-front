@@ -53,6 +53,12 @@ export const mapPlayersOnBoard = () => {
   return initialMap;
 };
 
+export const isHost = (playerId: string) => {
+  const { hostId } = store.getState().game;
+
+  return playerId === hostId;
+};
+
 export const isPlayer = (playerId: string) => {
   const player = store
     .getState()

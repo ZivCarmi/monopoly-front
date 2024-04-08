@@ -2,6 +2,7 @@ import { RootState } from "@/app/store";
 import { PayloadAction, createSlice, current } from "@reduxjs/toolkit";
 import {
   GameCard,
+  GameSetting,
   GameState,
   IProperty,
   Player,
@@ -71,6 +72,12 @@ const initialState: GameRoom = {
     participants: [],
   },
   trades: [],
+  settings: {
+    isPrivate: false,
+    maxPlayers: 4,
+    startingMoney: 1500,
+    randomizePlayerOrder: true,
+  },
 };
 
 export type TransferMoneyArgs = {
@@ -101,6 +108,7 @@ export const gameSlice = createSlice({
         participants: Object.values(room.stats.participants),
       };
       state.trades = room.trades;
+      state.settings = room.settings;
     },
     resetRoom: () => {
       return initialState;
@@ -113,6 +121,12 @@ export const gameSlice = createSlice({
     },
     setSelfPlayer: (state, action: PayloadAction<Player>) => {
       state.selfPlayer = action.payload;
+    },
+    setGameSetting: (state, action: PayloadAction<GameSetting>) => {
+      state.settings = {
+        ...state.settings,
+        ...action.payload,
+      };
     },
     setPlayerConnection: (
       state,
@@ -514,6 +528,7 @@ export const {
   setHostId,
   setSelfPlayerReady,
   setSelfPlayer,
+  setGameSetting,
   setPlayerConnection,
   addPlayer,
   removePlayer,

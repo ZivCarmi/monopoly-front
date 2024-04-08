@@ -1,4 +1,4 @@
-import { useSocket } from "@/app/socket-context";
+import useJoinRoom from "@/hooks/useJoinRoom";
 import {
   LobbyRoom,
   isGameEnded,
@@ -7,11 +7,11 @@ import {
 import { Badge } from "../ui/badge";
 
 const AvailableGameRoom = ({ room }: { room: LobbyRoom }) => {
-  const socket = useSocket();
+  const joinRoom = useJoinRoom();
   // const roomSpectatorsCount = room.connectedSockets - room.players.length;
 
   const joinRoomHandler = (roomId: string) => {
-    socket.emit("join_room", roomId);
+    joinRoom({ roomId });
   };
 
   return (

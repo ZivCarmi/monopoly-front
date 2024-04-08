@@ -5,6 +5,7 @@ import GameBoardProvider from "@/components/board/GameBoardProvider";
 import { useToast } from "@/components/ui/use-toast";
 import { useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import useJoinRoom from "@/hooks/useJoinRoom";
 
 const GameRoomPage = () => {
   const { roomId } = useParams();
@@ -13,6 +14,7 @@ const GameRoomPage = () => {
   const socket = useSocket();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const joinRoom = useJoinRoom();
 
   const onRoomNotAvailable = () => {
     navigate("/");
@@ -25,7 +27,7 @@ const GameRoomPage = () => {
 
   useEffect(() => {
     if (roomId && !isInRoom && isFirstRender.current) {
-      socket.emit("join_room", roomId);
+      joinRoom({ roomId });
       isFirstRender.current = false;
     }
 

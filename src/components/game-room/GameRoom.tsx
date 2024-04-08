@@ -16,29 +16,33 @@ import {
   addPlayer,
   bankruptPlayer,
   removePlayer,
+  setGameSetting,
+  setHostId,
   setPlayerConnection,
   setPlayerInDebt,
-  setHostId,
   setSelfPlayerReady,
   setWinner,
   startGame,
   switchTurn,
 } from "@/slices/game-slice";
+import { resetTrade } from "@/slices/trade-slice";
 import { writeLog } from "@/slices/ui-slice";
-import { Player, TradeType } from "@ziv-carmi/monopoly-utils";
+import { getPlayerName } from "@/utils";
+import { GameSetting, Player, TradeType } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
 import GameSidebar from "../game-panels/GameSidebar";
 import GameInfo from "../game-panels/general/GameInfo";
 import GameInvitation from "../game-panels/general/GameInvitation";
 import GameScoreboard from "../game-panels/scoreboard/GameScoreboard";
 import MainBoard from "./MainBoard";
-import { getPlayerName } from "@/utils";
-import GameTrades from "../game-panels/trades/GameTrades";
-import { resetTrade } from "@/slices/trade-slice";
 
 const GameRoom = () => {
   const socket = useSocket();
   const dispatch = useAppDispatch();
+
+  const onGameSettingsUpdated = (setting: GameSetting) => {
+    dispatch(setGameSetting(setting));
+  };
 
   const onPlayerConnectivity = ({
     playerId,
@@ -161,6 +165,7 @@ const GameRoom = () => {
   };
 
   useEffect(() => {
+    socket.on("game_settings_updated", onGameSettingsUpdated);
     socket.on("player_connectivity", onPlayerConnectivity);
     socket.on("player_created", onPlayerCreated);
     socket.on("player_joined", onPlayerJoined);
@@ -183,6 +188,7 @@ const GameRoom = () => {
     socket.on("game_ended", onGameEnded);
 
     return () => {
+      socket.off("game_settings_updated", onGameSettingsUpdated);
       socket.off("player_connectivity", onPlayerConnectivity);
       socket.off("player_created", onPlayerCreated);
       socket.off("player_joined", onPlayerJoined);
@@ -216,7 +222,6 @@ const GameRoom = () => {
       <div className="game-sidebar">
         <GameScoreboard />
         <GameSidebar />
-        <GameTrades />
       </div>
     </div>
   );

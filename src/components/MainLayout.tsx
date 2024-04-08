@@ -21,12 +21,12 @@ const MainLayout = () => {
     room: Room;
     selfPlayer?: Player;
   }) => {
+    navigate(`/rooms/${room.id}`);
     dispatch(setRoom(room));
     dispatch(writeLog(`הצטרפת לחדר ${room.id}`));
     if (selfPlayer) {
       dispatch(setSelfPlayer(selfPlayer));
     }
-    navigate(`/rooms/${room.id}`);
   };
 
   const onRoomJoinErrorFull = () => {
@@ -57,8 +57,8 @@ const MainLayout = () => {
   };
 
   const onReturnedToLobby = () => {
-    dispatch(resetGameRoom());
     navigate("/");
+    dispatch(resetGameRoom());
   };
 
   useEffect(() => {

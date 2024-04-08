@@ -1,27 +1,21 @@
-import CreateRoomButton from "@/components/lobby/CreateRoomButton";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import useJoinRoom from "@/hooks/useJoinRoom";
 import { Gamepad2, Users2 } from "lucide-react";
-import { useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link } from "react-router-dom";
 import Icon from "../ui/icon";
 
 const LobbyMainMenu = () => {
-  const { toast } = useToast();
-  const location = useLocation();
-
-  useEffect(() => {
-    if (location.state?.toast) {
-      toast(location.state.toast);
-    }
-  }, [location.state?.toast]);
+  const createRoom = useJoinRoom();
 
   return (
     <div className="m-auto flex items-center justify-center gap-2">
-      <CreateRoomButton>
+      <Button
+        onClick={() => createRoom({ isPrivate: true })}
+        variant="primaryFancy"
+      >
         <Icon icon={Gamepad2} />
-        צור חדר חדש
-      </CreateRoomButton>
+        צור חדר פרטי
+      </Button>
       <Button
         asChild
         className="bg-gradient-to-tl from-pink-500 to-yellow-500 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-500"

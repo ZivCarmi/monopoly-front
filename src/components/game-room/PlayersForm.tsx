@@ -17,7 +17,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { selectPlayers } from "@/slices/game-slice";
-import { playerSchema, Characters, Colors } from "@ziv-carmi/monopoly-utils";
+import { PlayerSchema, Characters, Colors } from "@ziv-carmi/monopoly-utils";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -25,8 +25,8 @@ import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
 export function PlayersForm() {
   const socket = useSocket();
-  const form = useForm<z.infer<typeof playerSchema>>({
-    resolver: zodResolver(playerSchema),
+  const form = useForm<z.infer<typeof PlayerSchema>>({
+    resolver: zodResolver(PlayerSchema),
     defaultValues: {
       name: "",
       character: undefined,
@@ -37,7 +37,7 @@ export function PlayersForm() {
   const colorWatch = form.watch("color");
   const players = useAppSelector(selectPlayers);
 
-  const submitHandler = (player: z.infer<typeof playerSchema>) => {
+  const submitHandler = (player: z.infer<typeof PlayerSchema>) => {
     socket.emit("create_player", player);
   };
 
