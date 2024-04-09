@@ -7,12 +7,17 @@ import { Player, Room } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
+import { setUserId } from "@/slices/user-slice";
 
 const MainLayout = () => {
   const socket = useSocket();
   const dispatch = useAppDispatch();
   const { toast } = useToast();
   const navigate = useNavigate();
+
+  const onUserId = (userId: string) => {
+    dispatch(setUserId(userId));
+  };
 
   const onRoomJoined = ({
     room,
@@ -62,6 +67,7 @@ const MainLayout = () => {
   };
 
   useEffect(() => {
+    socket.on("user_id", onUserId);
     socket.on("room_joined", onRoomJoined);
     socket.on("room_join_error_full", onRoomJoinErrorFull);
     socket.on("room_join_error_duplication", onRoomJoinErrorDuplication);
@@ -69,6 +75,7 @@ const MainLayout = () => {
     socket.on("on_lobby", onReturnedToLobby);
 
     return () => {
+      socket.off("user_id", onUserId);
       socket.off("room_joined", onRoomJoined);
       socket.off("room_join_error_full", onRoomJoinErrorFull);
       socket.off("room_join_error_duplication", onRoomJoinErrorDuplication);

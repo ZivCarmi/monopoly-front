@@ -25,6 +25,7 @@ export function SocketProvider({ children }: { children: React.ReactNode }) {
 
     newSocket.on("connect", () => {
       setSocket(newSocket);
+      newSocket.emit("get_user_id");
     });
 
     return () => {

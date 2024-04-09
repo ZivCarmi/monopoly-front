@@ -1,11 +1,13 @@
 import gameSlice from "@/slices/game-slice";
 import lobbySlice from "@/slices/lobby-slice";
-import uiSlice from "@/slices/ui-slice";
 import tradeSlice from "@/slices/trade-slice";
+import uiSlice from "@/slices/ui-slice";
+import userSlice from "@/slices/user-slice";
 import { Action, ThunkAction, configureStore } from "@reduxjs/toolkit";
 
 const store = configureStore({
   reducer: {
+    user: userSlice,
     lobby: lobbySlice,
     game: gameSlice,
     ui: uiSlice,

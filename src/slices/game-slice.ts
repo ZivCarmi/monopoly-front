@@ -26,8 +26,8 @@ type RoomBase = Omit<Room, "players" | "stats" | "id"> &
 export interface GameRoom extends RoomBase {
   players: Player[];
   isInRoom: boolean;
-  isReady: boolean;
   selfPlayer: Player | null;
+  isSpectating: boolean;
   canPerformTurnActions: boolean;
   drawnGameCard: {
     tileIndex: number | null;
@@ -38,10 +38,10 @@ export interface GameRoom extends RoomBase {
 
 const initialState: GameRoom = {
   isInRoom: false,
-  isReady: false,
   hostId: null,
   players: [],
   selfPlayer: null,
+  isSpectating: false,
   map: {
     board: [],
     chances: {
@@ -116,11 +116,11 @@ export const gameSlice = createSlice({
     setHostId: (state, action: PayloadAction<string>) => {
       state.hostId = action.payload;
     },
-    setSelfPlayerReady: (state) => {
-      state.isReady = true;
-    },
     setSelfPlayer: (state, action: PayloadAction<Player>) => {
       state.selfPlayer = action.payload;
+    },
+    setIsSpectating: (state, action: PayloadAction<boolean>) => {
+      state.isSpectating = action.payload;
     },
     setGameSetting: (state, action: PayloadAction<GameSetting>) => {
       state.settings = {
@@ -526,8 +526,8 @@ export const {
   setRoom,
   resetRoom,
   setHostId,
-  setSelfPlayerReady,
   setSelfPlayer,
+  setIsSpectating,
   setGameSetting,
   setPlayerConnection,
   addPlayer,

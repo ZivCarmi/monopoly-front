@@ -20,7 +20,6 @@ import {
   setHostId,
   setPlayerConnection,
   setPlayerInDebt,
-  setSelfPlayerReady,
   setWinner,
   startGame,
   switchTurn,
@@ -58,7 +57,6 @@ const GameRoom = () => {
 
   const onPlayerCreated = (player: Player) => {
     dispatch(addPlayer({ player, isSelf: true }));
-    dispatch(setSelfPlayerReady());
   };
 
   const onPlayerJoined = (player: Player) => {

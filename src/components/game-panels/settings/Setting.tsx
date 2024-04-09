@@ -3,6 +3,12 @@ import { Switch } from "@/components/ui/switch";
 import { isHost } from "@/utils";
 import { SwitchProps } from "@radix-ui/react-switch";
 import SettingSelect, { SettingSelectProps } from "./SettingSelect";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type SettingTypeSelect = {
   settingType: "select";
@@ -18,8 +24,8 @@ type SettingProps = {
 } & (SettingTypeSelect | SettingTypeSwitch);
 
 const Setting = ({ title, description, ...props }: SettingProps) => {
-  const { selfPlayer } = useAppSelector((state) => state.game);
-  const isDisabled = selfPlayer ? !isHost(selfPlayer.id) : true;
+  const { userId } = useAppSelector((state) => state.user);
+  const isDisabled = !isHost(userId);
 
   function renderContent() {
     switch (props.settingType) {
@@ -37,7 +43,18 @@ const Setting = ({ title, description, ...props }: SettingProps) => {
         <h3 className="font-bold">{title}</h3>
         <p className="text-sm text-muted-foreground">{description}</p>
       </div>
-      {renderContent()}
+      <TooltipProvider delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <span tabIndex={0}>{renderContent()}</span>
+          </TooltipTrigger>
+          {isDisabled && (
+            <TooltipContent className="text-balance text-center">
+              רק מארח החדר יכול לשנות את הגדרות המשחק
+            </TooltipContent>
+          )}
+        </Tooltip>
+      </TooltipProvider>
     </div>
   );
 };

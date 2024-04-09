@@ -1,18 +1,29 @@
+import { useAppSelector } from "@/app/hooks";
 import { cn } from "@/utils";
+import { isGameEnded, isGameNotStarted } from "@ziv-carmi/monopoly-utils";
 import { useCallback, useEffect, useRef } from "react";
 import BoardCenter from "../board-center/BoardCenter";
 import CenterContent from "../board-center/CenterContent";
 import Board from "../board/Board";
 import GameBoardRows from "../board/GameBoardRows";
-import WinnerScreen from "../winner/WinnerScreen";
-import { useAppSelector } from "@/app/hooks";
 import PlayersForm from "./PlayersForm";
-import { isGameEnded, isGameNotStarted } from "@ziv-carmi/monopoly-utils";
+import WinnerScreen from "./WinnerScreen";
+import MaxPlayersDialog from "./MaxPlayersDialog";
 
 interface MainBoardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const MainBoard = ({ className, ...props }: MainBoardProps) => {
-  const { isReady, state } = useAppSelector((state) => state.game);
+  const {
+    selfPlayer,
+    isSpectating,
+    state,
+    players,
+    settings: { maxPlayers },
+  } = useAppSelector((state) => state.game);
+  const isMaxPlayers = players.length >= maxPlayers;
+  const showMaxPlayersModal = isMaxPlayers && !selfPlayer && !isSpectating;
+  const showPlayersForm =
+    isGameNotStarted(state) && !selfPlayer && !isMaxPlayers;
   const boardContainerRef = useRef<HTMLDivElement>(null);
   const boardRef = useRef<HTMLDivElement>(null);
   const boardDimensions = useRef([
@@ -72,7 +83,8 @@ const MainBoard = ({ className, ...props }: MainBoardProps) => {
       ref={boardContainerRef}
     >
       <div className="w-fit relative m-auto">
-        {isGameNotStarted(state) && !isReady && <PlayersForm />}
+        {showPlayersForm && <PlayersForm />}
+        {showMaxPlayersModal && <MaxPlayersDialog />}
         {isGameEnded(state) && <WinnerScreen />}
         <Board className="h-fit" ref={boardRef}>
           <BoardCenter className="w-[47rem] h-[47rem]">
