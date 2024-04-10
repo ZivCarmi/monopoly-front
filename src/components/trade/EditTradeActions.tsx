@@ -1,7 +1,7 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import { resetTrade, setMode, setTrade } from "@/slices/trade-slice";
-import { isValidOffer, isValidTrade } from "@/utils";
+import { isParticipatingInTrade, isValidOffer, isValidTrade } from "@/utils";
 import { useMemo } from "react";
 import { AlertDialogFooter } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
@@ -9,9 +9,12 @@ import { Button } from "../ui/button";
 const EditTradeActions = () => {
   const socket = useSocket();
   const dispatch = useAppDispatch();
+  const { selfPlayer } = useAppSelector((state) => state.game);
   const { trade } = useAppSelector((state) => state.trade);
+  const isParticipating =
+    trade && selfPlayer && isParticipatingInTrade(trade.id, selfPlayer.id);
 
-  if (!trade) {
+  if (!isParticipating) {
     return null;
   }
 

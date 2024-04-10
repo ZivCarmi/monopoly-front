@@ -1,9 +1,9 @@
 import { useAppSelector } from "@/app/hooks";
 import { selectPlayers } from "@/slices/game-slice";
-import GamePanel from "../../ui/game-panel";
+import GamePanel from "../GamePanel";
 import PlayerRow from "./PlayerRow";
 
-const GameScoreboard = () => {
+const ScoreboardPanel = () => {
   const players = useAppSelector(selectPlayers);
 
   return (
@@ -17,4 +17,4 @@ const GameScoreboard = () => {
   );
 };
 
-export default GameScoreboard;
+export default ScoreboardPanel;

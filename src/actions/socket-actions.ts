@@ -10,7 +10,12 @@ import {
   transferMoney,
   updateTrade,
 } from "@/slices/game-slice";
-import { resetTrade, setMode, setTrade } from "@/slices/trade-slice";
+import {
+  resetTrade,
+  setMode,
+  setTrade,
+  setTradeIsOpen,
+} from "@/slices/trade-slice";
 import { setSelectedTile, writeLog } from "@/slices/ui-slice";
 import { getPlayerName } from "@/utils";
 import {
@@ -138,7 +143,8 @@ export const tradeCreatedThunk = (trade: TradeType): AppThunk => {
 
     // if offeree is the socket
     if (trade.turn === state.game.selfPlayer?.id) {
-      if (state.trade.mode === "idle") {
+      if (!state.trade.tradeIsOpen && !state.trade.selectPlayerIsOpen) {
+        dispatch(setTradeIsOpen(true));
         dispatch(setTrade(trade));
         dispatch(setMode("watching"));
       }
@@ -198,7 +204,8 @@ export const tradeUpdatedThunk = (trade: TradeType): AppThunk => {
     dispatch(updateTrade(trade));
 
     if (trade.turn === state.game.selfPlayer?.id) {
-      if (state.trade.mode === "idle") {
+      if (!state.trade.tradeIsOpen && !state.trade.selectPlayerIsOpen) {
+        dispatch(setTradeIsOpen(true));
         dispatch(setTrade(trade));
         dispatch(setMode("watching"));
       }

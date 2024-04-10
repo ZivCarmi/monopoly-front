@@ -1,9 +1,9 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import { resetTrade } from "@/slices/trade-slice";
-import { AlertDialogCancel, AlertDialogFooter } from "../ui/alert-dialog";
-import { Button } from "../ui/button";
 import { isValidOffer } from "@/utils";
+import { AlertDialogFooter } from "../ui/alert-dialog";
+import { Button } from "../ui/button";
 
 const CreateTradeActions = () => {
   const dispatch = useAppDispatch();
@@ -21,9 +21,9 @@ const CreateTradeActions = () => {
 
   return (
     <AlertDialogFooter>
-      <AlertDialogCancel onClick={() => dispatch(resetTrade())}>
+      <Button variant="outline" onClick={() => dispatch(resetTrade())}>
         בטל
-      </AlertDialogCancel>
+      </Button>
       <Button
         variant="primary"
         disabled={!isValidOffer(trade)}

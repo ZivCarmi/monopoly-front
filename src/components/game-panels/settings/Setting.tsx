@@ -1,14 +1,15 @@
 import { useAppSelector } from "@/app/hooks";
 import { Switch } from "@/components/ui/switch";
-import { isHost } from "@/utils";
-import { SwitchProps } from "@radix-ui/react-switch";
-import SettingSelect, { SettingSelectProps } from "./SettingSelect";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { isHost } from "@/utils";
+import { SwitchProps } from "@radix-ui/react-switch";
+import { isGameStarted } from "@ziv-carmi/monopoly-utils";
+import SettingSelect, { SettingSelectProps } from "./SettingSelect";
 
 type SettingTypeSelect = {
   settingType: "select";
@@ -25,9 +26,12 @@ type SettingProps = {
 
 const Setting = ({ title, description, ...props }: SettingProps) => {
   const { userId } = useAppSelector((state) => state.user);
-  const isDisabled = !isHost(userId);
+  const { state } = useAppSelector((state) => state.game);
+  const isGameInProgress = isGameStarted(state);
+  const isNotHost = !isHost(userId);
+  const isDisabled = isGameInProgress || isNotHost;
 
-  function renderContent() {
+  const renderSetting = () => {
     switch (props.settingType) {
       case "select":
         return <SettingSelect disabled={isDisabled} {...props} />;
@@ -35,10 +39,18 @@ const Setting = ({ title, description, ...props }: SettingProps) => {
         const { settingType, ...rest } = props;
         return <Switch disabled={isDisabled} {...rest} />;
     }
-  }
+  };
+
+  const renderTooltipContent = () => {
+    if (isGameInProgress) {
+      return "אין אפשרות לשנות הגדרות במהלך משחק";
+    } else if (isNotHost) {
+      return "רק מארח החדר יכול לשנות את הגדרות המשחק";
+    }
+  };
 
   return (
-    <div className="flex items-center">
+    <div className="flex items-center gap-8">
       <div className="grow">
         <h3 className="font-bold">{title}</h3>
         <p className="text-sm text-muted-foreground">{description}</p>
@@ -46,11 +58,11 @@ const Setting = ({ title, description, ...props }: SettingProps) => {
       <TooltipProvider delayDuration={0}>
         <Tooltip>
           <TooltipTrigger asChild>
-            <span tabIndex={0}>{renderContent()}</span>
+            <span>{renderSetting()}</span>
           </TooltipTrigger>
           {isDisabled && (
             <TooltipContent className="text-balance text-center">
-              רק מארח החדר יכול לשנות את הגדרות המשחק
+              {renderTooltipContent()}
             </TooltipContent>
           )}
         </Tooltip>

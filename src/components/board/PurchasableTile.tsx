@@ -1,7 +1,7 @@
 import { useAppDispatch } from "@/app/hooks";
 import { setSelectedTile } from "@/slices/ui-slice";
 import {
-  PurchasableTile,
+  PurchasableTile as PurchasableTileType,
   RentIndexes,
   isProperty,
 } from "@ziv-carmi/monopoly-utils";
@@ -15,7 +15,7 @@ import Tile from "./Tile";
 import TileCostBadge from "./TileCostBadge";
 
 type PurchasableTileProps = {
-  tile: PurchasableTile;
+  tile: PurchasableTileType;
 };
 
 const PurchasableTile: React.FC<PurchasableTileProps> = ({ tile }) => {

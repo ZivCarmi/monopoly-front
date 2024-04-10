@@ -1,11 +1,11 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import GameRoom from "@/components/game-room/GameRoom";
 import GameBoardProvider from "@/components/board/GameBoardProvider";
+import GameRoom from "@/components/game-room/GameRoom";
 import { useToast } from "@/components/ui/use-toast";
+import useJoinRoom from "@/hooks/useJoinRoom";
 import { useEffect, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import useJoinRoom from "@/hooks/useJoinRoom";
 
 const GameRoomPage = () => {
   const { roomId } = useParams();

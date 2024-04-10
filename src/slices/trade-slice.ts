@@ -4,11 +4,15 @@ import { TradeType } from "@ziv-carmi/monopoly-utils";
 export type TradeMode = "creating" | "watching" | "editing" | "idle";
 
 export interface TradeState {
+  tradeIsOpen: boolean;
+  selectPlayerIsOpen: boolean;
   mode: TradeMode;
   trade: TradeType | null;
 }
 
 const initialState: TradeState = {
+  tradeIsOpen: false,
+  selectPlayerIsOpen: false,
   mode: "idle",
   trade: null,
 };
@@ -20,13 +24,18 @@ export const tradeSlice = createSlice({
     resetTrade: () => {
       return initialState;
     },
+    setTradeIsOpen: (state, action: PayloadAction<boolean>) => {
+      state.tradeIsOpen = action.payload;
+    },
+    setSelectPlayerIsOpen: (state, action: PayloadAction<boolean>) => {
+      state.selectPlayerIsOpen = action.payload;
+    },
     setMode: (state, action: PayloadAction<TradeMode>) => {
       state.mode = action.payload;
     },
     setTrade: (state, action: PayloadAction<TradeType>) => {
       state.trade = action.payload;
     },
-
     setPlayerMoney: (
       state,
       action: PayloadAction<{ traderId: string; amount: number }>
@@ -77,6 +86,8 @@ export const tradeSlice = createSlice({
 
 export const {
   resetTrade,
+  setTradeIsOpen,
+  setSelectPlayerIsOpen,
   setMode,
   setTrade,
   setPlayerMoney,

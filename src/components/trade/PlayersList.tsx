@@ -1,53 +1,25 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { selectPlayers } from "@/slices/game-slice";
-import { setTrade } from "@/slices/trade-slice";
-import { TradeType } from "@ziv-carmi/monopoly-utils";
+import { setMode, setTrade, setTradeIsOpen } from "@/slices/trade-slice";
+import { createTrade } from "@/utils";
 import PlayerCharacter from "../player/PlayerCharacter";
 import PlayerName from "../player/PlayerName";
-import { useEffect } from "react";
+import { selectPlayersExceptSelf } from "@/app/selectors";
 
 const PlayersList = () => {
-  const dispatch = useAppDispatch();
   const { selfPlayer } = useAppSelector((state) => state.game);
+  const playersExceptSelf = useAppSelector(selectPlayersExceptSelf);
+  const dispatch = useAppDispatch();
 
   if (!selfPlayer) {
     return null;
   }
 
-  const playersExceptSelf = useAppSelector(selectPlayers).filter(
-    (player) => player.id !== selfPlayer.id
-  );
-
-  const createTrade = (offereeId: string) => {
-    const newTrade: TradeType = {
-      id: "",
-      turn: selfPlayer.id,
-      traders: [
-        {
-          id: selfPlayer.id,
-          money: 0,
-          properties: [],
-        },
-        {
-          id: offereeId,
-          money: 0,
-          properties: [],
-        },
-      ],
-      createdBy: selfPlayer.id,
-      lastEditBy: selfPlayer.id,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    };
-
+  const selectPlayerHandler = (offereeId: string) => {
+    const newTrade = createTrade(selfPlayer.id, offereeId);
     dispatch(setTrade(newTrade));
+    dispatch(setTradeIsOpen(true));
+    dispatch(setMode("creating"));
   };
-
-  useEffect(() => {
-    if (playersExceptSelf.length === 1) {
-      createTrade(playersExceptSelf[0].id);
-    }
-  }, []);
 
   return (
     <ul className="flex items-center justify-center flex-wrap gap-4">
@@ -55,7 +27,7 @@ const PlayersList = () => {
         <li key={player.id}>
           <button
             className="text-center text-sm flex items-center flex-col"
-            onClick={() => createTrade(player.id)}
+            onClick={() => selectPlayerHandler(player.id)}
           >
             <PlayerCharacter character={player.character} size={64} />
             <PlayerName name={player.name} color={player.color} />

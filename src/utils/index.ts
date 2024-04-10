@@ -165,6 +165,31 @@ export const getTimeValues = (countDown: number) => {
   return { minutes, seconds };
 };
 
+export const createTrade = (offerorId: string, offereeId: string) => {
+  const newTrade: TradeType = {
+    id: "",
+    turn: offerorId,
+    traders: [
+      {
+        id: offerorId,
+        money: 0,
+        properties: [],
+      },
+      {
+        id: offereeId,
+        money: 0,
+        properties: [],
+      },
+    ],
+    createdBy: offerorId,
+    lastEditBy: offerorId,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  return newTrade;
+};
+
 export const isParticipatingInTrade = (tradeId: string, playerId: string) => {
   const { trades } = store.getState().game;
   const trade = trades.find((_trade) => _trade.id === tradeId);

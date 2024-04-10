@@ -3,7 +3,7 @@ import PlayerCharacter from "@/components/player/PlayerCharacter";
 import PlayerName from "@/components/player/PlayerName";
 import PlayerNamePlate from "@/components/player/PlayerNamePlate";
 import { Button } from "@/components/ui/button";
-import { setMode, setTrade } from "@/slices/trade-slice";
+import { setMode, setTrade, setTradeIsOpen } from "@/slices/trade-slice";
 import { getPlayerCharacter, getPlayerColor, getPlayerName } from "@/utils";
 import { TradeType } from "@ziv-carmi/monopoly-utils";
 import { ArrowRightLeft } from "lucide-react";
@@ -15,6 +15,7 @@ const TradeRowButton = ({ trade }: { trade: TradeType }) => {
   const isSelfTurn = selfPlayer?.id === trade.turn;
 
   const watchTradeHandler = () => {
+    dispatch(setTradeIsOpen(true));
     dispatch(setTrade(trade));
     dispatch(setMode("watching"));
   };

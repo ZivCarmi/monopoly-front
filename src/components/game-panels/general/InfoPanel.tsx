@@ -4,7 +4,7 @@ import useBackToLobby from "@/hooks/useBackToLobby";
 import { isPlayer } from "@/utils";
 import { isGameStarted } from "@ziv-carmi/monopoly-utils";
 
-const GameInfo = () => {
+const InfoPanel = () => {
   const { state, selfPlayer } = useAppSelector((state) => state.game);
   const backToLobby = useBackToLobby();
 
@@ -32,4 +32,4 @@ const GameInfo = () => {
   );
 };
 
-export default GameInfo;
+export default InfoPanel;

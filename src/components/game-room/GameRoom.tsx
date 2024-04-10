@@ -29,10 +29,10 @@ import { writeLog } from "@/slices/ui-slice";
 import { getPlayerName } from "@/utils";
 import { GameSetting, Player, TradeType } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
-import GameSidebar from "../game-panels/GameSidebar";
-import GameInfo from "../game-panels/general/GameInfo";
-import GameInvitation from "../game-panels/general/GameInvitation";
-import GameScoreboard from "../game-panels/scoreboard/GameScoreboard";
+import SidebarPanel from "../game-panels/SidebarPanel";
+import InfoPanel from "../game-panels/general/InfoPanel";
+import InvitationPanel from "../game-panels/general/InvitationPanel";
+import ScoreboardPanel from "../game-panels/scoreboard/ScoreboardPanel";
 import MainBoard from "./MainBoard";
 
 const GameRoom = () => {
@@ -213,13 +213,13 @@ const GameRoom = () => {
   return (
     <div className="room-container" id="main-board">
       <div className="game-general">
-        <GameInfo />
-        <GameInvitation />
+        <InfoPanel />
+        <InvitationPanel />
       </div>
       <MainBoard className="main-board" />
       <div className="game-sidebar">
-        <GameScoreboard />
-        <GameSidebar />
+        <ScoreboardPanel />
+        <SidebarPanel />
       </div>
     </div>
   );
