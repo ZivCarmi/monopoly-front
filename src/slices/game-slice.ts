@@ -104,7 +104,7 @@ export const gameSlice = createSlice({
       state.doublesInARow = room.doublesInARow;
       state.suspendedPlayers = room.suspendedPlayers;
       state.stats = {
-        ...state.stats,
+        ...room.stats,
         participants: Object.values(room.stats.participants),
       };
       state.trades = room.trades;

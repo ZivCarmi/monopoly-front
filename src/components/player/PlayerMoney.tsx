@@ -1,10 +1,15 @@
-type PlayerMoneyProps = {
-  money: number;
-};
+import { cn } from "@/utils";
 
-const PlayerMoney = ({ money }: PlayerMoneyProps) => {
+interface PlayerMoneyProps extends React.HTMLAttributes<HTMLParagraphElement> {
+  money: number;
+}
+
+const PlayerMoney = ({ money, className, ...props }: PlayerMoneyProps) => {
   return (
-    <p className="inline-flex rtl:flex-row-reverse text-sm">
+    <p
+      className={cn("inline-flex rtl:flex-row-reverse text-sm", className)}
+      {...props}
+    >
       ₪<span className="ltr">{money}</span>
     </p>
   );
