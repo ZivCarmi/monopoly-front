@@ -388,27 +388,12 @@ export const gameSlice = createSlice({
     staySuspendedTurn: (state, action: PayloadAction<{ playerId: string }>) => {
       const { playerId } = action.payload;
 
-      console.log(
-        "before decreasing suspended turn state",
-        current(state.suspendedPlayers)
-      );
-
       if (state.suspendedPlayers[playerId] !== undefined) {
         state.suspendedPlayers[playerId].left -= 1;
       }
-
-      console.log(
-        "updated decreased suspended players state",
-        current(state.suspendedPlayers)
-      );
     },
     freePlayer: (state, action: PayloadAction<{ playerId: string }>) => {
       const { playerId } = action.payload;
-
-      console.log(
-        "freeing from suspension",
-        current(state.suspendedPlayers[playerId])
-      );
 
       delete state.suspendedPlayers[playerId];
     },

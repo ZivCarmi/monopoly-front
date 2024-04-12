@@ -20,7 +20,6 @@ const RollDices = () => {
   const isInDebt = !!selfPlayer && isPlayerInDebt(selfPlayer.id);
 
   const rollDiceHandler = () => {
-    console.log("Rolling dice...");
     socket.emit("rolling_dice");
   };
 

@@ -246,6 +246,8 @@ export const handleGameCard = (player: Player): AppThunk => {
       drawnGameCard: { card },
     } = getState().game;
 
+    console.log("card", card);
+
     if (!card) {
       throw new Error("No chance card was found.");
     }

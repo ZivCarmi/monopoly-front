@@ -20,6 +20,7 @@ import {
   setHostId,
   setPlayerConnection,
   setPlayerInDebt,
+  setRoom,
   setWinner,
   startGame,
   switchTurn,
@@ -27,7 +28,12 @@ import {
 import { resetTrade } from "@/slices/trade-slice";
 import { writeLog } from "@/slices/ui-slice";
 import { getPlayerName } from "@/utils";
-import { GameSetting, Player, TradeType } from "@ziv-carmi/monopoly-utils";
+import {
+  GameSetting,
+  Player,
+  Room,
+  TradeType,
+} from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
 import SidebarPanel from "../game-panels/SidebarPanel";
 import InfoPanel from "../game-panels/general/InfoPanel";
@@ -38,6 +44,10 @@ import MainBoard from "./MainBoard";
 const GameRoom = () => {
   const socket = useSocket();
   const dispatch = useAppDispatch();
+
+  const onGameUpdate = (room: Room) => {
+    dispatch(setRoom(room));
+  };
 
   const onGameSettingsUpdated = (setting: GameSetting) => {
     dispatch(setGameSetting(setting));
@@ -93,6 +103,8 @@ const GameRoom = () => {
   };
 
   const onDiceRolled = (dices: number[]) => {
+    if (document.visibilityState === "hidden") return;
+
     dispatch(handleDices(dices));
   };
 
@@ -163,6 +175,7 @@ const GameRoom = () => {
   };
 
   useEffect(() => {
+    socket.on("game_updated", onGameUpdate);
     socket.on("game_settings_updated", onGameSettingsUpdated);
     socket.on("player_connectivity", onPlayerConnectivity);
     socket.on("player_created", onPlayerCreated);
@@ -186,6 +199,7 @@ const GameRoom = () => {
     socket.on("game_ended", onGameEnded);
 
     return () => {
+      socket.off("game_updated", onGameUpdate);
       socket.off("game_settings_updated", onGameSettingsUpdated);
       socket.off("player_connectivity", onPlayerConnectivity);
       socket.off("player_created", onPlayerCreated);

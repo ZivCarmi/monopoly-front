@@ -25,15 +25,21 @@ const GameRoomPage = () => {
     });
   };
 
+  const updateGameOnFocus = () => {
+    socket.emit("update_game");
+  };
+
   useEffect(() => {
     if (roomId && !isInRoom && isFirstRender.current) {
       joinRoom({ roomId });
       isFirstRender.current = false;
     }
 
+    window.addEventListener("visibilitychange", updateGameOnFocus);
     socket.on("room_not_available", onRoomNotAvailable);
 
     return () => {
+      window.removeEventListener("visibilitychange", updateGameOnFocus);
       socket.off("room_not_available", onRoomNotAvailable);
     };
   }, []);
