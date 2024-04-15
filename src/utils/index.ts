@@ -137,13 +137,6 @@ export const getPlayerName = (playerId: string) => {
   return player?.name ? player.name : "";
 };
 
-export const getPlayerCharacter = (playerId: string) => {
-  const { players } = store.getState().game;
-  const player = players.find((player) => player.id === playerId);
-
-  return player?.character;
-};
-
 export const getPlayerColor = (playerId: string) => {
   const { players } = store.getState().game;
   const player = players.find((player) => player.id === playerId);

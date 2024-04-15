@@ -1,9 +1,9 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { setMode, setTrade, setTradeIsOpen } from "@/slices/trade-slice";
 import { createTrade } from "@/utils";
-import PlayerCharacter from "../player/PlayerCharacter";
 import PlayerName from "../player/PlayerName";
 import { selectPlayersExceptSelf } from "@/app/selectors";
+import PlayerCharacter from "../player/PlayerCharacter";
 
 const PlayersList = () => {
   const { selfPlayer } = useAppSelector((state) => state.game);
@@ -29,8 +29,8 @@ const PlayersList = () => {
             className="text-center text-sm flex items-center flex-col"
             onClick={() => selectPlayerHandler(player.id)}
           >
-            <PlayerCharacter character={player.character} size={64} />
-            <PlayerName name={player.name} color={player.color} />
+            <PlayerCharacter color={player.color} />
+            <PlayerName name={player.name} />
           </button>
         </li>
       ))}

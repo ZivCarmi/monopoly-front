@@ -10,31 +10,26 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { selectPlayers } from "@/slices/game-slice";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Characters, Colors, PlayerSchema } from "@ziv-carmi/monopoly-utils";
+import { Colors, PlayerSchema } from "@ziv-carmi/monopoly-utils";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
+import PlayerCharacter from "../player/PlayerCharacter";
 import Modal from "../ui/modal";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
 const PlayersForm = () => {
+  const [hoveredChar, setHoveredChar] = useState("");
   const socket = useSocket();
   const form = useForm<z.infer<typeof PlayerSchema>>({
     resolver: zodResolver(PlayerSchema),
     defaultValues: {
       name: "",
-      character: undefined,
       color: undefined,
     },
   });
-  const characterWatch = form.watch("character");
   const colorWatch = form.watch("color");
   const players = useAppSelector(selectPlayers);
 
@@ -50,8 +45,8 @@ const PlayersForm = () => {
             control={form.control}
             name="name"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>שם</FormLabel>
+              <FormItem className="space-y-6">
+                <FormLabel className="text-muted-foreground">שם</FormLabel>
                 <FormControl>
                   <Input {...field} maxLength={30} />
                 </FormControl>
@@ -61,68 +56,16 @@ const PlayersForm = () => {
           />
           <FormField
             control={form.control}
-            name="character"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>דמות</FormLabel>
-                <FormControl>
-                  <RadioGroup
-                    onValueChange={(e: Characters) => field.onChange(e)}
-                    className="grid-cols-3 gap-4"
-                  >
-                    {Object.keys(Characters).map((char) => {
-                      const charLower = char.toLowerCase();
-                      const takenChar = players.find(
-                        ({ character }) => character === charLower
-                      );
-
-                      return (
-                        !takenChar && (
-                          <FormItem key={char}>
-                            <FormControl>
-                              <RadioGroupItem
-                                value={charLower}
-                                className="hidden"
-                              />
-                            </FormControl>
-                            <FormLabel className="block text-center">
-                              <TooltipProvider delayDuration={0}>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <img
-                                      src={`/${charLower}.png`}
-                                      width={140}
-                                      className={
-                                        characterWatch === charLower
-                                          ? "opacity-100"
-                                          : "opacity-40"
-                                      }
-                                    />
-                                  </TooltipTrigger>
-                                  <TooltipContent>{char}</TooltipContent>
-                                </Tooltip>
-                              </TooltipProvider>
-                            </FormLabel>
-                          </FormItem>
-                        )
-                      );
-                    })}
-                  </RadioGroup>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
             name="color"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>בחר צבע</FormLabel>
+              <FormItem className="space-y-6">
+                <FormLabel className="text-muted-foreground">
+                  בחר שחקן
+                </FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={(e: Colors) => field.onChange(e)}
-                    className="flex flex-wrap justify-center gap-4"
+                    className="max-w-60 w-full m-auto flex flex-wrap justify-center gap-10"
                   >
                     {Object.keys(Colors).map((color) => {
                       const colorLower = color.toLowerCase();
@@ -139,14 +82,19 @@ const PlayersForm = () => {
                                 className="hidden"
                               />
                             </FormControl>
-                            <FormLabel
-                              className={`w-8 h-8 block rounded-full cursor-pointer ease-in-out duration-75 ${
-                                colorWatch === colorLower
-                                  ? "outline outline-offset-2 outline-2"
-                                  : ""
-                              }`}
-                              style={{ backgroundColor: color }}
-                            />
+                            <FormLabel>
+                              <PlayerCharacter
+                                className="cursor-pointer"
+                                color={color as Colors}
+                                size={1.75}
+                                showHalo={
+                                  colorWatch === colorLower ||
+                                  hoveredChar === colorLower
+                                }
+                                onMouseEnter={() => setHoveredChar(colorLower)}
+                                onMouseLeave={() => setHoveredChar("")}
+                              />
+                            </FormLabel>
                           </FormItem>
                         )
                       );

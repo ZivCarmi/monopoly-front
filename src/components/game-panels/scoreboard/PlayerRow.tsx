@@ -27,12 +27,8 @@ const PlayerRow = ({ player }: { player: Player }) => {
     >
       <TurnIndicator player={player} />
       <PlayerNamePlate>
-        <PlayerCharacter character={player.character} />
-        <PlayerName
-          name={player.name}
-          color={player.color}
-          className="text-sm"
-        />
+        <PlayerCharacter color={player.color} />
+        <PlayerName name={player.name} className="text-sm" />
         <HostIndicator playerId={player.id} />
         {!player.isConnected && player.connectionKickAt && (
           <NotConnectedIndicator connectionKickAt={player.connectionKickAt} />

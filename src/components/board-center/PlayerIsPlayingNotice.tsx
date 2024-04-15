@@ -13,10 +13,9 @@ const PlayerIsPlayingNotice = () => {
 
   return (
     <PlayerNamePlate>
-      <PlayerCharacter character={currentPlayer.character} />
+      <PlayerCharacter color={currentPlayer.color} />
       <h2 className="text-sm">
-        <PlayerName name={currentPlayer.name} color={currentPlayer.color} />{" "}
-        משחק...
+        <PlayerName name={currentPlayer.name} /> משחק...
       </h2>
     </PlayerNamePlate>
   );

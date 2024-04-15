@@ -6,11 +6,7 @@ import { useEffect, useState } from "react";
 import PlayerButton from "./PlayerButton";
 import PlayersContainer from "./PlayersContainer";
 
-type MappedPlayersProps = {
-  tileIndex: number;
-};
-
-const MappedPlayers = ({ tileIndex }: MappedPlayersProps) => {
+const MappedPlayers = ({ tileIndex }: { tileIndex: number }) => {
   const players = useAppSelector(selectPlayers);
   const [mappedPlayers, setMappedPlayers] = useState<MappedPlayersByTiles>({});
   const jailedPlayers = mappedPlayers[tileIndex]?.filter((player) =>

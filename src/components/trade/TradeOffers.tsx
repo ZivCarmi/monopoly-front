@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/app/hooks";
-import { getPlayerCharacter, getPlayerColor, getPlayerName } from "@/utils";
+import { getPlayerColor, getPlayerName } from "@/utils";
 import PlayerCharacter from "../player/PlayerCharacter";
 import PlayerName from "../player/PlayerName";
 import PlayerNamePlate from "../player/PlayerNamePlate";
@@ -19,11 +19,8 @@ const TradeOffers = () => {
       {trade.traders.map((trader) => (
         <div key={trader.id}>
           <PlayerNamePlate className="mb-2">
-            <PlayerCharacter character={getPlayerCharacter(trader.id)!} />
-            <PlayerName
-              name={getPlayerName(trader.id)}
-              color={getPlayerColor(trader.id)!}
-            />
+            <PlayerCharacter color={getPlayerColor(trader.id)!} />
+            <PlayerName name={getPlayerName(trader.id)} />
             {selfPlayer?.id === trader.id && "(את/ה)"}
           </PlayerNamePlate>
           <TradeBoard trader={trader} />

@@ -1,25 +1,46 @@
 import { cn } from "@/utils";
-import { Characters } from "@ziv-carmi/monopoly-utils";
+import { Colors } from "@ziv-carmi/monopoly-utils";
 
 export interface PlayerCharacterProps
-  extends React.ImgHTMLAttributes<HTMLImageElement> {
-  character: Characters;
-  size?: number | "auto";
+  extends React.HTMLAttributes<HTMLDivElement> {
+  color: Colors;
+  size?: number;
+  showHalo?: boolean;
 }
 
 const PlayerCharacter = ({
-  character,
+  color,
+  size = 1,
+  showHalo,
   className,
-  size = 32,
   ...props
 }: PlayerCharacterProps) => {
   return (
-    <img
-      src={`/${character}.png`}
-      width={size}
-      className={cn("inline-block", className)}
+    <div
+      style={{
+        filter: showHalo ? `drop-shadow(0px 0px 16px ${color})` : undefined,
+      }}
+      className={cn("duration-200", className)}
       {...props}
-    />
+    >
+      <div
+        className={cn("rounded-full")}
+        style={{
+          backgroundColor: color,
+          width: `${size}rem`,
+          height: `${size}rem`,
+        }}
+      />
+      <div
+        className={cn("relative h-0 -top-1", className)}
+        style={{
+          width: `${size}rem`,
+          borderBottom: `${size}rem solid ${color}`,
+          borderLeft: `${size / 4}rem solid transparent`,
+          borderRight: `${size / 4}rem solid transparent`,
+        }}
+      />
+    </div>
   );
 };
 

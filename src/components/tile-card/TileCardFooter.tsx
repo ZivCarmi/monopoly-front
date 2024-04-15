@@ -1,9 +1,9 @@
 import { useAppSelector } from "@/app/hooks";
-import PlayerCharacter from "../player/PlayerCharacter";
 import PlayerName from "../player/PlayerName";
 import PlayerNamePlate from "../player/PlayerNamePlate";
 import { Separator } from "../ui/separator";
 import TileCardActions from "./TileCardActions";
+import PlayerCharacter from "../player/PlayerCharacter";
 
 const TileCardFooter = () => {
   const { players, selfPlayer } = useAppSelector((state) => state.game);
@@ -24,8 +24,8 @@ const TileCardFooter = () => {
           <div className="flex items-center justify-center gap-4">
             <span className="text-muted-foreground text-sm">בבעלות</span>
             <PlayerNamePlate>
-              <PlayerCharacter character={tileOwner.character} />
-              <PlayerName name={tileOwner.name} color={tileOwner.color} />
+              <PlayerCharacter color={tileOwner.color} />
+              <PlayerName name={tileOwner.name} />
             </PlayerNamePlate>
           </div>
         </>

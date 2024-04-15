@@ -1,8 +1,9 @@
 import { Player } from "@ziv-carmi/monopoly-utils";
 import { useMemo } from "react";
+import PlayerCharacter from "../player/PlayerCharacter";
 
 const isPlayerType = (object: Player | JSX.Element): object is Player => {
-  return (object as Player).character !== undefined;
+  return (object as Player).color !== undefined;
 };
 
 type GameRoomPlayerIconsProps = {
@@ -29,7 +30,7 @@ const GameRoomPlayerIcons = ({
       {roomPlayersWithEmptySlots.map((player, idx) => (
         <li key={idx}>
           {isPlayerType(player) ? (
-            <img src={`/${player.character}.png`} width={24} />
+            <PlayerCharacter color={player.color} />
           ) : (
             player
           )}

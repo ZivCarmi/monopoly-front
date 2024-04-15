@@ -27,8 +27,8 @@ const WaitingToStartNotice = () => {
     <div>
       ממתין ל
       <PlayerNamePlate className="mx-2">
-        <PlayerName name={hostPlayer.name} color={hostPlayer.color} />
-        <PlayerCharacter character={hostPlayer.character} />
+        <PlayerName name={hostPlayer.name} />
+        <PlayerCharacter color={hostPlayer.color} />
       </PlayerNamePlate>
       שיתחיל את המשחק
     </div>

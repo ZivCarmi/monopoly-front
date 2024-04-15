@@ -4,7 +4,7 @@ import PlayerName from "@/components/player/PlayerName";
 import PlayerNamePlate from "@/components/player/PlayerNamePlate";
 import { Button } from "@/components/ui/button";
 import { setMode, setTrade, setTradeIsOpen } from "@/slices/trade-slice";
-import { getPlayerCharacter, getPlayerColor, getPlayerName } from "@/utils";
+import { getPlayerColor, getPlayerName } from "@/utils";
 import { TradeType } from "@ziv-carmi/monopoly-utils";
 import { ArrowRightLeft } from "lucide-react";
 import { Fragment } from "react";
@@ -32,19 +32,14 @@ const TradeRowButton = ({ trade }: { trade: TradeType }) => {
         >
           <div className="isolate inline-flex gap-2 items-center">
             {trade.traders.map((trader, idx) => {
-              const traderCharacter = getPlayerCharacter(trader.id);
               const traderName = getPlayerName(trader.id);
               const traderColor = getPlayerColor(trader.id);
 
               return (
                 <Fragment key={trader.id}>
                   <PlayerNamePlate>
-                    {traderCharacter && (
-                      <PlayerCharacter character={traderCharacter} />
-                    )}
-                    {traderName && traderColor && (
-                      <PlayerName name={traderName} color={traderColor} />
-                    )}
+                    {traderColor && <PlayerCharacter color={traderColor} />}
+                    {traderName && <PlayerName name={traderName} />}
                   </PlayerNamePlate>
                   {idx === 0 && (
                     <ArrowRightLeft className="text-primary w-5 h-5" />

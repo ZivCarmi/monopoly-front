@@ -200,12 +200,8 @@
 
 .row-right .tile:not(.corner) .player,
 .row-left .tile:not(.corner) .player {
-  transform: scaleY(-1) rotate(90deg);
-}
-
-.row-bottom .tile .player,
-.row-left .corner .player {
-  transform: scaleX(-1);
+  writing-mode: initial;
+  transform: rotate(90deg);
 }
 
 .row-top .mapped-players,
@@ -230,7 +226,7 @@
 .row-top .mapped-players .player:not(:first-child),
 .row-right .corner .mapped-players .player:not(:first-child),
 .row-bottom .mapped-players .player:not(:first-child) {
-  @apply -ml-6;
+  @apply -ml-1;
 }
 
 .row-right .tile:not(.corner) .mapped-players .player:not(:first-child),

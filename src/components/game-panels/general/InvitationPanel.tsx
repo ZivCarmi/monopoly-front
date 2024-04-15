@@ -1,5 +1,5 @@
 import { useAppSelector } from "@/app/hooks";
-import { isGameNotStarted } from "@ziv-carmi/monopoly-utils";
+import { isGameStarted } from "@ziv-carmi/monopoly-utils";
 import GamePanel from "../GamePanel";
 import PanelTitle from "../PanelTitle";
 import CopyRoomButton from "./CopyRoomButton";
@@ -13,7 +13,7 @@ const InvitationPanel = () => {
       <PanelTitle>שתף את המשחק</PanelTitle>
       <div className="flex gap-4">
         <CopyRoomButton />
-        {!isGameNotStarted(state) && <SettingsModal />}
+        {isGameStarted(state) && <SettingsModal />}
       </div>
     </GamePanel>
   );

@@ -23,10 +23,10 @@ const WinnerScreen = () => {
       <Dices size={120} />
       <h1 className="text-9xl/[7rem] tracking-tighter mb-8">משחק נגמר!</h1>
       <div className="text-3xl tracking-tight">המנצח הוא...</div>
-      <PlayerNamePlate className="gap-8 justify-center -mt-4 mb-4">
-        <PlayerCharacter character={winner.character} width="25%" />
+      <PlayerNamePlate className="gap-8 justify-center -mt-2 mb-4">
+        <PlayerCharacter color={winner.color} size={3} />
         <h2 className="text-5xl font-semibold">
-          <PlayerName name={winner.name} color={winner.color} />
+          <PlayerName name={winner.name} />
         </h2>
       </PlayerNamePlate>
       <div className="flex gap-2">
