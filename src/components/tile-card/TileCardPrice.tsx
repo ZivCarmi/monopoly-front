@@ -18,7 +18,7 @@ const TileCardPrice: React.FC<TileCardPriceProps> = ({
       <span className="text-sm">
         {Icon ? <Icon size={20} /> : labelAsText ? labelAsText : null}
       </span>
-      <p>${amount}</p>
+      <p>₪{amount}</p>
     </div>
   );
 };

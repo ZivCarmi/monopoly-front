@@ -14,11 +14,7 @@ import OwnerIndicator from "./OwnerIndicator";
 import Tile from "./Tile";
 import TileCostBadge from "./TileCostBadge";
 
-type PurchasableTileProps = {
-  tile: PurchasableTileType;
-};
-
-const PurchasableTile: React.FC<PurchasableTileProps> = ({ tile }) => {
+const PurchasableTile = ({ tile }: { tile: PurchasableTileType }) => {
   const dispatch = useAppDispatch();
   const cityHasHouses =
     isProperty(tile) &&

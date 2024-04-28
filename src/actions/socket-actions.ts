@@ -129,7 +129,7 @@ export const paidOutOfJailThunk = (): AppThunk => {
     dispatch(freePlayer({ playerId: currentPlayerTurnId }));
     dispatch(
       writeLog(
-        `${playerName} שילם $${PAY_OUT_FROM_JAIL_AMOUNT} עבור שחרור מהכלא`
+        `${playerName} שילם ₪${PAY_OUT_FROM_JAIL_AMOUNT} עבור שחרור מהכלא`
       )
     );
   };

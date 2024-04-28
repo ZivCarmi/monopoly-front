@@ -12,6 +12,7 @@ import {
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
 import { clsx, type ClassValue } from "clsx";
+import { Home, Hotel } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
 export function cn(...inputs: ClassValue[]) {

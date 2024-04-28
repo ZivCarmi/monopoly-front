@@ -4,7 +4,7 @@ const useBackToLobby = () => {
   const socket = useSocket();
 
   const backToLobbyHandler = () => {
-    socket.emit("back_to_lobby");
+    socket.emit("return_to_lobby");
   };
 
   return backToLobbyHandler;

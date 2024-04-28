@@ -429,8 +429,6 @@ export const gameSlice = createSlice({
           });
           state.map.surprises.currentIndex += 1;
           break;
-        default:
-          break;
       }
     },
     switchTurn: (state, action: PayloadAction<{ nextPlayerId: string }>) => {

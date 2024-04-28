@@ -7,45 +7,17 @@ import {
   isProperty,
 } from "@ziv-carmi/monopoly-utils";
 import { Factory, Home, Hotel, Plane } from "lucide-react";
-import IndustryPricing from "./IndustryPricing";
-import TileCardPrice from "./TileCardPrice";
 import { Separator } from "../ui/separator";
+import IndustryPricing from "./IndustryPricing";
+import PropertyPricing from "./PropertyPricing";
+import TileCardPrice from "./TileCardPrice";
 
-type TileCardContentProps = {
-  tile: PurchasableTile;
-};
-
-const TileCardContent: React.FC<TileCardContentProps> = ({ tile }) => {
+const TileCardContent = ({ tile }: { tile: PurchasableTile }) => {
   const isTileProperty = isProperty(tile);
 
   return (
     <>
-      {isTileProperty && (
-        <ul className="space-y-1">
-          {Object.values(tile.rent).map((amount, i) => (
-            <li className="flex items-center justify-between" key={amount}>
-              <div className="text-right">
-                {i === 0 && (
-                  <>
-                    <div className="font-medium">דמי שכירות</div>
-                    <div className="font-medium">בעלות על סדרה</div>
-                  </>
-                )}
-                {i > 0 &&
-                  i < 5 &&
-                  Array.from({ length: i }, (_, idx) => (
-                    <Home className="inline text-red-900" key={idx} />
-                  ))}
-                {i === 5 && <Hotel className="inline text-red-900" />}
-              </div>
-              <div>
-                <div>${amount}</div>
-                {i === 0 && <div>${amount * 2}</div>}
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+      {isTileProperty && <PropertyPricing rent={tile.rent} />}
       {isAirport(tile) && <IndustryPricing rent={AIRPORT_RENTS} icon={Plane} />}
       {isCompany(tile) && (
         <IndustryPricing rent={COMPANY_RENTS} icon={Factory} />

@@ -18,7 +18,7 @@ const PayOutOfJailButton = ({ isDisabled }: { isDisabled: boolean }) => {
       disabled={isDisabled}
     >
       <Icon icon={ShoppingCart} />
-      שלם ${PAY_OUT_FROM_JAIL_AMOUNT} להשתחרר מהכלא
+      שלם ₪{PAY_OUT_FROM_JAIL_AMOUNT} להשתחרר מהכלא
     </Button>
   );
 };

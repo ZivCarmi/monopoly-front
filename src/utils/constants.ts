@@ -1,1 +1,2 @@
 export const MS_FOR_CARD_MESSAGE = 5000;
+export const PLAYER_NAME_STORAGE_KEY = "PLAYER_NAME";

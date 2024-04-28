@@ -2,28 +2,16 @@ import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import GameBoardProvider from "@/components/board/GameBoardProvider";
 import GameRoom from "@/components/game-room/GameRoom";
-import { useToast } from "@/components/ui/use-toast";
 import useJoinRoom from "@/hooks/useJoinRoom";
 import { useEffect, useRef } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useParams } from "react-router-dom";
 
 const GameRoomPage = () => {
   const { roomId } = useParams();
   const { isInRoom } = useAppSelector((state) => state.game);
   const isFirstRender = useRef(true);
   const socket = useSocket();
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const joinRoom = useJoinRoom();
-
-  const onRoomNotAvailable = () => {
-    navigate("/");
-    toast({
-      title: `Couldn't find room ${roomId}`,
-      description: "It has been deleted or expired",
-      variant: "destructive",
-    });
-  };
 
   const updateGameOnFocus = () => {
     socket.emit("update_game");
@@ -36,11 +24,9 @@ const GameRoomPage = () => {
     }
 
     window.addEventListener("visibilitychange", updateGameOnFocus);
-    socket.on("room_not_available", onRoomNotAvailable);
 
     return () => {
       window.removeEventListener("visibilitychange", updateGameOnFocus);
-      socket.off("room_not_available", onRoomNotAvailable);
     };
   }, []);
 

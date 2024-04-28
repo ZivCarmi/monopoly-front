@@ -1,8 +1,8 @@
-import { BoardRow } from "@/types/Board";
+import { BoardRow as BoardRowType } from "@/types/Board";
 import { ReactNode } from "react";
 
 export interface BoardRowProps extends React.HTMLAttributes<HTMLDivElement> {
-  area: BoardRow;
+  area: BoardRowType;
   children: ReactNode;
 }
 

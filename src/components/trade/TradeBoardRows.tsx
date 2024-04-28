@@ -1,11 +1,23 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { setPlayerProperties } from "@/slices/trade-slice";
-import { TradePlayer, isPurchasable } from "@ziv-carmi/monopoly-utils";
+import { cn, hasBuildings } from "@/utils";
+import {
+  TradePlayer,
+  isProperty,
+  isPurchasable,
+} from "@ziv-carmi/monopoly-utils";
 import { useMemo } from "react";
 import BoardRow from "../board/BoardRow";
 import BoardRowTile from "../board/BoardRowTile";
 import { useGameBoard } from "../board/GameBoardProvider";
 import OwnerIndicator from "../board/OwnerIndicator";
+import PropertyIcon from "../board/PropertyIcon";
 import Tile from "../board/Tile";
 import TradeBoardTile from "./TradeBoardTile";
 
@@ -26,31 +38,70 @@ const TradeBoardRows = ({ trader }: { trader: TradePlayer }) => {
             const tileIndex = 10 * rowIndex + tileIndexInRow;
             const isOwnersProperty =
               isPurchasable(tile) && tile.owner === trader.id;
+            const isPropertyHasBuilds =
+              isProperty(tile) && hasBuildings(tile.country.id);
 
             return (
               <BoardRowTile key={tileIndex} tile={tile}>
                 <TradeBoardTile
                   isOwnersProperty={isOwnersProperty}
                   onClick={() => setPropertiesHandler(tileIndex)}
-                  disabled={mode !== "creating" && mode !== "editing"}
-                  className="w-full h-full disabled:opacity-50 rounded-sm"
+                  disabled={
+                    (mode !== "creating" && mode !== "editing") ||
+                    isPropertyHasBuilds
+                  }
+                  className={cn(
+                    "w-full h-full rounded-sm",
+                    row.area === "right" && "rotate-180"
+                  )}
                   style={{
-                    opacity: isOwnersProperty ? 1 : 0.2,
                     outlineOffset: 1,
                     outline: trader.properties.includes(tileIndex)
                       ? "red solid 1px"
                       : "",
                   }}
                 >
-                  <Tile
-                    className={`flex w-full h-full justify-between relative ${
-                      row.area === "top" ? "flex-col" : "flex-col-reverse"
-                    }`}
-                  >
-                    {isPurchasable(tile) && tile.owner && (
-                      <OwnerIndicator ownerId={tile.owner} />
-                    )}
-                  </Tile>
+                  <TooltipProvider delayDuration={0} disableHoverableContent>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span tabIndex={0}>
+                          <Tile
+                            className={cn(
+                              "flex w-full h-full justify-between relative",
+                              row.area === "top" || row.area === "right"
+                                ? "flex-col"
+                                : "flex-col-reverse"
+                            )}
+                          >
+                            {isPurchasable(tile) && tile.owner && (
+                              <OwnerIndicator
+                                ownerId={tile.owner}
+                                className={
+                                  isPropertyHasBuilds && isOwnersProperty
+                                    ? "opacity-20"
+                                    : isOwnersProperty
+                                    ? "opacity-100"
+                                    : "opacity-0"
+                                }
+                              />
+                            )}
+                          </Tile>
+                        </span>
+                      </TooltipTrigger>
+                      {isProperty(tile) && (
+                        <TooltipContent
+                          className={cn(
+                            "text-balance text-center [writing-mode:initial] rtl flex items-center gap-2"
+                          )}
+                        >
+                          {tile.name}
+                          {isPropertyHasBuilds && isOwnersProperty && (
+                            <PropertyIcon rentIndex={tile.rentIndex} />
+                          )}
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 </TradeBoardTile>
               </BoardRowTile>
             );

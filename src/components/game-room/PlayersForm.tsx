@@ -1,4 +1,4 @@
-import { useAppSelector } from "@/app/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,7 +9,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { selectPlayers } from "@/slices/game-slice";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Colors, PlayerSchema } from "@ziv-carmi/monopoly-utils";
@@ -19,14 +18,19 @@ import * as z from "zod";
 import PlayerCharacter from "../player/PlayerCharacter";
 import Modal from "../ui/modal";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import { Input } from "../ui/input";
+import { PLAYER_NAME_STORAGE_KEY } from "@/utils/constants";
+import { setNickname } from "@/slices/user-slice";
 
 const PlayersForm = () => {
   const [hoveredChar, setHoveredChar] = useState("");
   const socket = useSocket();
+  const { nickname } = useAppSelector((state) => state.user);
+  const dispatch = useAppDispatch();
   const form = useForm<z.infer<typeof PlayerSchema>>({
     resolver: zodResolver(PlayerSchema),
     defaultValues: {
-      name: "",
+      name: nickname || "",
       color: undefined,
     },
   });
@@ -35,25 +39,32 @@ const PlayersForm = () => {
 
   const submitHandler = (player: z.infer<typeof PlayerSchema>) => {
     socket.emit("create_player", player);
+    dispatch(setNickname(player.name));
+    localStorage.setItem(PLAYER_NAME_STORAGE_KEY, player.name);
   };
 
   return (
     <Modal className="grid w-full max-w-lg gap-4 border p-6 shadow-lg rounded-lg md:w-full">
       <Form {...form}>
         <form onSubmit={form.handleSubmit(submitHandler)} className="space-y-8">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem className="space-y-6">
-                <FormLabel className="text-muted-foreground">שם</FormLabel>
-                <FormControl>
-                  <Input {...field} maxLength={30} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          {!nickname && (
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem className="space-y-6">
+                  <FormControl>
+                    <Input
+                      {...field}
+                      placeholder="הכינוי שלך..."
+                      maxLength={30}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
           <FormField
             control={form.control}
             name="color"

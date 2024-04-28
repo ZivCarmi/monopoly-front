@@ -7,6 +7,7 @@ export interface OwnerIndicatorProps
 
 const OwnerIndicator: React.FC<OwnerIndicatorProps> = ({
   ownerId,
+  className,
   ...props
 }) => {
   if (!ownerId) return null;
@@ -18,7 +19,7 @@ const OwnerIndicator: React.FC<OwnerIndicatorProps> = ({
       {...props}
       className={cn(
         "flex flex-[0_0_32%] items-center justify-center w-full h-full rounded-sm",
-        props.className
+        className
       )}
       style={{ backgroundColor: ownerColor }}
     />

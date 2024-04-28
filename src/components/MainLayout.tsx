@@ -1,19 +1,24 @@
 import { resetGameRoom } from "@/actions/lobby-actions";
 import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
+import useUpdateNickname from "@/hooks/useUpdateNickname";
 import { setRoom, setSelfPlayer } from "@/slices/game-slice";
 import { writeLog } from "@/slices/ui-slice";
+import { setUserId } from "@/slices/user-slice";
+import { PLAYER_NAME_STORAGE_KEY } from "@/utils/constants";
 import { Player, Room } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
-import { setUserId } from "@/slices/user-slice";
+
+const STORAGED_PLAYER_NAME = localStorage.getItem(PLAYER_NAME_STORAGE_KEY);
 
 const MainLayout = () => {
   const socket = useSocket();
   const dispatch = useAppDispatch();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const updateNickname = useUpdateNickname();
 
   const onUserId = (userId: string) => {
     dispatch(setUserId(userId));
@@ -34,12 +39,12 @@ const MainLayout = () => {
     }
   };
 
-  const onRoomJoinErrorFull = () => {
+  const onRoomNotAvailable = (roomId: string) => {
     navigate("/");
     toast({
+      title: `חדר ${roomId} לא נמצא`,
+      description: "ייתכן שהחדר נמחק או הסתיים",
       variant: "destructive",
-      title: "חדר מלא",
-      description: "באפשרותך להיכנס לחדר אחר או ליצור אחד.",
     });
   };
 
@@ -67,22 +72,26 @@ const MainLayout = () => {
   };
 
   useEffect(() => {
+    if (STORAGED_PLAYER_NAME) {
+      updateNickname({ nickname: STORAGED_PLAYER_NAME });
+    }
+
     socket.on("user_id", onUserId);
     socket.on("room_joined", onRoomJoined);
-    socket.on("room_join_error_full", onRoomJoinErrorFull);
+    socket.on("room_not_available", onRoomNotAvailable);
     socket.on("room_join_error_duplication", onRoomJoinErrorDuplication);
     socket.on("room_deleted", onRoomDeleted);
-    socket.on("on_lobby", onReturnedToLobby);
+    socket.on("returned_to_lobby", onReturnedToLobby);
 
     return () => {
       socket.off("user_id", onUserId);
       socket.off("room_joined", onRoomJoined);
-      socket.off("room_join_error_full", onRoomJoinErrorFull);
+      socket.off("room_not_available", onRoomNotAvailable);
       socket.off("room_join_error_duplication", onRoomJoinErrorDuplication);
       socket.off("room_deleted", onRoomDeleted);
-      socket.off("on_lobby", onReturnedToLobby);
+      socket.off("returned_to_lobby", onReturnedToLobby);
     };
-  });
+  }, []);
 
   return <Outlet />;
 };

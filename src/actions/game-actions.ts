@@ -103,7 +103,7 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
 
         dispatch(
           writeLog(
-            `${walkingPlayer.name} עבר ב${goTile.name} והרוויח $${goRewardOnPass}`
+            `${walkingPlayer.name} עבר ב${goTile.name} והרוויח ₪${goRewardOnPass}`
           )
         );
 
@@ -141,8 +141,6 @@ export const handleStaySuspendedPlayer = (playerId: string): AppThunk => {
 
     const decreasedSuspensionLeft = suspendedPlayers[playerId].left - 1;
 
-    console.log("stay as suspended fn, left:", decreasedSuspensionLeft);
-
     decreasedSuspensionLeft > 0
       ? dispatch(staySuspendedTurn({ playerId }))
       : dispatch(freePlayer({ playerId }));
@@ -169,7 +167,7 @@ export const handlePlayerLanding = (playerId: string): AppThunk => {
       dispatch(transferMoney({ recieverId: playerId, amount: goRewardOnLand }));
       dispatch(
         writeLog(
-          `${player.name} נחת על ${goTile.name} והרוויח $${goRewardOnLand}`
+          `${player.name} נחת על ${goTile.name} והרוויח ₪${goRewardOnLand}`
         )
       );
     } else if (isPurchasable(landedTile)) {
@@ -243,6 +241,7 @@ export const sendPlayerToJail = (playerId: string): AppThunk => {
 export const handleGameCard = (player: Player): AppThunk => {
   return (dispatch, getState) => {
     const {
+      map: { board },
       drawnGameCard: { card },
     } = getState().game;
 
@@ -251,6 +250,14 @@ export const handleGameCard = (player: Player): AppThunk => {
     if (!card) {
       throw new Error("No chance card was found.");
     }
+
+    dispatch(
+      writeLog(
+        `${player.name} נחת על ${board[player.tilePos].name} והוציא: ${
+          card.message
+        }`
+      )
+    );
 
     switch (card.type) {
       case GameCardTypes.PAYMENT:
@@ -280,7 +287,7 @@ export const handleTaxPayment = (player: Player, tile: ITax): AppThunk => {
         amount: taxAmount,
       })
     );
-    dispatch(writeLog(`${player.name} שילם מס בסך $${taxAmount}`));
+    dispatch(writeLog(`${player.name} שילם מס בסך ₪${taxAmount}`));
   };
 };
 
@@ -323,7 +330,7 @@ export const handleRentPayment = (
 
     dispatch(
       writeLog(
-        `${payer.name} שילם שכירות בסך $${rentAmount} לידי ${owner.name}`
+        `${payer.name} שילם שכירות בסך ₪${rentAmount} לידי ${owner.name}`
       )
     );
 

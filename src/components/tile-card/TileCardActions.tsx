@@ -38,7 +38,7 @@ const TileCardActions: React.FC<TileCardActionsProps> = ({ tile }) => {
         disabled={!canSell}
         onClick={sellPropertyHandler}
       >
-        מכור עבור ${tile.cost / 2}
+        מכור עבור ₪{tile.cost / 2}
       </Button>
     </div>
   );

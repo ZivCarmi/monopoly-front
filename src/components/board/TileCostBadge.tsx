@@ -8,7 +8,7 @@ const TileCostBadge = ({ cost }: TileCostBadgeProps) => {
   return (
     <div className="badgeWrapper flex items-center justify-center">
       <Badge variant="secondary" className="badge self-center">
-        ${cost}
+        ₪{cost}
       </Badge>
     </div>
   );

@@ -27,7 +27,7 @@ const PurchasePropertyButton: React.FC<PurchasePropertyButtonProps> = ({
       disabled={isDisabled}
     >
       <Icon icon={ShoppingCart} />
-      רכוש עבור ${price}
+      רכוש עבור ₪{price}
     </Button>
   );
 };
