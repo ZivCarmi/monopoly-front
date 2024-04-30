@@ -9,6 +9,7 @@ import PayOutOfJailButton from "./PayOutOfJailButton";
 import PlayerIsPlayingNotice from "./PlayerIsPlayingNotice";
 import PurchasePropertyButton from "./PurchasePropertyButton";
 import RollDices from "./RollDices";
+import { AnimatePresence } from "framer-motion";
 
 const CenterAction = () => {
   const { canPerformTurnActions, cubesRolledInTurn, selfPlayer } =
@@ -33,18 +34,20 @@ const CenterAction = () => {
 
   return (
     <>
-      {canPurchase && (
-        <PurchasePropertyButton
-          isDisabled={currentPlayer.money < tile.cost}
-          propertyIndex={currentPlayer.tilePos}
-          price={tile.cost}
-        />
-      )}
-      {selfPlayer && isPlayerInJail(selfPlayer.id) && !cubesRolledInTurn && (
-        <PayOutOfJailButton
-          isDisabled={currentPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
-        />
-      )}
+      <AnimatePresence>
+        {canPurchase && (
+          <PurchasePropertyButton
+            isDisabled={currentPlayer.money < tile.cost}
+            propertyIndex={currentPlayer.tilePos}
+            price={tile.cost}
+          />
+        )}
+        {selfPlayer && isPlayerInJail(selfPlayer.id) && !cubesRolledInTurn && (
+          <PayOutOfJailButton
+            isDisabled={currentPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
+          />
+        )}
+      </AnimatePresence>
       <RollDices />
     </>
   );

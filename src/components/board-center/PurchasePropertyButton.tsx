@@ -2,6 +2,7 @@ import { useSocket } from "@/app/socket-context";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
+import { motion } from "framer-motion";
 
 type PurchasePropertyButtonProps = {
   isDisabled: boolean;
@@ -9,11 +10,13 @@ type PurchasePropertyButtonProps = {
   price: number;
 };
 
-const PurchasePropertyButton: React.FC<PurchasePropertyButtonProps> = ({
+const MotionButton = motion(Button);
+
+const PurchasePropertyButton = ({
   isDisabled,
   propertyIndex,
   price,
-}) => {
+}: PurchasePropertyButtonProps) => {
   const socket = useSocket();
 
   const purchasePropertyHandler = () => {
@@ -21,14 +24,18 @@ const PurchasePropertyButton: React.FC<PurchasePropertyButtonProps> = ({
   };
 
   return (
-    <Button
+    <MotionButton
       variant="primaryFancy"
       onClick={purchasePropertyHandler}
       disabled={isDisabled}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.25 }}
+      viewport={{ once: true }}
     >
       <Icon icon={ShoppingCart} />
       רכוש עבור ₪{price}
-    </Button>
+    </MotionButton>
   );
 };
 

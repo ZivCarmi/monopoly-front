@@ -10,6 +10,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
+import { motion } from "framer-motion";
+
+const MotionButton = motion(Button);
 
 const RollDices = () => {
   const { cubesRolledInTurn, doublesInARow, selfPlayer } = useAppSelector(
@@ -30,32 +33,45 @@ const RollDices = () => {
   const renderButton = () => {
     if (cubesRolledInTurn && !hasExtraTurn) {
       return (
-        <Button
+        <MotionButton
           variant="primary"
           onClick={switchTurnHandler}
           disabled={isInDebt}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25 }}
         >
           <Icon icon={RefreshCcw} />
           סיים תור
-        </Button>
+        </MotionButton>
       );
     } else if (!cubesRolledInTurn) {
       return (
-        <Button variant="primary" onClick={rollDiceHandler} disabled={isInDebt}>
+        <MotionButton
+          variant="primary"
+          onClick={rollDiceHandler}
+          disabled={isInDebt}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25 }}
+        >
           <Icon icon={Dices} />
           הטל קוביות
-        </Button>
+        </MotionButton>
       );
     } else if (hasExtraTurn) {
       return (
-        <Button
+        <MotionButton
           variant="primaryFancy"
           onClick={rollDiceHandler}
           disabled={isInDebt}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.25 }}
         >
           <Icon icon={Dices} />
           הטל שוב
-        </Button>
+        </MotionButton>
       );
     }
   };
