@@ -2,8 +2,10 @@ import { RootState } from "@/app/store";
 import { PurchasableTile } from "@ziv-carmi/monopoly-utils";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export type GameLogType = { id: number; message: string; date: Date };
+
 export interface UiState {
-  gameLog: { id: number; message: string }[];
+  gameLog: GameLogType[];
   selectedTile: PurchasableTile | null;
 }
 
@@ -23,6 +25,7 @@ export const uiSlice = createSlice({
       state.gameLog.unshift({
         id: state.gameLog.length + 1,
         message: action.payload,
+        date: new Date(),
       });
     },
     setSelectedTile: (state, action: PayloadAction<PurchasableTile>) => {
