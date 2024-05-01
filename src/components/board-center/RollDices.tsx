@@ -1,6 +1,7 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import { isPlayerInDebt } from "@/utils";
+import { Variants, motion } from "framer-motion";
 import { Dices, RefreshCcw } from "lucide-react";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
@@ -10,7 +11,25 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../ui/tooltip";
-import { motion } from "framer-motion";
+
+export const buttonVariant: Variants = {
+  hidden: {
+    opacity: 0,
+    // y: 8,
+    transition: {
+      duration: 0.25,
+      ease: "easeOut",
+    },
+  },
+  visible: {
+    opacity: 1,
+    // y: 0,
+    transition: {
+      duration: 0.25,
+      ease: "easeOut",
+    },
+  },
+};
 
 const MotionButton = motion(Button);
 
@@ -37,9 +56,11 @@ const RollDices = () => {
           variant="primary"
           onClick={switchTurnHandler}
           disabled={isInDebt}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.25 }}
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          layout
+          variants={buttonVariant}
         >
           <Icon icon={RefreshCcw} />
           סיים תור
@@ -51,9 +72,11 @@ const RollDices = () => {
           variant="primary"
           onClick={rollDiceHandler}
           disabled={isInDebt}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.25 }}
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          layout
+          variants={buttonVariant}
         >
           <Icon icon={Dices} />
           הטל קוביות
@@ -65,9 +88,11 @@ const RollDices = () => {
           variant="primaryFancy"
           onClick={rollDiceHandler}
           disabled={isInDebt}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.25 }}
+          initial="hidden"
+          animate="visible"
+          exit="hidden"
+          layout
+          variants={buttonVariant}
         >
           <Icon icon={Dices} />
           הטל שוב

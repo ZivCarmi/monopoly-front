@@ -3,6 +3,7 @@ import { ShoppingCart } from "lucide-react";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
 import { motion } from "framer-motion";
+import { buttonVariant } from "./RollDices";
 
 type PurchasePropertyButtonProps = {
   isDisabled: boolean;
@@ -28,10 +29,11 @@ const PurchasePropertyButton = ({
       variant="primaryFancy"
       onClick={purchasePropertyHandler}
       disabled={isDisabled}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.25 }}
-      viewport={{ once: true }}
+      initial="hidden"
+      animate="visible"
+      exit="hidden"
+      layout
+      variants={buttonVariant}
     >
       <Icon icon={ShoppingCart} />
       רכוש עבור ₪{price}

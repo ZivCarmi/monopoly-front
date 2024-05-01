@@ -1,16 +1,16 @@
 import { Badge } from "../ui/badge";
+import { motion } from "framer-motion";
 
-type TileCostBadgeProps = {
-  cost: number;
-};
-
-const TileCostBadge = ({ cost }: TileCostBadgeProps) => {
+const TileCostBadge = ({ cost }: { cost: number }) => {
   return (
-    <div className="badgeWrapper flex items-center justify-center">
+    <motion.div
+      className="badgeWrapper flex items-center justify-center"
+      layout
+    >
       <Badge variant="secondary" className="badge self-center">
         ₪{cost}
       </Badge>
-    </div>
+    </motion.div>
   );
 };
 

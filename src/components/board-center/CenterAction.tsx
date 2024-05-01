@@ -42,12 +42,12 @@ const CenterAction = () => {
             price={tile.cost}
           />
         )}
-        {selfPlayer && isPlayerInJail(selfPlayer.id) && !cubesRolledInTurn && (
-          <PayOutOfJailButton
-            isDisabled={currentPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
-          />
-        )}
       </AnimatePresence>
+      {selfPlayer && isPlayerInJail(selfPlayer.id) && !cubesRolledInTurn && (
+        <PayOutOfJailButton
+          isDisabled={currentPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
+        />
+      )}
       <RollDices />
     </>
   );

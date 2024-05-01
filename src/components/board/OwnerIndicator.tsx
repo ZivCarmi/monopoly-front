@@ -1,7 +1,7 @@
 import { cn, getPlayerColor } from "@/utils";
+import { HTMLMotionProps, motion } from "framer-motion";
 
-export interface OwnerIndicatorProps
-  extends React.HTMLAttributes<HTMLDivElement> {
+export interface OwnerIndicatorProps extends HTMLMotionProps<"div"> {
   ownerId: string;
 }
 
@@ -10,18 +10,19 @@ const OwnerIndicator = ({
   className,
   ...props
 }: OwnerIndicatorProps) => {
-  if (!ownerId) return null;
-
   const ownerColor = getPlayerColor(ownerId);
 
   return (
-    <div
+    <motion.div
       {...props}
       className={cn(
         "flex flex-[0_0_32%] items-center justify-center w-full h-full rounded-sm",
         className
       )}
       style={{ backgroundColor: ownerColor }}
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ ease: "circOut", duration: 0.35 }}
     />
   );
 };

@@ -13,6 +13,7 @@ import CityFlagIcon from "./CityFlagIcon";
 import OwnerIndicator from "./OwnerIndicator";
 import Tile from "./Tile";
 import TileCostBadge from "./TileCostBadge";
+import { AnimatePresence } from "framer-motion";
 
 const PurchasableTile = ({ tile }: { tile: PurchasableTileType }) => {
   const dispatch = useAppDispatch();
@@ -32,16 +33,18 @@ const PurchasableTile = ({ tile }: { tile: PurchasableTileType }) => {
           tile={tile}
           className="flex-col justify-between relative tileContent"
         >
-          {tile.owner ? (
-            <OwnerIndicator ownerId={tile.owner}>
-              {cityHasHotel && <CityBuilding icon={Hotel} />}
-              {cityHasHouses && (
-                <CityBuilding icon={Home} count={tile.rentIndex} />
-              )}
-            </OwnerIndicator>
-          ) : (
-            <TileCostBadge cost={tile.cost} />
-          )}
+          <AnimatePresence initial={false}>
+            {tile.owner ? (
+              <OwnerIndicator ownerId={tile.owner}>
+                {cityHasHotel && <CityBuilding icon={Hotel} />}
+                {cityHasHouses && (
+                  <CityBuilding icon={Home} count={tile.rentIndex} />
+                )}
+              </OwnerIndicator>
+            ) : (
+              <TileCostBadge cost={tile.cost} />
+            )}
+          </AnimatePresence>
         </Tile>
         {isProperty(tile) && <CityFlagIcon countryId={tile.country.id} />}
       </PopoverTrigger>
