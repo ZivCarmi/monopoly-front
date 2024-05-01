@@ -5,11 +5,11 @@ export interface OwnerIndicatorProps
   ownerId: string;
 }
 
-const OwnerIndicator: React.FC<OwnerIndicatorProps> = ({
+const OwnerIndicator = ({
   ownerId,
   className,
   ...props
-}) => {
+}: OwnerIndicatorProps) => {
   if (!ownerId) return null;
 
   const ownerColor = getPlayerColor(ownerId);

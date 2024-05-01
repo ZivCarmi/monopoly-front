@@ -14,6 +14,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../../ui/tooltip";
+import { motion } from "framer-motion";
 
 const PlayerRow = ({ player }: { player: Player }) => {
   const { state, selfPlayer } = useAppSelector((state) => state.game);
@@ -25,7 +26,7 @@ const PlayerRow = ({ player }: { player: Player }) => {
         selfPlayer?.id === player.id && "bg-background/50"
       )}
     >
-      <TurnIndicator player={player} />
+      {isPlayerTurn(player.id) && <TurnIndicator player={player} />}
       <PlayerNamePlate>
         <PlayerCharacter color={player.color} />
         <PlayerName name={player.name} className="text-sm" />
@@ -78,9 +79,10 @@ const BankruptedIndicator = () => {
 
 const TurnIndicator = ({ player }: { player: Player }) => {
   return (
-    <div
+    <motion.div
       className="w-1 rounded-tl-full rounded-bl-full absolute top-0 bottom-0 -right-4"
-      style={isPlayerTurn(player.id) ? { backgroundColor: player.color } : {}}
+      style={{ backgroundColor: player.color }}
+      layoutId="sideline"
     />
   );
 };
