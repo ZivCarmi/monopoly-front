@@ -14,7 +14,7 @@ const AvailableGameRoom = ({ room }: { room: LobbyRoom }) => {
     <li>
       <button
         onClick={() => joinRoomHandler(room.id)}
-        className="w-full rounded-lg text-left rtl:text-right space-y-1 bg-background border hover:bg-muted/50 transition-colors text-sm"
+        className="w-full rounded-lg text-left rtl:text-right space-y-1 bg-background hover:bg-muted/50 transition-colors text-sm"
       >
         <div className="flex justify-between">
           <div className="p-4">

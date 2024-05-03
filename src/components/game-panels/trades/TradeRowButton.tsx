@@ -26,7 +26,7 @@ const TradeRowButton = ({ trade }: { trade: TradeType }) => {
         <Button
           className={`bg-transparent hover:bg-transparent gap-4 justify-start relative ${
             isSelfTurn &&
-            "before:bg-background before:absolute before:inset-0 before:animate-pulse before:rounded-md"
+            "before:bg-purple-600 before:absolute before:inset-0 before:animate-pulse before:rounded-md"
           }`}
           onClick={watchTradeHandler}
         >

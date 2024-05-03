@@ -6,7 +6,7 @@ const GamePanel = ({ className, ...props }: GamePanelProps) => {
   return (
     <div
       {...props}
-      className={cn("bg-neutral-800 p-4 rounded-lg grid gap-4", className)}
+      className={cn("bg-card p-4 rounded-lg grid gap-4", className)}
     />
   );
 };

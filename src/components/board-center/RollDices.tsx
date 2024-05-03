@@ -85,7 +85,7 @@ const RollDices = () => {
     } else if (hasExtraTurn) {
       return (
         <MotionButton
-          variant="primaryFancy"
+          variant="blueFancy"
           onClick={rollDiceHandler}
           disabled={isInDebt}
           initial="hidden"

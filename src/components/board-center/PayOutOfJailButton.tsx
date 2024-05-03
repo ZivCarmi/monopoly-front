@@ -16,7 +16,7 @@ const PayOutOfJailButton = ({ isDisabled }: { isDisabled: boolean }) => {
 
   return (
     <MotionButton
-      variant="outline"
+      variant="blueFancy"
       onClick={payOutOfJailHandler}
       disabled={isDisabled}
       initial={{ opacity: 0 }}

@@ -40,7 +40,8 @@
   }
 
   .dark {
-    --background: 200deg 6.9% 10.37%;
+    /* --background: 200deg 6.9% 10.37%; */
+    --background: 270 80% 5%;
     --foreground: 0 0% 98%;
 
     --muted: 200deg 6.9% 24.37%;
@@ -49,7 +50,8 @@
     --popover: 200deg 6.9% 10.37%;
     --popover-foreground: 0 0% 98%;
 
-    --card: 200deg 6.9% 10.37%;
+    /* --card: 200deg 6.9% 10.37%; */
+    --card: 270 35% 15%;
     --card-foreground: 0 0% 98%;
 
     --border: 200deg 6.9% 24.37%;
@@ -72,6 +74,16 @@
 
     --ring: 200deg 6.9% 24.37%;
   }
+}
+
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type="number"] {
+  -moz-appearance: textfield;
 }
 
 @layer base {

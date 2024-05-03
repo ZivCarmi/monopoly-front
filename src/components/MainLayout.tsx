@@ -4,7 +4,7 @@ import { useSocket } from "@/app/socket-context";
 import useUpdateNickname from "@/hooks/useUpdateNickname";
 import { setRoom, setSelfPlayer } from "@/slices/game-slice";
 import { writeLog } from "@/slices/ui-slice";
-import { setUserId } from "@/slices/user-slice";
+import { setNickname, setUserId } from "@/slices/user-slice";
 import { PLAYER_NAME_STORAGE_KEY } from "@/utils/constants";
 import { Player, Room } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
@@ -19,6 +19,10 @@ const MainLayout = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const updateNickname = useUpdateNickname();
+
+  const onNicknameSelected = (nickname: string) => {
+    dispatch(setNickname(nickname));
+  };
 
   const onUserId = (userId: string) => {
     dispatch(setUserId(userId));
@@ -76,6 +80,7 @@ const MainLayout = () => {
       updateNickname({ nickname: STORAGED_PLAYER_NAME });
     }
 
+    socket.on("nickname_selected", onNicknameSelected);
     socket.on("user_id", onUserId);
     socket.on("room_joined", onRoomJoined);
     socket.on("room_not_available", onRoomNotAvailable);
@@ -84,6 +89,7 @@ const MainLayout = () => {
     socket.on("returned_to_lobby", onReturnedToLobby);
 
     return () => {
+      socket.off("nickname_selected", onNicknameSelected);
       socket.off("user_id", onUserId);
       socket.off("room_joined", onRoomJoined);
       socket.off("room_not_available", onRoomNotAvailable);

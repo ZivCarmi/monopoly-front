@@ -12,7 +12,7 @@ import {
 import { selectPlayers } from "@/slices/game-slice";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Colors, PlayerSchema } from "@ziv-carmi/monopoly-utils";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import PlayerCharacter from "../player/PlayerCharacter";
@@ -42,6 +42,28 @@ const PlayersForm = () => {
     dispatch(setNickname(player.name));
     localStorage.setItem(PLAYER_NAME_STORAGE_KEY, player.name);
   };
+
+  useEffect(() => {
+    const getAvailableColors = () => {
+      const colors = Object.keys(Colors);
+      const takenColors = players.map(({ color }) => color.toLowerCase());
+      const availableColors: string[] = [];
+
+      colors.forEach((color) => {
+        const colorLower = color.toLowerCase();
+        if (!takenColors.includes(colorLower)) {
+          availableColors.push(colorLower);
+        }
+      });
+
+      return availableColors;
+    };
+
+    const colors = getAvailableColors();
+    const randomColor = colors[Math.floor(Math.random() * colors.length)];
+
+    form.setValue("color", randomColor as Colors);
+  }, []);
 
   return (
     <Modal className="grid w-full max-w-lg gap-4 border p-6 shadow-lg rounded-lg md:w-full">

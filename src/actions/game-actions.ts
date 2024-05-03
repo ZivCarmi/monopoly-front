@@ -22,6 +22,7 @@ import {
   Player,
   PurchasableTile,
   TileTypes,
+  cyclicRangeNumber,
   getGoTile,
   getJailTileIndex,
   getVacationTileIndex,
@@ -63,9 +64,13 @@ export const handleDices = (dices: number[]): AppThunk => {
 
     // update suspended player
     if (isPlayerSuspended(currentPlayerTurnId)?.reason === TileTypes.JAIL) {
-      return isDouble
-        ? dispatch(freePlayer({ playerId: currentPlayerTurnId }))
-        : dispatch(handleStaySuspendedPlayer(currentPlayerTurnId));
+      if (isDouble) {
+        dispatch(freePlayer({ playerId: currentPlayerTurnId }));
+        dispatch(writeLog(`${player.name} הטיל דאבל ושוחרר מהכלא`));
+      } else {
+        dispatch(handleStaySuspendedPlayer(currentPlayerTurnId));
+      }
+      return;
     }
 
     if (isPlayerSuspended(currentPlayerTurnId)?.reason === TileTypes.VACATION) {
@@ -96,6 +101,8 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
       const { players, map } = getState().game;
       const walkingPlayer = players.find((player) => playerId === player.id);
 
+      steps -= incrementor;
+
       // award player for passing GO tile
       if (walkingPlayer && walkingPlayer.tilePos === 0 && steps > 0) {
         const goTile = getGoTile(map.board);
@@ -114,8 +121,6 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
           })
         );
       }
-
-      steps -= incrementor;
 
       setTimeout(() => {
         if (steps === 0) {
@@ -299,6 +304,7 @@ export const handleRentPayment = (
     const {
       players,
       map: { board },
+      dices,
     } = getState().game;
     const owner = players.find((player) => player.id === tile.owner);
     let rentAmount = 0;
@@ -324,8 +330,9 @@ export const handleRentPayment = (
         (_tile) => isCompany(_tile) && _tile.owner === owner.id
       ).length;
       const rentIndexAmount = COMPANY_RENTS[ownedCompaniesCount - 1];
+      const dicesSum = dices[0] + dices[1];
 
-      rentAmount = Math.ceil((payer.money * rentIndexAmount) / 100);
+      rentAmount = Math.ceil(dicesSum * rentIndexAmount);
     }
 
     dispatch(

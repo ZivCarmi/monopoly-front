@@ -11,8 +11,6 @@ type PurchasePropertyButtonProps = {
   price: number;
 };
 
-const MotionButton = motion(Button);
-
 const PurchasePropertyButton = ({
   isDisabled,
   propertyIndex,
@@ -25,19 +23,22 @@ const PurchasePropertyButton = ({
   };
 
   return (
-    <MotionButton
-      variant="primaryFancy"
-      onClick={purchasePropertyHandler}
-      disabled={isDisabled}
+    <motion.div
       initial="hidden"
       animate="visible"
       exit="hidden"
       layout
       variants={buttonVariant}
     >
-      <Icon icon={ShoppingCart} />
-      רכוש עבור ₪{price}
-    </MotionButton>
+      <Button
+        variant="primaryFancy"
+        onClick={purchasePropertyHandler}
+        disabled={isDisabled}
+      >
+        <Icon icon={ShoppingCart} />
+        רכוש עבור ₪{price}
+      </Button>
+    </motion.div>
   );
 };
 
