@@ -31,8 +31,6 @@ export const buttonVariant: Variants = {
   },
 };
 
-const MotionButton = motion(Button);
-
 const RollDices = () => {
   const { cubesRolledInTurn, doublesInARow, selfPlayer } = useAppSelector(
     (state) => state.game
@@ -52,51 +50,32 @@ const RollDices = () => {
   const renderButton = () => {
     if (cubesRolledInTurn && !hasExtraTurn) {
       return (
-        <MotionButton
+        <Button
           variant="primary"
           onClick={switchTurnHandler}
           disabled={isInDebt}
-          initial="hidden"
-          animate="visible"
-          exit="hidden"
-          layout
-          variants={buttonVariant}
         >
           <Icon icon={RefreshCcw} />
           סיים תור
-        </MotionButton>
+        </Button>
       );
     } else if (!cubesRolledInTurn) {
       return (
-        <MotionButton
-          variant="primary"
-          onClick={rollDiceHandler}
-          disabled={isInDebt}
-          initial="hidden"
-          animate="visible"
-          exit="hidden"
-          layout
-          variants={buttonVariant}
-        >
+        <Button variant="primary" onClick={rollDiceHandler} disabled={isInDebt}>
           <Icon icon={Dices} />
           הטל קוביות
-        </MotionButton>
+        </Button>
       );
     } else if (hasExtraTurn) {
       return (
-        <MotionButton
+        <Button
           variant="blueFancy"
           onClick={rollDiceHandler}
           disabled={isInDebt}
-          initial="hidden"
-          animate="visible"
-          exit="hidden"
-          layout
-          variants={buttonVariant}
         >
           <Icon icon={Dices} />
           הטל שוב
-        </MotionButton>
+        </Button>
       );
     }
   };
@@ -105,7 +84,16 @@ const RollDices = () => {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <span tabIndex={0}>{renderButton()}</span>
+          <motion.span
+            tabIndex={0}
+            initial="hidden"
+            animate="visible"
+            exit="hidden"
+            layout
+            variants={buttonVariant}
+          >
+            {renderButton()}
+          </motion.span>
         </TooltipTrigger>
         {isInDebt && (
           <TooltipContent className="text-balance text-center">
