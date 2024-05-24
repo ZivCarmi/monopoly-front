@@ -1,21 +1,41 @@
 import { cn } from "@/utils";
 import Overlay from "./overlay";
+import { motion, HTMLMotionProps, Variants } from "framer-motion";
 
-interface ModalProps extends React.HTMLAttributes<HTMLDivElement> {}
+interface ModalProps extends HTMLMotionProps<"div"> {}
+
+const modalVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    transition: {
+      duration: 0.15,
+    },
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      duration: 0.15,
+    },
+  },
+};
 
 const Modal = ({ className, children, ...props }: ModalProps) => {
   return (
     <>
       <Overlay />
-      <div
+      <motion.div
         className={cn(
           "absolute left-[50%] top-[50%] translate-x-[-50%] translate-y-[-50%] z-50 text-center",
           className
         )}
+        initial="hidden"
+        animate="visible"
+        exit="hidden"
+        variants={modalVariants}
         {...props}
       >
         {children}
-      </div>
+      </motion.div>
     </>
   );
 };

@@ -50,9 +50,8 @@ const PlayersForm = () => {
       const availableColors: string[] = [];
 
       colors.forEach((color) => {
-        const colorLower = color.toLowerCase();
-        if (!takenColors.includes(colorLower)) {
-          availableColors.push(colorLower);
+        if (!takenColors.includes(color)) {
+          availableColors.push(color);
         }
       });
 
@@ -66,15 +65,21 @@ const PlayersForm = () => {
   }, []);
 
   return (
-    <Modal className="grid w-full max-w-lg gap-4 border p-6 shadow-lg rounded-lg md:w-full">
+    <Modal
+      key="players-form"
+      className="grid w-full max-w-lg gap-4 p-6 shadow-lg rounded-lg md:w-full"
+    >
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(submitHandler)} className="space-y-8">
+        <form
+          onSubmit={form.handleSubmit(submitHandler)}
+          className="max-w-60 w-full m-auto space-y-8"
+        >
           {!nickname && (
             <FormField
               control={form.control}
               name="name"
               render={({ field }) => (
-                <FormItem className="space-y-6">
+                <FormItem className="space-y-4">
                   <FormControl>
                     <Input
                       {...field}
@@ -91,45 +96,48 @@ const PlayersForm = () => {
             control={form.control}
             name="color"
             render={({ field }) => (
-              <FormItem className="space-y-6">
-                <FormLabel className="text-muted-foreground">
-                  בחר שחקן
-                </FormLabel>
+              <FormItem className="space-y-8">
+                <FormLabel className="text-lg">בחר את נראות השחקן:</FormLabel>
                 <FormControl>
                   <RadioGroup
                     onValueChange={(e: Colors) => field.onChange(e)}
-                    className="max-w-60 w-full m-auto flex flex-wrap justify-center gap-10"
+                    className="flex flex-wrap justify-center gap-10"
                   >
-                    {Object.keys(Colors).map((color) => {
-                      const colorLower = color.toLowerCase();
+                    {Object.values(Colors).map((_color) => {
                       const takenColor = players.find(
-                        ({ color }) => color === colorLower
+                        ({ color }) => color === _color
                       );
+                      const isSelected =
+                        colorWatch === _color || hoveredChar === _color;
 
                       return (
-                        !takenColor && (
-                          <FormItem key={color}>
-                            <FormControl>
-                              <RadioGroupItem
-                                value={colorLower}
-                                className="hidden"
-                              />
-                            </FormControl>
-                            <FormLabel>
-                              <PlayerCharacter
-                                className="cursor-pointer"
-                                color={color as Colors}
-                                size={1.75}
-                                showHalo={
-                                  colorWatch === colorLower ||
-                                  hoveredChar === colorLower
-                                }
-                                onMouseEnter={() => setHoveredChar(colorLower)}
-                                onMouseLeave={() => setHoveredChar("")}
-                              />
-                            </FormLabel>
-                          </FormItem>
-                        )
+                        <FormItem key={_color}>
+                          <FormControl>
+                            <RadioGroupItem
+                              disabled={!!takenColor}
+                              value={_color}
+                              className="hidden"
+                            />
+                          </FormControl>
+                          <FormLabel>
+                            <PlayerCharacter
+                              className={
+                                !!takenColor
+                                  ? "opacity-25 cursor-not-allowed"
+                                  : "cursor-pointer"
+                              }
+                              color={_color as Colors}
+                              size={1.75}
+                              onMouseEnter={() => setHoveredChar(_color)}
+                              onMouseLeave={() => setHoveredChar("")}
+                              style={{
+                                filter: isSelected
+                                  ? `drop-shadow(0px 0px 16px ${_color})`
+                                  : undefined,
+                              }}
+                            />
+                          </FormLabel>
+                        </FormItem>
                       );
                     })}
                   </RadioGroup>

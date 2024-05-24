@@ -9,6 +9,7 @@ import GameBoardRows from "../board/GameBoardRows";
 import PlayersForm from "./PlayersForm";
 import WinnerScreen from "./WinnerScreen";
 import MaxPlayersDialog from "./MaxPlayersDialog";
+import { AnimatePresence } from "framer-motion";
 
 interface MainBoardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -83,7 +84,7 @@ const MainBoard = ({ className, ...props }: MainBoardProps) => {
       ref={boardContainerRef}
     >
       <div className="w-fit relative m-auto">
-        {showPlayersForm && <PlayersForm />}
+        <AnimatePresence>{showPlayersForm && <PlayersForm />}</AnimatePresence>
         {showMaxPlayersModal && <MaxPlayersDialog />}
         {isGameEnded(state) && <WinnerScreen />}
         <Board className="h-fit" ref={boardRef}>

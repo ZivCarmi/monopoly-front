@@ -4,7 +4,7 @@ const JailTile = () => {
   return (
     <div className="w-full flex flex-col">
       <div className="grow flex items-center justify-center">
-        <TileName>ביקורים</TileName>
+        <TileName className="text-muted-foreground">ביקורים</TileName>
       </div>
       <div className="relative basis-[60%] w-[75%] rounded-bl-md rounded-tr-md border-t-2 border-r-2 border-neutral-500">
         <div className="w-full h-full grid grid-cols-6">

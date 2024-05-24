@@ -55,9 +55,11 @@
     --card-foreground: 0 0% 98%;
 
     --border: 200deg 6.9% 24.37%;
-    --input: 200deg 6.9% 24.37%;
+    /* --input: 200deg 6.9% 24.37%; */
+    --input: 260deg 20% 30%;
 
-    --primary: 0 0% 98%;
+    /* --primary: 0 0% 98%; */
+    --primary: 265deg 55% 55%;
     --primary-foreground: 0 0% 9%;
 
     --secondary: 200deg 6.9% 24.37%;
@@ -280,6 +282,24 @@ input[type="number"] {
   min-inline-size: 5rem;
   block-size: 7rem;
   inline-size: 0;
+  background-color: #262a4c;
+  background-image: linear-gradient(to bottom right, #262a4c, #2f264c);
+}
+
+.tile.airport {
+  background-image: radial-gradient(
+    circle,
+    transparent,
+    rgba(151, 205, 202, 0.5) 200%
+  );
+}
+
+.tile.company {
+  background-image: radial-gradient(
+    circle,
+    transparent,
+    rgba(0, 255, 242, 0.5) 200%
+  );
 }
 
 .corner {

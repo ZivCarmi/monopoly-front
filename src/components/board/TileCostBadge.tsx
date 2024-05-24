@@ -7,7 +7,9 @@ const TileCostBadge = ({ cost }: { cost: number }) => {
       className="badgeWrapper flex items-center justify-center"
       layout
     >
-      <Badge variant="secondary" className="badge self-center">
+      <Badge
+        className={`badge self-center rounded-sm bg-foreground/20 text-foreground hover:bg-foreground/20`}
+      >
         ₪{cost}
       </Badge>
     </motion.div>

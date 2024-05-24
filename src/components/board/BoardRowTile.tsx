@@ -12,8 +12,8 @@ const BoardRowTile = ({ tile, children }: BoardRowTileProps) => {
   return (
     <div
       className={cn(
-        "relative border rounded-md border-neutral-700 tile",
-        isCorner(tile) && `corner ${tile.type.toLowerCase()}`
+        `relative border rounded-md border-neutral-700 tile ${tile.type.toLowerCase()}`,
+        isCorner(tile) && "corner"
       )}
     >
       <TileBackgroundImage tile={tile} />

@@ -20,11 +20,12 @@ const PlayerRow = ({ player }: { player: Player }) => {
   const { state, selfPlayer } = useAppSelector((state) => state.game);
 
   return (
-    <div
+    <motion.div
       className={cn(
         "flex items-center text-center p-2 relative rounded-lg",
         selfPlayer?.id === player.id && "bg-background/50"
       )}
+      layout
     >
       {isPlayerTurn(player.id) && <TurnIndicator player={player} />}
       <PlayerNamePlate>
@@ -44,7 +45,7 @@ const PlayerRow = ({ player }: { player: Player }) => {
           <PlayerMoney money={player.money} />
         )}
       </div>
-    </div>
+    </motion.div>
   );
 };
 

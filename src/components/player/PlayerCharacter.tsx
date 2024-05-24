@@ -5,24 +5,16 @@ export interface PlayerCharacterProps
   extends React.HTMLAttributes<HTMLDivElement> {
   color: Colors;
   size?: number;
-  showHalo?: boolean;
 }
 
 const PlayerCharacter = ({
   color,
   size = 1,
-  showHalo,
   className,
   ...props
 }: PlayerCharacterProps) => {
   return (
-    <div
-      style={{
-        filter: showHalo ? `drop-shadow(0px 0px 16px ${color})` : undefined,
-      }}
-      className={cn("duration-200", className)}
-      {...props}
-    >
+    <div className={cn("duration-200", className)} {...props}>
       <div
         className={cn("rounded-full")}
         style={{
@@ -32,7 +24,7 @@ const PlayerCharacter = ({
         }}
       />
       <div
-        className={cn("relative h-0 -top-1", className)}
+        className={cn("relative h-0 -top-1")}
         style={{
           width: `${size}rem`,
           borderBottom: `${size}rem solid ${color}`,

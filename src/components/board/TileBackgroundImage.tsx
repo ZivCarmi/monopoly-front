@@ -12,7 +12,7 @@ const TileBackgroundImage = ({ tile }: TileBackgroundImageProps) => {
   }
 
   return (
-    <div className="w-full h-full absolute top-0 left-0 -z-10 overflow-hidden rounded-sm">
+    <div className="w-full h-full absolute top-0 left-0 overflow-hidden rounded-sm blur-[2px]">
       <div
         className="w-full h-full absolute top-0 left-0 brightness-[40%] tileImg"
         style={{
