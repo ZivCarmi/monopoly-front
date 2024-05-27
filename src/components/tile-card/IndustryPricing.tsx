@@ -3,9 +3,13 @@ import {
   PurchasableTileIconContainer,
   PurchasableTileIconCount,
 } from "../board/PurchasableTileIcon";
-import { TilePricingLabel, TilePricingValue } from "./TilePricing";
-import TilePricingItem from "./TilePricingItem";
-import TilePricingList from "./TilePricingList";
+import {
+  TilePricingLabel,
+  TilePricingValue,
+  TilePricingItem,
+  TilePricingList,
+  TilePricingInstructions,
+} from "./TilePricing";
 
 type IndustryPricingProps = {
   rent: readonly number[];
@@ -17,6 +21,7 @@ const IndustryPricing = ({ rent, icon }: IndustryPricingProps) => {
 
   return (
     <TilePricingList>
+      <TilePricingInstructions />
       {rent.map((price, i) => (
         <TilePricingItem key={price}>
           <TilePricingLabel>

@@ -25,8 +25,8 @@
     --secondary: 0 0% 96.1%;
     --secondary-foreground: 0 0% 9%;
 
-    --warning: 40 96% 40%;
-    --warning-foreground: 50 96% 89%;
+    --warning: 40deg 96% 40%;
+    --warning-foreground: 50deg 96% 89%;
 
     --accent: 0 0% 96.1%;
     --accent-foreground: 0 0% 9%;
@@ -41,17 +41,18 @@
 
   .dark {
     /* --background: 200deg 6.9% 10.37%; */
-    --background: 270 80% 5%;
+    --background: 270deg 80% 5%;
     --foreground: 0 0% 98%;
 
     --muted: 200deg 6.9% 24.37%;
     --muted-foreground: 0 0% 63.9%;
 
-    --popover: 200deg 6.9% 10.37%;
+    /* --popover: 200deg 6.9% 10.37%; */
+    --popover: 234deg 33% 22%;
     --popover-foreground: 0 0% 98%;
 
     /* --card: 200deg 6.9% 10.37%; */
-    --card: 270 35% 15%;
+    --card: 270deg 35% 15%;
     --card-foreground: 0 0% 98%;
 
     --border: 200deg 6.9% 24.37%;
@@ -65,10 +66,11 @@
     --secondary: 200deg 6.9% 24.37%;
     --secondary-foreground: 0 0% 98%;
 
-    --warning: 40 96% 40%;
-    --warning-foreground: 50 96% 89%;
+    --warning: 40deg 96% 40%;
+    --warning-foreground: 50deg 96% 89%;
 
-    --accent: 200deg 6.9% 24.37%;
+    /* --accent: 200deg 6.9% 24.37%; */
+    --accent: 234deg 33% 35%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
@@ -234,7 +236,6 @@ input[type="number"] {
 .jail .jail-players {
   top: 40%;
   right: 25%;
-  z-index: -1;
 }
 
 .row-top .mapped-players .player:not(:first-child),
@@ -282,8 +283,12 @@ input[type="number"] {
   min-inline-size: 5rem;
   block-size: 7rem;
   inline-size: 0;
-  background-color: #262a4c;
-  background-image: linear-gradient(to bottom right, #262a4c, #2f264c);
+  background-image: linear-gradient(
+    to bottom right,
+    hsl(var(--popover)),
+    #2f264c
+  );
+  @apply bg-popover;
 }
 
 .tile.airport {

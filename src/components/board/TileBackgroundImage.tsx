@@ -1,10 +1,15 @@
+import { cn } from "@/utils";
 import { GameTile, isProperty } from "@ziv-carmi/monopoly-utils";
 
-type TileBackgroundImageProps = {
+interface TileBackgroundImage extends React.HTMLAttributes<HTMLDivElement> {
   tile: GameTile;
-};
+}
 
-const TileBackgroundImage = ({ tile }: TileBackgroundImageProps) => {
+const TileBackgroundImage = ({
+  tile,
+  className,
+  ...props
+}: TileBackgroundImage) => {
   let url = "";
 
   if (isProperty(tile)) {
@@ -12,9 +17,15 @@ const TileBackgroundImage = ({ tile }: TileBackgroundImageProps) => {
   }
 
   return (
-    <div className="w-full h-full absolute top-0 left-0 overflow-hidden rounded-sm blur-[2px]">
+    <div
+      className={cn(
+        "w-full h-full absolute inset-0 overflow-hidden rounded-sm blur-[2px]",
+        className
+      )}
+      {...props}
+    >
       <div
-        className="w-full h-full absolute top-0 left-0 brightness-[40%] tileImg"
+        className="w-full h-full brightness-[40%] tileImg"
         style={{
           backgroundImage: `url(${url})`,
           backgroundPosition: "center",
@@ -24,4 +35,5 @@ const TileBackgroundImage = ({ tile }: TileBackgroundImageProps) => {
     </div>
   );
 };
+
 export default TileBackgroundImage;

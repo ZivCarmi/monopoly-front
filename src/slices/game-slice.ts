@@ -77,6 +77,7 @@ const initialState: GameRoom = {
     maxPlayers: 4,
     startingMoney: 1500,
     randomizePlayerOrder: true,
+    noRentInPrison: false,
   },
 };
 

@@ -37,7 +37,7 @@ import {
   isTax,
   isVacation,
 } from "@ziv-carmi/monopoly-utils";
-import { isPlayerSuspended } from "../utils";
+import { isPlayerInJail, isPlayerSuspended } from "../utils";
 import {
   advanceToTileGameCard,
   advanceToTileTypeGameCard,
@@ -303,6 +303,7 @@ export const handleRentPayment = (
     const {
       players,
       map: { board },
+      settings,
       dices,
     } = getState().game;
     const owner = players.find((player) => player.id === tile.owner);
@@ -311,6 +312,8 @@ export const handleRentPayment = (
     if (!owner) {
       throw new Error("Owner was not found in handleRentPayment");
     }
+
+    if (settings.noRentInPrison && isPlayerInJail(owner.id)) return;
 
     if (isProperty(tile)) {
       const doubleRent =

@@ -14,6 +14,7 @@ import OwnerIndicator from "./OwnerIndicator";
 import Tile from "./Tile";
 import TileCostBadge from "./TileCostBadge";
 import { AnimatePresence } from "framer-motion";
+import TileBackgroundImage from "./TileBackgroundImage";
 
 const PurchasableTile = ({ tile }: { tile: PurchasableTileType }) => {
   const dispatch = useAppDispatch();
@@ -48,7 +49,8 @@ const PurchasableTile = ({ tile }: { tile: PurchasableTileType }) => {
         </Tile>
         {isProperty(tile) && <CityFlagIcon countryId={tile.country.id} />}
       </PopoverTrigger>
-      <PopoverContent>
+      <PopoverContent className="w-64 border-none">
+        <TileBackgroundImage tile={tile} className="opacity-15" />
         <TileCard />
       </PopoverContent>
     </Popover>
