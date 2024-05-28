@@ -48,16 +48,17 @@
     --muted-foreground: 0 0% 63.9%;
 
     /* --popover: 200deg 6.9% 10.37%; */
-    --popover: 234deg 33% 22%;
+    --popover: 265deg 35% 12%;
     --popover-foreground: 0 0% 98%;
 
     /* --card: 200deg 6.9% 10.37%; */
     --card: 270deg 35% 15%;
     --card-foreground: 0 0% 98%;
 
-    --border: 200deg 6.9% 24.37%;
+    /* --border: 200deg 6.9% 24.37%; */
+    --border: 270deg 25% 25%;
     /* --input: 200deg 6.9% 24.37%; */
-    --input: 260deg 20% 30%;
+    --input: 270deg 20% 25%;
 
     /* --primary: 0 0% 98%; */
     --primary: 265deg 55% 55%;
@@ -70,13 +71,14 @@
     --warning-foreground: 50deg 96% 89%;
 
     /* --accent: 200deg 6.9% 24.37%; */
-    --accent: 234deg 33% 35%;
+    --accent: 270deg 25% 25%;
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 85.7% 97.3%;
 
-    --ring: 200deg 6.9% 24.37%;
+    /* --ring: 200deg 6.9% 24.37%; */
+    --ring: 270deg 25% 25%;
   }
 }
 
@@ -286,7 +288,7 @@ input[type="number"] {
   background-image: linear-gradient(
     to bottom right,
     hsl(var(--popover)),
-    #2f264c
+    hsl(285deg 35% 12%)
   );
   @apply bg-popover;
 }

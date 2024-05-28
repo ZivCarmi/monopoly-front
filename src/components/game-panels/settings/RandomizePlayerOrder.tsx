@@ -15,7 +15,7 @@ const RandomizePlayerOrder = () => {
   return (
     <Setting
       title="סדר שחקנים אקראי"
-      description="ארגן בצורה אקראית את סדר השחקנים בתחילת המשחק"
+      description="סדר השחקנים יסודר בצורה אקראית בתחילת המשחק"
       settingType="switch"
       checked={randomizePlayerOrder}
       onCheckedChange={onChangeHandler}
