@@ -15,7 +15,6 @@ import {
 export const buttonVariant: Variants = {
   hidden: {
     opacity: 0,
-    // y: 8,
     transition: {
       duration: 0.25,
       ease: "easeOut",
@@ -23,7 +22,6 @@ export const buttonVariant: Variants = {
   },
   visible: {
     opacity: 1,
-    // y: 0,
     transition: {
       duration: 0.25,
       ease: "easeOut",
@@ -37,7 +35,7 @@ const RollDices = () => {
   );
   const hasExtraTurn = doublesInARow > 0 && doublesInARow < 3;
   const socket = useSocket();
-  const isInDebt = !!selfPlayer && isPlayerInDebt(selfPlayer.id);
+  const isInDebt = !!selfPlayer && !!isPlayerInDebt(selfPlayer.id);
 
   const rollDiceHandler = () => {
     socket.emit("rolling_dice");

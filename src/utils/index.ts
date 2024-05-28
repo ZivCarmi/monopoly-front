@@ -92,12 +92,11 @@ export const isPlayerInJail = (playerId: string) => {
 
 export const isPlayerInDebt = (playerId: string) => {
   const { players } = store.getState().game;
+  const player = players.find((player) => player.id === playerId);
 
-  const playerInDebt = players.find(
-    (player) => player.id === playerId && player.debtTo
-  );
+  if (!player || player.money >= 0) return null;
 
-  return !!playerInDebt;
+  return player;
 };
 
 export const getCities = (countryId: CountryIds) => {

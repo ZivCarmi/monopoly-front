@@ -4,12 +4,12 @@ import {
   PAY_OUT_FROM_JAIL_AMOUNT,
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
+import { AnimatePresence } from "framer-motion";
 import { isPlayerInJail } from "../../utils";
 import PayOutOfJailButton from "./PayOutOfJailButton";
 import PlayerIsPlayingNotice from "./PlayerIsPlayingNotice";
 import PurchasePropertyButton from "./PurchasePropertyButton";
 import RollDices from "./RollDices";
-import { AnimatePresence } from "framer-motion";
 
 const CenterAction = () => {
   const { canPerformTurnActions, cubesRolledInTurn, selfPlayer } =

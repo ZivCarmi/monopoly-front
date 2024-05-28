@@ -15,7 +15,7 @@ const IsPrivate = () => {
   return (
     <Setting
       title="חדר פרטי"
-      description="חדרים פרטיים יכולים להיות נגישים אך ורק דרך קישור URL של החדר"
+      description="חדרים פרטיים יכולים להיות נגישים אך ורק דרך קישור ה- URL של החדר"
       settingType="switch"
       checked={isPrivate}
       onCheckedChange={onChangeHandler}

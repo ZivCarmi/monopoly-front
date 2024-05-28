@@ -9,15 +9,23 @@ import TradeBoard from "./TradeBoard";
 const TradeOffers = () => {
   const { selfPlayer } = useAppSelector((state) => state.game);
   const { trade } = useAppSelector((state) => state.trade);
+  const selfTrader = trade?.traders.find(
+    (trader) => trader.id === selfPlayer?.id
+  );
+  const secondTrader = trade?.traders.find(
+    (trader) => trader.id !== selfPlayer?.id
+  );
 
-  if (!trade) {
+  if (!selfTrader || !secondTrader) {
     return null;
   }
 
+  const sortedTraders = [selfTrader, secondTrader];
+
   return (
     <div className="grid grid-cols-2 gap-10 justify-items-center">
-      {trade.traders.map((trader) => (
-        <div key={trader.id}>
+      {sortedTraders.map((trader) => (
+        <div className="flex flex-col" key={trader.id}>
           <PlayerNamePlate className="mb-2">
             <PlayerCharacter color={getPlayerColor(trader.id)!} />
             <PlayerName name={getPlayerName(trader.id)} />

@@ -14,21 +14,19 @@ const AvailableGameRoom = ({ room }: { room: LobbyRoom }) => {
     <li>
       <button
         onClick={() => joinRoomHandler(room.id)}
-        className="w-full rounded-lg text-left rtl:text-right space-y-1 bg-background hover:bg-muted/50 transition-colors text-sm"
+        className="w-full rounded-lg text-left rtl:text-right bg-popover hover:bg-card duration-200 text-sm flex justify-between"
       >
-        <div className="flex justify-between">
-          <div className="p-4">
-            <h2 className="font-bold tracking-wider mb-2 text-muted-foreground">
-              {room.id}
-            </h2>
-            <GameRoomPlayers
-              players={room.players}
-              maxPlayers={room.settings.maxPlayers}
-            />
-          </div>
-          <div className="bg-border/15 rounded-lg p-4 flex items-end gap-3 relative">
-            <GameRoomSettings room={room} />
-          </div>
+        <div className="p-4">
+          <h2 className="font-bold tracking-wider mb-2 text-muted-foreground">
+            {room.id}
+          </h2>
+          <GameRoomPlayers
+            players={room.players}
+            maxPlayers={room.settings.maxPlayers}
+          />
+        </div>
+        <div className="bg-primary/10 rounded-lg p-4 flex self-stretch items-end gap-3 relative">
+          <GameRoomSettings room={room} />
         </div>
       </button>
     </li>

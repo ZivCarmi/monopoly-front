@@ -15,7 +15,7 @@ const MaxPlayers = () => {
   return (
     <Setting
       title="מספר שחקנים"
-      description="קבע כמה שחקנים יוכלו לשחק במשחק"
+      description="כמה שחקנים יוכלו להצטרף למשחק"
       settingType="select"
       options={[
         { label: "2", value: "2" },

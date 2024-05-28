@@ -15,7 +15,7 @@ const StartingCash = () => {
   return (
     <Setting
       title="סכום התחלתי"
-      description="קבע עם כמה כסף שחקנים יתחילו את המשחק"
+      description="סכום כסף התחלתי לכל שחקן"
       settingType="select"
       options={[
         { label: "₪500", value: "500" },

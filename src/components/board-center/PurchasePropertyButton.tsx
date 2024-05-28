@@ -1,8 +1,14 @@
 import { useSocket } from "@/app/socket-context";
+import { motion } from "framer-motion";
 import { ShoppingCart } from "lucide-react";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
-import { motion } from "framer-motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "../ui/tooltip";
 import { buttonVariant } from "./RollDices";
 
 type PurchasePropertyButtonProps = {
@@ -30,14 +36,25 @@ const PurchasePropertyButton = ({
       layout
       variants={buttonVariant}
     >
-      <Button
-        variant="primaryFancy"
-        onClick={purchasePropertyHandler}
-        disabled={isDisabled}
-      >
-        <Icon icon={ShoppingCart} />
-        רכוש עבור ₪{price}
-      </Button>
+      <TooltipProvider delayDuration={0}>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div tabIndex={0}>
+              <Button
+                variant="primaryFancy"
+                onClick={purchasePropertyHandler}
+                disabled={isDisabled}
+              >
+                <Icon icon={ShoppingCart} />
+                רכוש עבור ₪{price}
+              </Button>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="text-balance text-center">
+            אינך עם מספיק כסף כדי לרכוש נכס זה
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </motion.div>
   );
 };
