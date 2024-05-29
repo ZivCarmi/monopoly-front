@@ -4,7 +4,7 @@ import TileName from "./TileName";
 import TileIcon from "./TileIcon";
 
 interface TileProps extends React.HTMLAttributes<HTMLDivElement> {
-  tile: ITile;
+  tile?: ITile;
   hideTileName?: boolean;
 }
 
@@ -17,10 +17,12 @@ const Tile = ({
 }: TileProps) => {
   return (
     <div {...props} className={cn("flex w-full h-full", className)}>
-      <div className="flex flex-col tileNameIcon">
-        {tile?.icon && <TileIcon tile={tile} />}
-        {tile && !hideTileName && <TileName>{tile.name}</TileName>}
-      </div>
+      {tile && (
+        <div className="flex flex-col tileNameIcon">
+          {tile?.icon && <TileIcon tile={tile} />}
+          {!hideTileName && <TileName>{tile.name}</TileName>}
+        </div>
+      )}
       {children}
     </div>
   );
