@@ -30,7 +30,7 @@ const TradeRowButton = ({ trade }: { trade: TradeType }) => {
           }`}
           onClick={watchTradeHandler}
         >
-          <div className="isolate inline-flex gap-2 items-center">
+          <div className="isolate inline-flex gap-2 items-center text-foreground">
             {trade.traders.map((trader, idx) => {
               const traderName = getPlayerName(trader.id);
               const traderColor = getPlayerColor(trader.id);

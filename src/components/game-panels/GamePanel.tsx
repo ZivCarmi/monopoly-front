@@ -8,6 +8,11 @@ const GamePanel = ({ className, ...props }: GamePanelProps) => {
     <motion.div
       {...props}
       className={cn("bg-card p-4 rounded-lg grid gap-4", className)}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{
+        duration: 0.15,
+      }}
       layout
     />
   );

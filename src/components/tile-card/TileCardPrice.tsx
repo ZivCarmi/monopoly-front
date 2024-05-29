@@ -6,11 +6,11 @@ type TileCardPriceProps = {
   amount: number;
 };
 
-const TileCardPrice: React.FC<TileCardPriceProps> = ({
+const TileCardPrice = ({
   labelAsIcon,
   labelAsText,
   amount,
-}) => {
+}: TileCardPriceProps) => {
   const Icon = labelAsIcon;
 
   return (

@@ -12,7 +12,7 @@ const JailTile = () => {
             <span key={idx} className="border-l-2 border-neutral-500" />
           ))}
         </div>
-        <span className="absolute bottom-0 left-1/2 -translate-x-1/2">
+        <span className="absolute bottom-1 left-1/2 -translate-x-1/2">
           <TileName>כלא</TileName>
         </span>
       </div>

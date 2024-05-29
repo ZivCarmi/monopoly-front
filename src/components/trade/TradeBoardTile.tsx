@@ -3,12 +3,12 @@ export interface TradeBoardTileProps
   isOwnersProperty: boolean;
 }
 
-const TradeBoardTile: React.FC<TradeBoardTileProps> = ({
+const TradeBoardTile = ({
   isOwnersProperty,
   onClick,
   children,
   ...props
-}) => {
+}: TradeBoardTileProps) => {
   return isOwnersProperty ? (
     <button {...props} onClick={onClick}>
       {children}

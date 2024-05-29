@@ -5,7 +5,10 @@ interface TileNameProps extends React.HTMLAttributes<HTMLDivElement> {}
 const TileName = ({ children, className, ...props }: TileNameProps) => {
   return (
     <div
-      className={cn("text-sm text-center rtl font-bold", className)}
+      className={cn(
+        "text-sm text-center rtl font-bold leading-[14px]",
+        className
+      )}
       {...props}
     >
       {children}

@@ -1,4 +1,4 @@
-import { GameTile, isCorner } from "@ziv-carmi/monopoly-utils";
+import { GameTile, isCorner, isProperty } from "@ziv-carmi/monopoly-utils";
 import { ReactNode } from "react";
 import TileBackgroundImage from "./TileBackgroundImage";
 import { cn } from "@/utils";
@@ -16,7 +16,7 @@ const BoardRowTile = ({ tile, children }: BoardRowTileProps) => {
         isCorner(tile) && "corner"
       )}
     >
-      <TileBackgroundImage tile={tile} />
+      {isProperty(tile) && <TileBackgroundImage tile={tile} />}
       {children}
     </div>
   );

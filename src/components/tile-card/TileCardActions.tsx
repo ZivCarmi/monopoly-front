@@ -7,11 +7,7 @@ import { selectPurchasableTileIndex } from "@/slices/ui-slice";
 import { Separator } from "../ui/separator";
 import { hasBuildings, isPlayerSuspended, isPlayerTurn } from "@/utils";
 
-type TileCardActionsProps = {
-  tile: PurchasableTile;
-};
-
-const TileCardActions: React.FC<TileCardActionsProps> = ({ tile }) => {
+const TileCardActions = ({ tile }: { tile: PurchasableTile }) => {
   const socket = useSocket();
   const propertyIndex = useAppSelector(selectPurchasableTileIndex);
   const { selfPlayer } = useAppSelector((state) => state.game);

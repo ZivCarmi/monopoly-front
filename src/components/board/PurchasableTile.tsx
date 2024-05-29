@@ -28,7 +28,7 @@ const PurchasableTile = ({ tile }: { tile: PurchasableTileType }) => {
     <Popover>
       <PopoverTrigger
         onClick={() => dispatch(setSelectedTile(tile))}
-        className="w-full h-full"
+        className="w-full h-full flex"
       >
         <Tile
           tile={tile}
@@ -50,7 +50,9 @@ const PurchasableTile = ({ tile }: { tile: PurchasableTileType }) => {
         {isProperty(tile) && <CityFlagIcon countryId={tile.country.id} />}
       </PopoverTrigger>
       <PopoverContent className="w-64 border-none">
-        <TileBackgroundImage tile={tile} className="opacity-15" />
+        {isProperty(tile) && (
+          <TileBackgroundImage tile={tile} className="opacity-15" />
+        )}
         <TileCard />
       </PopoverContent>
     </Popover>

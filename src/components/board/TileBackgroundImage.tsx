@@ -1,8 +1,8 @@
 import { cn } from "@/utils";
-import { GameTile, isProperty } from "@ziv-carmi/monopoly-utils";
+import { IProperty } from "@ziv-carmi/monopoly-utils";
 
 interface TileBackgroundImage extends React.HTMLAttributes<HTMLDivElement> {
-  tile: GameTile;
+  tile: IProperty;
 }
 
 const TileBackgroundImage = ({
@@ -10,12 +10,6 @@ const TileBackgroundImage = ({
   className,
   ...props
 }: TileBackgroundImage) => {
-  let url = "";
-
-  if (isProperty(tile)) {
-    url = `/${tile.country.id}-icon.png`;
-  }
-
   return (
     <div
       className={cn(
@@ -27,7 +21,7 @@ const TileBackgroundImage = ({
       <div
         className="w-full h-full brightness-[40%] tileImg"
         style={{
-          backgroundImage: `url(${url})`,
+          backgroundImage: `url(/${tile.country.id}-icon.png)`,
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
         }}

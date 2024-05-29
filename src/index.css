@@ -315,9 +315,53 @@ input[type="number"] {
   inline-size: 2.5rem;
 }
 
+.corner .tileNameIcon {
+  justify-content: center;
+}
+
+.row-top .tileNameIcon {
+  flex-direction: column-reverse;
+}
+
+.row-right .tile:not(.corner) .tileIcon,
+.row-left .tile:not(.corner) .tileIcon {
+  transform: rotate(90deg);
+}
+
 .row-top .tileContent {
   flex-direction: column-reverse;
+}
+
+.row-top .property .tileContent {
   padding-bottom: var(--city-tile-spacing);
+}
+
+.row-right .property .tileContent,
+.row-left .property .tileContent {
+  padding-right: var(--city-tile-spacing);
+}
+
+.row-bottom .property .tileContent {
+  padding-top: var(--city-tile-spacing);
+}
+
+.corner .tileIcon {
+  height: 50px;
+}
+
+.go .tileIcon {
+  height: 36px;
+}
+
+.company .tileIcon,
+.airport .tileIcon {
+  height: 28px;
+}
+
+.tax .tileIcon,
+.surprise .tileIcon,
+.chance .tileIcon {
+  height: 42px;
 }
 
 .row-top .badgeWrapper {
@@ -331,15 +375,6 @@ input[type="number"] {
 
 .row-bottom .badgeWrapper {
   padding-bottom: 0.25rem;
-}
-
-.row-right .tileContent,
-.row-left .tileContent {
-  padding-right: var(--city-tile-spacing);
-}
-
-.row-bottom .tileContent {
-  padding-top: var(--city-tile-spacing);
 }
 
 .row-right .tile:not(.corner) {

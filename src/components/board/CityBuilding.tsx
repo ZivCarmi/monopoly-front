@@ -5,7 +5,7 @@ type CityBuildingProps = {
   count?: number;
 };
 
-const CityBuilding: React.FC<CityBuildingProps> = ({ count, icon }) => {
+const CityBuilding = ({ count, icon }: CityBuildingProps) => {
   const Icon = icon;
   const iconsCount = count || 1;
 
