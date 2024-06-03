@@ -13,18 +13,14 @@ const TileBackgroundImage = ({
   return (
     <div
       className={cn(
-        "w-full h-full absolute inset-0 overflow-hidden rounded-sm blur-[2px]",
+        "w-full h-full flex items-center justify-center absolute inset-0 overflow-hidden rounded-sm blur-sm",
         className
       )}
       {...props}
     >
-      <div
-        className="w-full h-full brightness-[40%] tileImg"
-        style={{
-          backgroundImage: `url(/${tile.country.id}-icon.png)`,
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }}
+      <img
+        src={`/${tile.icon}-icon.svg`}
+        className="w-full h-full brightness-[40%] tileImg [min-inline-size:fit-content] [min-block-size:fit-content]"
       />
     </div>
   );

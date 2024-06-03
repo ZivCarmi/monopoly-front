@@ -20,6 +20,7 @@ import OwnerIndicator from "../board/OwnerIndicator";
 import PropertyIcon from "../board/PropertyIcon";
 import Tile from "../board/Tile";
 import TradeBoardTile from "./TradeBoardTile";
+import TileBackgroundImage from "../board/TileBackgroundImage";
 
 const TradeBoardRows = ({ trader }: { trader: TradePlayer }) => {
   const dispatch = useAppDispatch();
@@ -52,15 +53,14 @@ const TradeBoardRows = ({ trader }: { trader: TradePlayer }) => {
                   }
                   className={cn(
                     "w-full h-full rounded-sm",
-                    row.area === "right" && "rotate-180"
+                    row.area === "right" && "rotate-180",
+                    trader.properties.includes(tileIndex) &&
+                      "outline outline-3 outline-white"
                   )}
-                  style={{
-                    outlineOffset: 1,
-                    outline: trader.properties.includes(tileIndex)
-                      ? "red solid 1px"
-                      : "",
-                  }}
                 >
+                  {isProperty(tile) && (
+                    <TileBackgroundImage tile={tile} className="blur-none" />
+                  )}
                   <TooltipProvider delayDuration={0} disableHoverableContent>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -76,13 +76,14 @@ const TradeBoardRows = ({ trader }: { trader: TradePlayer }) => {
                             {isPurchasable(tile) && tile.owner && (
                               <OwnerIndicator
                                 ownerId={tile.owner}
-                                className={
+                                className={cn(
+                                  "[max-block-size:0.75rem]",
                                   isPropertyHasBuilds && isOwnersProperty
                                     ? "opacity-20"
                                     : isOwnersProperty
                                     ? "opacity-100"
                                     : "opacity-0"
-                                }
+                                )}
                               />
                             )}
                           </Tile>

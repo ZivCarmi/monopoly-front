@@ -1,7 +1,7 @@
 import { cn } from "@/utils";
 import { ITile } from "@ziv-carmi/monopoly-utils";
-import TileName from "./TileName";
 import TileIcon from "./TileIcon";
+import TileName from "./TileName";
 
 interface TileProps extends React.HTMLAttributes<HTMLDivElement> {
   tile?: ITile;
@@ -18,8 +18,8 @@ const Tile = ({
   return (
     <div {...props} className={cn("flex w-full h-full", className)}>
       {tile && (
-        <div className="flex flex-col tileNameIcon">
-          {tile?.icon && <TileIcon tile={tile} />}
+        <div className="flex items-center flex-col tileNameIcon">
+          <TileIcon tile={tile} />
           {!hideTileName && <TileName>{tile.name}</TileName>}
         </div>
       )}

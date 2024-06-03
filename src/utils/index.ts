@@ -4,6 +4,7 @@ import {
   CountryIds,
   GameTile,
   IProperty,
+  PurchasableTile,
   RentIndexes,
   SuspensionProps,
   TileTypes,
@@ -114,19 +115,14 @@ export const hasBuildings = (countryId: CountryIds) => {
   );
 };
 
-export const getPlayerPropertiesId = (ownerId: string) => {
+export const getPlayerProperties = (playerId: string) => {
   const { board } = store.getState().game.map;
-  const propertiesId: number[] = [];
 
-  for (let tileIndex = 0; tileIndex < board.length; tileIndex++) {
-    const tile = board[tileIndex];
+  const playerProperties = board.filter(
+    (tile) => isPurchasable(tile) && tile.owner === playerId
+  );
 
-    if (isPurchasable(tile) && tile.owner === ownerId) {
-      propertiesId.push(tileIndex);
-    }
-  }
-
-  return propertiesId;
+  return playerProperties as PurchasableTile[];
 };
 
 export const getPlayerName = (playerId: string) => {

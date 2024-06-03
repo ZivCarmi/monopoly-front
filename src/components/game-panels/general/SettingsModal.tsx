@@ -7,7 +7,7 @@ const SettingsModal = () => {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button>
+        <Button variant="primary">
           <Settings className="w-4 h-4 me-2" />
           הגדרות
         </Button>

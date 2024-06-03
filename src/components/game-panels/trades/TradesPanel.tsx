@@ -10,7 +10,7 @@ const TradesPanel = () => {
   return (
     <GamePanel>
       <GamePanelContent>
-        <PanelTitle>Trades</PanelTitle>
+        <PanelTitle>עסקאות</PanelTitle>
         <CreateTradeButton />
         <GameTrades />
       </GamePanelContent>

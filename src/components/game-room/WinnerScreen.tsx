@@ -30,11 +30,11 @@ const WinnerScreen = () => {
         </h2>
       </PlayerNamePlate>
       <div className="flex gap-2">
-        <Button>
+        <Button variant="primary">
           <Icon icon={RefreshCcw} />
           משחק חדש
         </Button>
-        <Button onClick={backToLobby}>
+        <Button variant="primary" onClick={backToLobby}>
           <Icon icon={Home} />
           חזרה ללובי
         </Button>

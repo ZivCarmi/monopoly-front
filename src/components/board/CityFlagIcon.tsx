@@ -1,7 +1,22 @@
+import { cn } from "@/utils";
 import { CountryIds } from "@ziv-carmi/monopoly-utils";
 
-const CityFlagIcon = ({ countryId }: { countryId: CountryIds }) => {
-  return <img src={`/${countryId}-icon.png`} className="flagIcon" />;
+interface CityFlagIconProps extends React.HTMLAttributes<HTMLImageElement> {
+  countryId: CountryIds;
+}
+
+const CityFlagIcon = ({
+  countryId,
+  className,
+  ...props
+}: CityFlagIconProps) => {
+  return (
+    <img
+      src={`/${countryId}-icon.png`}
+      className={cn("flagIcon", className)}
+      {...props}
+    />
+  );
 };
 
 export default CityFlagIcon;

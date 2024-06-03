@@ -1,3 +1,4 @@
+import { BoardRow } from "@/types/Board";
 import {
   NormalGameTile,
   isCard,
@@ -6,7 +7,6 @@ import {
 import GameCard from "./GameCard";
 import PurchasableTile from "./PurchasableTile";
 import Tile from "./Tile";
-import { BoardRow } from "@/types/Board";
 
 type NormalTileProps = {
   tile: NormalGameTile;

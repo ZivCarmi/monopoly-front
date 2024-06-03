@@ -119,19 +119,6 @@ input[type="number"] {
   }
 }
 
-:root {
-  --flag-icon-size: 34px;
-  --flag-icon-center: var(--flag-icon-size) / 2;
-  --city-tile-spacing: calc(var(--flag-icon-center) + 3px);
-}
-
-@layer base {
-  .board .row-left .badge,
-  .board .row-right .badge {
-    @apply px-0.5 py-2.5;
-  }
-}
-
 .room-container {
   display: grid;
   grid-template-columns: minmax(20rem, 1fr) auto minmax(20rem, 1fr);
@@ -164,48 +151,9 @@ input[type="number"] {
   transform: rotate(90deg);
 }
 
-.flagIcon {
-  width: var(--flag-icon-size);
-  height: var(--flag-icon-size);
-  position: absolute;
-}
-
-.row-top .flagIcon,
-.row-bottom .flagIcon {
-  left: 50%;
-  transform: translateX(-50%);
-}
-
-.row-right .flagIcon,
-.row-left .flagIcon {
-  top: 50%;
-  transform: translateY(-50%) rotate(90deg);
-  left: calc(100% - var(--flag-icon-center));
-}
-
-.tileImg {
-  scale: 1.5;
-  background-size: 130%;
-}
-
 .row-right .tileImg,
 .row-left .tileImg {
-  background-size: 90%;
   transform: rotate(90deg);
-}
-
-.tradeBoard .row-right .tileImg,
-.tradeBoard .row-left .tileImg {
-  scale: 2.25;
-  background-size: 50%;
-}
-
-.row-top .flagIcon {
-  top: calc(100% - var(--flag-icon-center));
-}
-
-.row-bottom .flagIcon {
-  bottom: calc(100% - var(--flag-icon-center));
 }
 
 .row-right .tile:not(.corner) .player,
@@ -315,12 +263,19 @@ input[type="number"] {
   inline-size: 2.5rem;
 }
 
-.corner .tileNameIcon {
-  justify-content: center;
-}
-
 .row-top .tileNameIcon {
   flex-direction: column-reverse;
+}
+
+.row-top .tileContent {
+  flex-direction: column-reverse;
+}
+
+.property .tileIconWrapper {
+  width: 2.25rem;
+  height: 2.25rem;
+  margin-block-end: -1.125rem;
+  margin-block-start: -1.125rem;
 }
 
 .row-right .tile:not(.corner) .tileIcon,
@@ -328,53 +283,31 @@ input[type="number"] {
   transform: rotate(90deg);
 }
 
-.row-top .tileContent {
-  flex-direction: column-reverse;
-}
-
-.row-top .property .tileContent {
-  padding-bottom: var(--city-tile-spacing);
-}
-
-.row-right .property .tileContent,
-.row-left .property .tileContent {
-  padding-right: var(--city-tile-spacing);
-}
-
-.row-bottom .property .tileContent {
-  padding-top: var(--city-tile-spacing);
-}
-
 .corner .tileIcon {
-  height: 50px;
+  height: 2.75rem;
 }
 
 .go .tileIcon {
-  height: 36px;
+  height: 2rem;
 }
 
 .company .tileIcon,
 .airport .tileIcon {
-  height: 28px;
+  height: 1.5rem;
 }
 
 .tax .tileIcon,
 .surprise .tileIcon,
 .chance .tileIcon {
-  height: 42px;
+  height: 2.5rem;
 }
 
-.row-top .badgeWrapper {
-  padding-top: 0.25rem;
-}
-
-.row-right .badgeWrapper,
-.row-left .badgeWrapper {
-  padding-left: 0.25rem;
-}
-
-.row-bottom .badgeWrapper {
-  padding-bottom: 0.25rem;
+.property .tileName {
+  margin-block-start: 1.5625rem;
+  margin-block-end: 1.5625rem;
+  align-self: stretch;
+  line-height: 0.78125rem;
+  text-shadow: 0 0 0.5em hsl(var(--popover));
 }
 
 .row-right .tile:not(.corner) {

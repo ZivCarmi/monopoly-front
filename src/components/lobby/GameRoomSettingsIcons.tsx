@@ -28,7 +28,7 @@ const GameRoomSettingsIcons = ({ room }: { room: LobbyRoom }) => {
       icon: (
         <PlayerMoney money={room.settings.startingMoney} className="text-xs" />
       ),
-      description: "עם כמה כסף שחקנים יתחילו את המשחק",
+      description: "סכום כסף התחלתי לכל שחקן",
     },
   ];
 

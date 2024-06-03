@@ -6,7 +6,7 @@ import Loader from "../ui/loader";
 
 const GameBoardContext = createContext<BoardRaw>([]);
 
-export function useGameBoard() {
+export const useGameBoard = () => {
   const gameBoard = useContext(GameBoardContext);
 
   if (!gameBoard) {
@@ -14,9 +14,9 @@ export function useGameBoard() {
   }
 
   return gameBoard;
-}
+};
 
-export function GameBoardProvider({ children }: { children: React.ReactNode }) {
+const GameBoardProvider = ({ children }: { children: React.ReactNode }) => {
   const {
     map: { board },
   } = useAppSelector((state) => state.game);
@@ -41,6 +41,6 @@ export function GameBoardProvider({ children }: { children: React.ReactNode }) {
       )}
     </GameBoardContext.Provider>
   );
-}
+};
 
 export default GameBoardProvider;

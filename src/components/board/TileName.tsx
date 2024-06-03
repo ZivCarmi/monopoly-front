@@ -6,7 +6,7 @@ const TileName = ({ children, className, ...props }: TileNameProps) => {
   return (
     <div
       className={cn(
-        "text-sm text-center rtl font-bold leading-[14px]",
+        "text-sm text-center rtl font-bold leading-[14px] tracking-tight tileName",
         className
       )}
       {...props}
