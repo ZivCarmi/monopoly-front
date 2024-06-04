@@ -4,7 +4,6 @@ import {
   isAirport,
   isCard,
   isCompany,
-  isCorner,
   isGo,
   isGoToJail,
   isProperty,
