@@ -24,7 +24,8 @@ const MyPropertiesPanel = () => {
             <li key={tile.name}>
               <PurchasableTilePopover
                 tile={tile}
-                className="w-auto gap-4 items-center p-2 text-sm"
+                className="gap-4 items-center p-2 text-sm"
+                popoverContentProps={{ side: "right", sideOffset: 24 }}
               >
                 {tile.icon && (
                   <TileIcon tile={tile} className="w-4 h-4 p-0 rounded-full" />

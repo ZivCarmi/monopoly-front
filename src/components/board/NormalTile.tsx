@@ -11,18 +11,18 @@ import Tile from "./Tile";
 type NormalTileProps = {
   tile: NormalGameTile;
   tileIndex: number;
-  rowClassName: BoardRow;
+  rowSide: BoardRow;
 };
 
-const NormalTile = ({ tile, rowClassName, tileIndex }: NormalTileProps) => {
+const NormalTile = ({ tile, rowSide, tileIndex }: NormalTileProps) => {
   return isPurchasable(tile) ? (
-    <PurchasableTile tile={tile} />
+    <PurchasableTile tile={tile} rowSide={rowSide} />
   ) : isCard(tile) ? (
-    <Tile tile={tile} className="flex-col justify-between relative tileContent">
-      <GameCard tileIndex={tileIndex} rowClassName={rowClassName} />
+    <Tile tile={tile} rowSide={rowSide} className="justify-between relative">
+      <GameCard tileIndex={tileIndex} rowSide={rowSide} />
     </Tile>
   ) : (
-    <Tile tile={tile} className="tileContent" />
+    <Tile tile={tile} rowSide={rowSide} />
   );
 };
 

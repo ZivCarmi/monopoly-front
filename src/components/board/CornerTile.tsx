@@ -4,9 +4,7 @@ import Tile from "./Tile";
 
 const CornerTile = ({ tile }: { tile: CornerGameTile }) => {
   return isJail(tile) ? (
-    <Tile tile={tile} hideTileName={true}>
-      <JailTile />
-    </Tile>
+    <JailTile />
   ) : (
     <Tile tile={tile} className="justify-center items-center" />
   );

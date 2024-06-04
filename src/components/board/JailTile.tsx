@@ -2,7 +2,7 @@ import TileName from "./TileName";
 
 const JailTile = () => {
   return (
-    <div className="w-full flex flex-col">
+    <div className="w-full h-full flex flex-col">
       <div className="grow flex items-center justify-center">
         <TileName className="text-muted-foreground">ביקורים</TileName>
       </div>

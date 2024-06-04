@@ -10,16 +10,16 @@ import { MS_FOR_CARD_MESSAGE } from "@/utils/constants";
 
 type GameCardProps = {
   tileIndex: number;
-  rowClassName: BoardRow;
+  rowSide: BoardRow;
 };
 
-const GameCard = ({ tileIndex, rowClassName }: GameCardProps) => {
+const GameCard = ({ tileIndex, rowSide }: GameCardProps) => {
   const { drawnGameCard } = useAppSelector((state) => state.game);
 
   return (
     <AnimatePresence>
       {drawnGameCard.card && drawnGameCard.tileIndex === tileIndex && (
-        <DrawnGameCard row={rowClassName}>
+        <DrawnGameCard row={rowSide}>
           {drawnGameCard.card.message}
         </DrawnGameCard>
       )}

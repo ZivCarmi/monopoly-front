@@ -10,8 +10,15 @@ import PurchasableTilePopover from "./PurchasableTilePopover";
 import Tile from "./Tile";
 import TileCostBadge from "./TileCostBadge";
 import TileBackgroundImage from "./TileBackgroundImage";
+import { BoardRow } from "@/types/Board";
+import { getOppositeBoardSide } from "@/utils";
 
-const PurchasableTile = ({ tile }: { tile: PurchasableTileType }) => {
+type PurchaseableTileProps = {
+  tile: PurchasableTileType;
+  rowSide: BoardRow;
+};
+
+const PurchasableTile = ({ tile, rowSide }: PurchaseableTileProps) => {
   const cityHasHouses =
     isProperty(tile) &&
     tile.rentIndex !== RentIndexes.BLANK &&
@@ -19,12 +26,12 @@ const PurchasableTile = ({ tile }: { tile: PurchasableTileType }) => {
   const cityHasHotel = isProperty(tile) && tile.rentIndex === RentIndexes.HOTEL;
 
   return (
-    <PurchasableTilePopover tile={tile}>
+    <PurchasableTilePopover
+      tile={tile}
+      popoverContentProps={{ side: getOppositeBoardSide(rowSide) }}
+    >
       {isProperty(tile) && <TileBackgroundImage tile={tile} />}
-      <Tile
-        tile={tile}
-        className="flex-col justify-between relative tileContent"
-      >
+      <Tile tile={tile} className="justify-between relative" rowSide={rowSide}>
         <div className="flex items-center justify-center grow [max-block-size:2.25rem]">
           {tile.owner ? (
             <OwnerIndicator ownerId={tile.owner}>

@@ -139,7 +139,8 @@ input[type="number"] {
 .main-board {
   grid-area: center;
   height: calc(100vh - 2rem);
-  margin: auto;
+  margin-right: auto;
+  margin-left: auto;
 }
 
 .game-sidebar {
@@ -263,14 +264,6 @@ input[type="number"] {
   inline-size: 2.5rem;
 }
 
-.row-top .tileNameIcon {
-  flex-direction: column-reverse;
-}
-
-.row-top .tileContent {
-  flex-direction: column-reverse;
-}
-
 .property .tileIconWrapper {
   width: 2.25rem;
   height: 2.25rem;
@@ -283,22 +276,22 @@ input[type="number"] {
   transform: rotate(90deg);
 }
 
-.corner .tileIcon {
+.main-board .corner .tileIcon {
   height: 2.75rem;
 }
 
-.go .tileIcon {
+.main-board .go .tileIcon {
   height: 2rem;
 }
 
-.company .tileIcon,
-.airport .tileIcon {
+.main-board .company .tileIcon,
+.main-board .airport .tileIcon {
   height: 1.5rem;
 }
 
-.tax .tileIcon,
-.surprise .tileIcon,
-.chance .tileIcon {
+.main-board .tax .tileIcon,
+.main-board .surprise .tileIcon,
+.main-board .chance .tileIcon {
   height: 2.5rem;
 }
 

@@ -1,5 +1,11 @@
 import store from "@/app/store";
-import { BoardRaw, MappedPlayersByTiles, rowClassname } from "@/types/Board";
+import {
+  BoardRaw,
+  BoardRow,
+  MappedPlayersByTiles,
+  OppositeSide,
+  rowSide,
+} from "@/types/Board";
 import {
   CountryIds,
   GameTile,
@@ -19,6 +25,17 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+export const getOppositeBoardSide = (side: BoardRow) => {
+  const oppositeSides: OppositeSide = {
+    top: "bottom",
+    right: "left",
+    bottom: "top",
+    left: "right",
+  };
+
+  return oppositeSides[side];
+};
+
 // create board that contains 10 tiles in a each row
 export const createBoard = () => {
   const { board } = store.getState().game.map;
@@ -30,7 +47,7 @@ export const createBoard = () => {
     rowTiles.push(tile);
 
     if (rowTiles.length === board.length / 4) {
-      boardRows.push({ area: rowClassname[counter], tiles: rowTiles });
+      boardRows.push({ area: rowSide[counter], tiles: rowTiles });
       rowTiles = [];
       counter++;
     }

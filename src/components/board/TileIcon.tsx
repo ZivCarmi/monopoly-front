@@ -6,8 +6,10 @@ import {
   isCompany,
   isCorner,
   isGo,
+  isGoToJail,
   isProperty,
   isTax,
+  isVacation,
 } from "@ziv-carmi/monopoly-utils";
 
 interface TileIconProps extends React.HTMLAttributes<HTMLDivElement> {
@@ -28,8 +30,8 @@ const TileIcon = ({ tile, className, ...props }: TileIconProps) => {
       className={cn(
         (isCard(tile) || isTax(tile)) && "p-4",
         (isAirport(tile) || isCompany(tile)) && "p-2",
+        (isVacation(tile) || isGoToJail(tile)) && "pb-4",
         isGo(tile) && "pt-4",
-        isCorner(tile) && "pb-4",
         isProperty(tile) && "rounded-full overflow-hidden",
         "tileIconWrapper",
         className

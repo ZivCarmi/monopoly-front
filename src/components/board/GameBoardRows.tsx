@@ -1,4 +1,4 @@
-import { rowClassname } from "@/types/Board";
+import { rowSide } from "@/types/Board";
 import { isCorner } from "@ziv-carmi/monopoly-utils";
 import BoardRow from "./BoardRow";
 import BoardRowTile from "./BoardRowTile";
@@ -13,7 +13,7 @@ const GameBoardRows = () => {
   return gameBoard.map((row, rowIndex) => (
     <BoardRow key={rowIndex} area={row.area}>
       {row.tiles.map((tile, tileIndexInRow) => {
-        const rowIndex = rowClassname.findIndex((rowCn) => rowCn === row.area);
+        const rowIndex = rowSide.findIndex((rowCn) => rowCn === row.area);
         const tileIndex = 10 * rowIndex + tileIndexInRow;
 
         return (
@@ -24,7 +24,7 @@ const GameBoardRows = () => {
               <NormalTile
                 tile={tile}
                 tileIndex={tileIndex}
-                rowClassName={rowClassname[rowIndex]}
+                rowSide={rowSide[rowIndex]}
               />
             )}
             <MappedPlayers tileIndex={tileIndex} />
