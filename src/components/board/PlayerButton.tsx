@@ -17,9 +17,10 @@ const PlayerButton = ({ player }: { player: Player }) => {
     >
       <PlayerCharacter
         color={player.color}
+        className={isPlayerTurn ? "scale-125" : ""}
         style={{
           filter:
-            "drop-shadow(0 0 1.5em black) drop-shadow(0 0 .75em rgba(0, 0, 0, 0.25))",
+            "drop-shadow(0 0 0.5em black) drop-shadow(0 0 .75em rgba(0,0,0,0.25))",
         }}
       />
     </button>

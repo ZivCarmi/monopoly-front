@@ -19,7 +19,7 @@ const GameBoardRows = () => {
         return (
           <BoardRowTile key={tileIndex} tile={tile}>
             {isCorner(tile) ? (
-              <CornerTile tile={tile} />
+              <CornerTile tile={tile} rowSide={rowSide[rowIndex]} />
             ) : (
               <NormalTile
                 tile={tile}
