@@ -117,6 +117,37 @@ export const isPlayerInDebt = (playerId: string) => {
   return player;
 };
 
+export const isPlayerCanUpgrade = (playerId: string, property: IProperty) => {
+  const { players } = store.getState().game;
+  const player = players.find((player) => player.id === playerId);
+  const upgradeCost =
+    property.rentIndex === RentIndexes.FOUR_HOUSES
+      ? property.hotelCost
+      : property.houseCost;
+
+  if (!player) return false;
+
+  return (
+    isPlayerTurn(playerId) &&
+    !isPlayerSuspended(playerId) &&
+    player.money >= upgradeCost &&
+    property.rentIndex !== RentIndexes.HOTEL
+  );
+};
+
+export const isPlayerCanDowngrade = (playerId: string, property: IProperty) => {
+  const { players } = store.getState().game;
+  const player = players.find((player) => player.id === playerId);
+
+  if (!player) return false;
+
+  return (
+    isPlayerTurn(playerId) &&
+    !isPlayerSuspended(playerId) &&
+    property.rentIndex !== RentIndexes.BLANK
+  );
+};
+
 export const getCities = (countryId: CountryIds) => {
   const { board } = store.getState().game.map;
 

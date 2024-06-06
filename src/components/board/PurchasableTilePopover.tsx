@@ -27,7 +27,13 @@ const PurchasableTilePopover = ({
         className={cn("w-full h-full flex", className)}
         {...props}
       />
-      <PopoverContent className="w-64 border-none" {...popoverContentProps}>
+      <PopoverContent
+        className="w-64 border-none"
+        onOpenAutoFocus={(event) => {
+          event.preventDefault();
+        }}
+        {...popoverContentProps}
+      >
         <TileCard />
       </PopoverContent>
     </Popover>

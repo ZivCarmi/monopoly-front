@@ -1,15 +1,16 @@
+import { useAppSelector } from "@/app/hooks";
+import { useSocket } from "@/app/socket-context";
+import { selectGameBoard } from "@/slices/game-slice";
+import { selectPurchasableTileIndex } from "@/slices/ui-slice";
+import { isPlayerCanDowngrade, isPlayerCanUpgrade } from "@/utils";
 import {
   IProperty,
-  RentIndexes,
   getCityLevelText,
   hasMonopoly,
 } from "@ziv-carmi/monopoly-utils";
+import { ArrowDownToLine, ArrowUpFromLine } from "lucide-react";
 import { Button } from "../ui/button";
-import { useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context";
-import { selectPurchasableTileIndex } from "@/slices/ui-slice";
-import { isPlayerSuspended, isPlayerTurn } from "@/utils";
-import { selectGameBoard } from "@/slices/game-slice";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 const PropertyActions = ({ property }: { property: IProperty }) => {
   const socket = useSocket();
@@ -17,23 +18,8 @@ const PropertyActions = ({ property }: { property: IProperty }) => {
   const board = useAppSelector(selectGameBoard);
   const propertyIndex = useAppSelector(selectPurchasableTileIndex);
 
-  if (!selfPlayer) return null;
+  if (!selfPlayer || !hasMonopoly(board, property.country.id)) return null;
 
-  const selfPlayerHasTurn = isPlayerTurn(selfPlayer.id);
-  const isSuspended = isPlayerSuspended(selfPlayer.id);
-  const upgradeCost =
-    property.rentIndex === RentIndexes.FOUR_HOUSES
-      ? property.hotelCost
-      : property.houseCost;
-  const canUpgrade =
-    selfPlayerHasTurn &&
-    !isSuspended &&
-    selfPlayer.money >= upgradeCost &&
-    property.rentIndex !== RentIndexes.HOTEL;
-  const canDowngrade =
-    selfPlayerHasTurn &&
-    !isSuspended &&
-    property.rentIndex !== RentIndexes.BLANK;
   const upgradedCityLevelText = getCityLevelText(property.rentIndex + 1);
   const downgradedCityLevelText = getCityLevelText(property.rentIndex - 1);
 
@@ -46,30 +32,44 @@ const PropertyActions = ({ property }: { property: IProperty }) => {
   };
 
   return (
-    hasMonopoly(board, property.country.id) && (
-      <div className="flex gap-2">
-        <Button
-          variant="primary"
-          disabled={!canUpgrade}
-          onClick={upgradeCityHandler}
-          className="flex-1"
-        >
+    <>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="primaryFancy"
+            disabled={!isPlayerCanUpgrade(selfPlayer.id, property)}
+            onClick={upgradeCityHandler}
+            className=""
+            size="icon"
+          >
+            <ArrowUpFromLine className="w-4 h-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent className="text-balance text-center">
           {upgradedCityLevelText
             ? `שדרג ל${upgradedCityLevelText}`
             : "במקסימום"}
-        </Button>
-        <Button
-          variant="warning"
-          disabled={!canDowngrade}
-          onClick={downgradeCityHandler}
-          className="flex-1"
-        >
+        </TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="primaryFancy"
+            disabled={!isPlayerCanDowngrade(selfPlayer.id, property)}
+            onClick={downgradeCityHandler}
+            className=""
+            size="icon"
+          >
+            <ArrowDownToLine className="w-4 h-4" />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent className="text-balance text-center">
           {downgradedCityLevelText
             ? `שנמך ל${downgradedCityLevelText}`
-            : "במינימום"}
-        </Button>
-      </div>
-    )
+            : "נכס ללא בתים"}
+        </TooltipContent>
+      </Tooltip>
+    </>
   );
 };
 

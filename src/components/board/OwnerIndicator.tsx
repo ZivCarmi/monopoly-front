@@ -15,7 +15,10 @@ const OwnerIndicator = ({
   return (
     <motion.div
       {...props}
-      className={cn("w-full h-full rounded-sm", className)}
+      className={cn(
+        "w-full h-full flex items-center justify-center rounded-sm",
+        className
+      )}
       style={{ backgroundColor: ownerColor }}
       initial={{ scale: 0 }}
       animate={{ scale: 1 }}
