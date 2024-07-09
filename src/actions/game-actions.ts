@@ -1,9 +1,8 @@
 import { AppThunk } from "@/app/store";
 import {
-  allowTurnActions,
+  EXPERIMENTAL_incrementPlayerPosition,
   drawGameCard,
   freePlayer,
-  incrementPlayerPosition,
   movePlayer,
   setDices,
   staySuspendedTurn,
@@ -18,10 +17,10 @@ import {
   IJail,
   ITax,
   IVacation,
-  MS_TO_MOVE_ON_TILES,
   Player,
   PurchasableTile,
   TileTypes,
+  WalkObject,
   getGoTile,
   getJailTileIndex,
   getVacationTileIndex,
@@ -51,7 +50,6 @@ export const handleDices = (dices: number[]): AppThunk => {
     const { players, currentPlayerTurnId, doublesInARow } = getState().game;
     const player = players.find((player) => player.id === currentPlayerTurnId);
     const isDouble = dices[0] === dices[1];
-    const dicesSum = dices.reduce((acc, dice) => acc + dice, 0);
 
     if (!player) {
       throw new Error("Player was not found");
@@ -82,31 +80,25 @@ export const handleDices = (dices: number[]): AppThunk => {
         writeLog(`${player.name} נשלח לכלא לאחר 3 דאבלים רצופים`)
       );
     }
-
-    dispatch(walkPlayer(currentPlayerTurnId, dicesSum));
   };
 };
 
-export const walkPlayer = (playerId: string, steps: number): AppThunk => {
+export const walkPlayer = ({
+  playerId,
+  position,
+  passedGo,
+}: WalkObject): AppThunk => {
   return (dispatch, getState) => {
-    dispatch(allowTurnActions(false));
+    const { players, map } = getState().game;
 
-    // if steps is positive we move forward, otherwise backwards on the board
-    const incrementor = steps > 0 ? 1 : -1;
+    dispatch(EXPERIMENTAL_incrementPlayerPosition({ playerId, position }));
 
-    const update = () => {
-      dispatch(incrementPlayerPosition({ playerId, incrementor }));
-
-      const { players, map } = getState().game;
+    if (passedGo) {
       const walkingPlayer = players.find((player) => playerId === player.id);
+      const goTile = getGoTile(map.board);
+      const goRewardOnPass = map.goRewards.pass;
 
-      steps -= incrementor;
-
-      // award player for passing GO tile
-      if (walkingPlayer && walkingPlayer.tilePos === 0 && steps > 0) {
-        const goTile = getGoTile(map.board);
-        const goRewardOnPass = map.goRewards.pass;
-
+      if (walkingPlayer) {
         dispatch(
           writeLog(
             `${walkingPlayer.name} עבר ב${goTile.name} והרוויח ₪${goRewardOnPass}`
@@ -114,40 +106,10 @@ export const walkPlayer = (playerId: string, steps: number): AppThunk => {
         );
 
         dispatch(
-          transferMoney({
-            recieverId: playerId,
-            amount: goRewardOnPass,
-          })
+          transferMoney({ recieverId: playerId, amount: goRewardOnPass })
         );
       }
-
-      setTimeout(() => {
-        if (steps === 0) {
-          dispatch(allowTurnActions(true));
-          dispatch(handlePlayerLanding(playerId));
-        } else {
-          requestAnimationFrame(update);
-        }
-      }, MS_TO_MOVE_ON_TILES);
-    };
-
-    requestAnimationFrame(update);
-  };
-};
-
-export const handleStaySuspendedPlayer = (playerId: string): AppThunk => {
-  return (dispatch, getState) => {
-    const { suspendedPlayers } = getState().game;
-
-    if (suspendedPlayers[playerId] === undefined) {
-      throw new Error(`Player ID: ${playerId} is not suspended.`);
     }
-
-    const decreasedSuspensionLeft = suspendedPlayers[playerId].left - 1;
-
-    decreasedSuspensionLeft > 0
-      ? dispatch(staySuspendedTurn({ playerId }))
-      : dispatch(freePlayer({ playerId }));
   };
 };
 
@@ -182,7 +144,6 @@ export const handlePlayerLanding = (playerId: string): AppThunk => {
       dispatch(
         drawGameCard({ type: landedTile.type, tileIndex: player.tilePos })
       );
-
       dispatch(handleGameCard(player));
     } else if (isTax(landedTile)) {
       dispatch(handleTaxPayment(player, landedTile));
@@ -193,6 +154,22 @@ export const handlePlayerLanding = (playerId: string): AppThunk => {
       dispatch(sendPlayerToJail(playerId));
       dispatch(writeLog(`${player.name} נשלח לכלא`));
     }
+  };
+};
+
+export const handleStaySuspendedPlayer = (playerId: string): AppThunk => {
+  return (dispatch, getState) => {
+    const { suspendedPlayers } = getState().game;
+
+    if (suspendedPlayers[playerId] === undefined) {
+      throw new Error(`Player ID: ${playerId} is not suspended.`);
+    }
+
+    const decreasedSuspensionLeft = suspendedPlayers[playerId].left - 1;
+
+    decreasedSuspensionLeft > 0
+      ? dispatch(staySuspendedTurn({ playerId }))
+      : dispatch(freePlayer({ playerId }));
   };
 };
 
@@ -249,8 +226,6 @@ export const handleGameCard = (player: Player): AppThunk => {
       drawnGameCard: { card },
     } = getState().game;
 
-    console.log("card", card);
-
     if (!card) {
       throw new Error("No chance card was found.");
     }
@@ -268,15 +243,17 @@ export const handleGameCard = (player: Player): AppThunk => {
       case GameCardTypes.GROUP_PAYMENT:
         return dispatch(paymentGameCard(player.id, card));
       case GameCardTypes.ADVANCE_TO_TILE:
-        dispatch(advanceToTileGameCard(player.id, card));
-        return dispatch(handlePlayerLanding(player.id));
+        return setTimeout(() => {
+          dispatch(advanceToTileGameCard(player.id, card));
+          dispatch(handlePlayerLanding(player.id));
+        }, 300);
       case GameCardTypes.ADVANCE_TO_TILE_TYPE:
-        dispatch(advanceToTileTypeGameCard(player.id, card));
-        return dispatch(handlePlayerLanding(player.id));
-      case GameCardTypes.WALK:
-        return dispatch(walkPlayer(player.id, card.event.steps));
+        return setTimeout(() => {
+          dispatch(advanceToTileTypeGameCard(player.id, card));
+          dispatch(handlePlayerLanding(player.id));
+        }, 300);
       case GameCardTypes.GO_TO_JAIL:
-        return dispatch(sendPlayerToJail(player.id));
+        return setTimeout(() => dispatch(sendPlayerToJail(player.id)), 300);
     }
   };
 };

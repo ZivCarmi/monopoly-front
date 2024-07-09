@@ -22,11 +22,14 @@ import { selectGameBoard } from "@/slices/game-slice";
 const TileCardActions = ({ tile }: { tile: PurchasableTile }) => {
   const socket = useSocket();
   const propertyIndex = useAppSelector(selectPurchasableTileIndex);
-  const { selfPlayer } = useAppSelector((state) => state.game);
+  const { canPerformTurnActions, selfPlayer } = useAppSelector(
+    (state) => state.game
+  );
   const board = useAppSelector(selectGameBoard);
 
   const canSellProperty =
     !!selfPlayer &&
+    canPerformTurnActions &&
     isPlayerTurn(selfPlayer.id) &&
     !isPlayerSuspended(selfPlayer.id);
   const canSell = isProperty(tile)

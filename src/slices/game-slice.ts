@@ -13,7 +13,6 @@ import {
   TileTypes,
   TradeType,
   cycleNextItem,
-  cyclicRangeNumber,
   isProperty,
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
@@ -28,7 +27,6 @@ export interface GameRoom extends RoomBase {
   isInRoom: boolean;
   selfPlayer: Player | null;
   isSpectating: boolean;
-  canPerformTurnActions: boolean;
   drawnGameCard: {
     tileIndex: number | null;
     card: GameCard | null;
@@ -61,7 +59,7 @@ const initialState: GameRoom = {
   dices: [],
   cubesRolledInTurn: false,
   currentPlayerTurnId: null,
-  canPerformTurnActions: true,
+  canPerformTurnActions: false,
   doublesInARow: 0,
   suspendedPlayers: {},
   drawnGameCard: {
@@ -101,6 +99,7 @@ export const gameSlice = createSlice({
       state.state = room.state;
       state.dices = room.dices;
       state.currentPlayerTurnId = room.currentPlayerTurnId;
+      state.canPerformTurnActions = room.canPerformTurnActions;
       state.cubesRolledInTurn = room.cubesRolledInTurn;
       state.doublesInARow = room.doublesInARow;
       state.suspendedPlayers = room.suspendedPlayers;
@@ -172,6 +171,7 @@ export const gameSlice = createSlice({
     ) => {
       state.players = action.payload.generatedPlayers;
       state.currentPlayerTurnId = action.payload.currentPlayerTurn;
+      state.canPerformTurnActions = true;
       state.state = GameState.STARTED;
     },
     setDices: (state, action: PayloadAction<{ dices: number[] }>) => {
@@ -183,21 +183,17 @@ export const gameSlice = createSlice({
       state.cubesRolledInTurn = true;
       state.doublesInARow = isDouble ? ++state.doublesInARow : 0;
     },
-    incrementPlayerPosition: (
+    EXPERIMENTAL_incrementPlayerPosition: (
       state,
-      action: PayloadAction<{ playerId: string; incrementor: number }>
+      action: PayloadAction<{ playerId: string; position: number }>
     ) => {
-      const { playerId, incrementor } = action.payload;
-      const boardLength = state.map.board.length;
+      const { playerId, position } = action.payload;
       const playerIndex = state.players.findIndex(
         (player) => player.id === playerId
       );
 
       if (playerIndex >= 0) {
-        state.players[playerIndex].tilePos = cyclicRangeNumber(
-          state.players[playerIndex].tilePos + incrementor,
-          boardLength
-        );
+        state.players[playerIndex].tilePos = position;
       }
     },
     movePlayer: (
@@ -518,7 +514,7 @@ export const {
   removePlayer,
   startGame,
   setDices,
-  incrementPlayerPosition,
+  EXPERIMENTAL_incrementPlayerPosition,
   movePlayer,
   allowTurnActions,
   transferMoney,

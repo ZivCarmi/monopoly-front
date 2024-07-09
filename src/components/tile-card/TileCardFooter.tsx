@@ -15,23 +15,24 @@ const TileCardFooter = () => {
   const selfPlayerIsOwner = !!selfPlayer && selfPlayer.id === owner;
   const tileOwner = players.find((player) => player.id === owner);
 
-  return (
-    <>
-      {selfPlayerIsOwner && <TileCardActions tile={selectedTile} />}
-      {!selfPlayerIsOwner && tileOwner && (
-        <>
-          <Separator className="my-4" />
-          <div className="flex items-center justify-center gap-4">
-            <span className="text-muted-foreground text-sm">בבעלות</span>
-            <PlayerNamePlate>
-              <PlayerCharacter color={tileOwner.color} />
-              <PlayerName name={tileOwner.name} />
-            </PlayerNamePlate>
-          </div>
-        </>
-      )}
-    </>
-  );
+  if (selfPlayerIsOwner) {
+    return <TileCardActions tile={selectedTile} />;
+  }
+
+  if (tileOwner) {
+    return (
+      <>
+        <Separator className="my-4" />
+        <div className="flex items-center justify-center gap-4">
+          <span className="text-muted-foreground text-sm">בבעלות</span>
+          <PlayerNamePlate>
+            <PlayerCharacter color={tileOwner.color} />
+            <PlayerName name={tileOwner.name} />
+          </PlayerNamePlate>
+        </div>
+      </>
+    );
+  }
 };
 
 export default TileCardFooter;

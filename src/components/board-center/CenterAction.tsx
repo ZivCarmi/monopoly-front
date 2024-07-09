@@ -25,12 +25,12 @@ const CenterAction = () => {
     return <PlayerIsPlayingNotice />;
   }
 
-  const tile = board[currentPlayer.tilePos];
-  const canPurchase = cubesRolledInTurn && isPurchasable(tile) && !tile.owner;
-
   if (!canPerformTurnActions) {
     return null;
   }
+
+  const tile = board[currentPlayer.tilePos];
+  const canPurchase = cubesRolledInTurn && isPurchasable(tile) && !tile.owner;
 
   return (
     <>

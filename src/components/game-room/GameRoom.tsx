@@ -1,4 +1,8 @@
-import { handleDices } from "@/actions/game-actions";
+import {
+  handleDices,
+  handlePlayerLanding,
+  walkPlayer,
+} from "@/actions/game-actions";
 import {
   cityLevelChangedThunk,
   paidOutOfJailThunk,
@@ -14,6 +18,7 @@ import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import {
   addPlayer,
+  allowTurnActions,
   bankruptPlayer,
   removePlayer,
   setGameSetting,
@@ -30,6 +35,7 @@ import { writeLog } from "@/slices/ui-slice";
 import { getPlayerName } from "@/utils";
 import {
   GameSetting,
+  WalkObject,
   Player,
   Room,
   TradeType,
@@ -51,6 +57,18 @@ const GameRoom = () => {
 
   const onGameSettingsUpdated = (setting: GameSetting) => {
     dispatch(setGameSetting(setting));
+  };
+
+  const onPlayerWalking = (walkData: WalkObject) => {
+    dispatch(walkPlayer(walkData));
+  };
+
+  const onPlayerLanded = (playerId: string) => {
+    dispatch(handlePlayerLanding(playerId));
+  };
+
+  const onAllowedTurnActions = (isAllowed: boolean) => {
+    dispatch(allowTurnActions(isAllowed));
   };
 
   const onPlayerConnectivity = ({
@@ -177,6 +195,9 @@ const GameRoom = () => {
   useEffect(() => {
     socket.on("game_updated", onGameUpdate);
     socket.on("game_settings_updated", onGameSettingsUpdated);
+    socket.on("player_walking", onPlayerWalking);
+    socket.on("player_landed", onPlayerLanded);
+    socket.on("allow_turn_actions", onAllowedTurnActions);
     socket.on("player_connectivity", onPlayerConnectivity);
     socket.on("player_created", onPlayerCreated);
     socket.on("player_joined", onPlayerJoined);
@@ -201,6 +222,9 @@ const GameRoom = () => {
     return () => {
       socket.off("game_updated", onGameUpdate);
       socket.off("game_settings_updated", onGameSettingsUpdated);
+      socket.off("player_walking", onPlayerWalking);
+      socket.off("player_landed", onPlayerLanded);
+      socket.off("allow_turn_actions", onAllowedTurnActions);
       socket.off("player_connectivity", onPlayerConnectivity);
       socket.off("player_created", onPlayerCreated);
       socket.off("player_joined", onPlayerJoined);
