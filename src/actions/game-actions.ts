@@ -1,7 +1,7 @@
 import { AppThunk } from "@/app/store";
 import {
+  EXPERIMENTAL_setGameCard,
   EXPERIMENTAL_incrementPlayerPosition,
-  drawGameCard,
   freePlayer,
   movePlayer,
   setDices,
@@ -13,6 +13,7 @@ import { writeLog } from "@/slices/ui-slice";
 import {
   AIRPORT_RENTS,
   COMPANY_RENTS,
+  GameCard,
   GameCardTypes,
   IJail,
   ITax,
@@ -27,7 +28,6 @@ import {
   hasBuildings,
   hasMonopoly,
   isAirport,
-  isCard,
   isCompany,
   isGo,
   isGoToJail,
@@ -87,6 +87,7 @@ export const walkPlayer = ({
   playerId,
   position,
   passedGo,
+  isLastStep,
 }: WalkObject): AppThunk => {
   return (dispatch, getState) => {
     const { players, map } = getState().game;
@@ -110,10 +111,17 @@ export const walkPlayer = ({
         );
       }
     }
+
+    if (isLastStep) {
+      dispatch(handlePlayerLanding(playerId, position));
+    }
   };
 };
 
-export const handlePlayerLanding = (playerId: string): AppThunk => {
+export const handlePlayerLanding = (
+  playerId: string,
+  landedIndex: number
+): AppThunk => {
   return (dispatch, getState) => {
     const { players, map } = getState().game;
     const player = players.find((player) => player.id === playerId);
@@ -124,7 +132,7 @@ export const handlePlayerLanding = (playerId: string): AppThunk => {
       );
     }
 
-    const landedTile = map.board[player.tilePos];
+    const landedTile = map.board[landedIndex];
     const goRewardOnLand = map.goRewards.land;
 
     if (isGo(landedTile)) {
@@ -140,11 +148,6 @@ export const handlePlayerLanding = (playerId: string): AppThunk => {
       if (!landedTile.owner || landedTile.owner === playerId) return;
 
       dispatch(handleRentPayment(player, landedTile));
-    } else if (isCard(landedTile)) {
-      dispatch(
-        drawGameCard({ type: landedTile.type, tileIndex: player.tilePos })
-      );
-      dispatch(handleGameCard(player));
     } else if (isTax(landedTile)) {
       dispatch(handleTaxPayment(player, landedTile));
     } else if (isVacation(landedTile)) {
@@ -219,15 +222,19 @@ export const sendPlayerToJail = (playerId: string): AppThunk => {
   };
 };
 
-export const handleGameCard = (player: Player): AppThunk => {
+export const handleGameCard = (card: GameCard): AppThunk => {
   return (dispatch, getState) => {
-    const {
-      map: { board },
-      drawnGameCard: { card },
-    } = getState().game;
+    dispatch(EXPERIMENTAL_setGameCard(card));
 
-    if (!card) {
-      throw new Error("No chance card was found.");
+    const {
+      players,
+      currentPlayerTurnId,
+      map: { board },
+    } = getState().game;
+    const player = players.find((player) => player.id === currentPlayerTurnId);
+
+    if (!player) {
+      throw new Error("No player was found in handleGameCard.");
     }
 
     dispatch(
@@ -243,15 +250,15 @@ export const handleGameCard = (player: Player): AppThunk => {
       case GameCardTypes.GROUP_PAYMENT:
         return dispatch(paymentGameCard(player.id, card));
       case GameCardTypes.ADVANCE_TO_TILE:
-        return setTimeout(() => {
-          dispatch(advanceToTileGameCard(player.id, card));
-          dispatch(handlePlayerLanding(player.id));
-        }, 300);
+        return setTimeout(
+          () => dispatch(advanceToTileGameCard(player.id, card)),
+          300
+        );
       case GameCardTypes.ADVANCE_TO_TILE_TYPE:
-        return setTimeout(() => {
-          dispatch(advanceToTileTypeGameCard(player.id, card));
-          dispatch(handlePlayerLanding(player.id));
-        }, 300);
+        return setTimeout(
+          () => dispatch(advanceToTileTypeGameCard(player.id, card)),
+          300
+        );
       case GameCardTypes.GO_TO_JAIL:
         return setTimeout(() => dispatch(sendPlayerToJail(player.id)), 300);
     }

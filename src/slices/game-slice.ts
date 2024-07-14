@@ -400,32 +400,16 @@ export const gameSlice = createSlice({
         card: null,
       };
     },
-    drawGameCard: (
-      state,
-      action: PayloadAction<{
-        type: TileTypes.CHANCE | TileTypes.SURPRISE;
-        tileIndex: number;
-      }>
-    ) => {
-      const { chances, surprises } = state.map;
+    EXPERIMENTAL_setGameCard: (state, action: PayloadAction<GameCard>) => {
+      const player = state.players.find(
+        (player) => player.id === state.currentPlayerTurnId
+      );
 
-      state.drawnGameCard.tileIndex = action.payload.tileIndex;
-
-      switch (action.payload.type) {
-        case TileTypes.CHANCE:
-          state.drawnGameCard.card = cycleNextItem({
-            currentIndex: chances.currentIndex,
-            array: chances.cards,
-          });
-          state.map.chances.currentIndex += 1;
-          break;
-        case TileTypes.SURPRISE:
-          state.drawnGameCard.card = cycleNextItem({
-            currentIndex: surprises.currentIndex,
-            array: surprises.cards,
-          });
-          state.map.surprises.currentIndex += 1;
-          break;
+      if (player) {
+        state.drawnGameCard = {
+          tileIndex: player.tilePos,
+          card: action.payload,
+        };
       }
     },
     switchTurn: (state, action: PayloadAction<{ nextPlayerId: string }>) => {
@@ -526,7 +510,7 @@ export const {
   staySuspendedTurn,
   freePlayer,
   resetCards,
-  drawGameCard,
+  EXPERIMENTAL_setGameCard,
   switchTurn,
   setPlayerInDebt,
   bankruptPlayer,
