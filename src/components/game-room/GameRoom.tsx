@@ -6,6 +6,7 @@ import {
 } from "@/actions/game-actions";
 import {
   cityLevelChangedThunk,
+  movedToNextAirportThunk,
   paidOutOfJailThunk,
   purchasedPropertyThunk,
   soldPropertyThunk,
@@ -161,6 +162,10 @@ const GameRoom = () => {
     dispatch(paidOutOfJailThunk());
   };
 
+  const onMovedToNextAirport = (airportIndex: number) => {
+    dispatch(movedToNextAirportThunk(airportIndex));
+  };
+
   const onTradeCreated = (trade: TradeType) => {
     dispatch(tradeCreatedThunk(trade));
   };
@@ -222,6 +227,7 @@ const GameRoom = () => {
     socket.on("sold_property", onSoldProperty);
     socket.on("city_level_change", onCityLevelChange);
     socket.on("paid_out_of_jail", onPaidOutOfJail);
+    socket.on("moved_to_next_airport", onMovedToNextAirport);
     socket.on("created_trade", onTradeCreated);
     socket.on("accepted_trade", onTradeAccepted);
     socket.on("declined_trade", onTradeDeclined);
@@ -250,6 +256,7 @@ const GameRoom = () => {
       socket.off("sold_property", onSoldProperty);
       socket.off("city_level_change", onCityLevelChange);
       socket.off("paid_out_of_jail", onPaidOutOfJail);
+      socket.off("moved_to_next_airport", onMovedToNextAirport);
       socket.off("created_trade", onTradeCreated);
       socket.off("accepted_trade", onTradeAccepted);
       socket.off("declined_trade", onTradeDeclined);

@@ -1,12 +1,20 @@
+import { cn } from "@/utils";
 import { RentIndexes } from "@ziv-carmi/monopoly-utils";
 import { X } from "lucide-react";
 
+interface PurchasableTileIconContainerProps
+  extends React.HTMLAttributes<HTMLDivElement> {}
+
 export const PurchasableTileIconContainer = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  return <div className="flex items-center gap-0.5 ltr">{children}</div>;
+  className,
+  ...props
+}: PurchasableTileIconContainerProps) => {
+  return (
+    <div
+      className={cn("flex items-center gap-0.5 ltr", className)}
+      {...props}
+    />
+  );
 };
 
 export const PurchasableTileIconCount = ({

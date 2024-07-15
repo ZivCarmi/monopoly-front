@@ -3,10 +3,12 @@ import {
   addTrade,
   completeTrade,
   freePlayer,
+  movePlayer,
   purchaseProperty,
   removeTrade,
   sellProperty,
   setCityLevel,
+  setNoAnotherTurn,
   transferMoney,
   updateTrade,
 } from "@/slices/game-slice";
@@ -132,6 +134,33 @@ export const paidOutOfJailThunk = (): AppThunk => {
         `${playerName} שילם ₪${PAY_OUT_FROM_JAIL_AMOUNT} עבור שחרור מהכלא`
       )
     );
+  };
+};
+
+export const movedToNextAirportThunk = (airportIndex: number): AppThunk => {
+  return (dispatch, getState) => {
+    const {
+      currentPlayerTurnId,
+      map: { board },
+    } = getState().game;
+    const nextAirport = board[airportIndex];
+
+    if (!currentPlayerTurnId) {
+      throw new Error(
+        "currentPlayerTurnId not found in movedToNextAirportThunk"
+      );
+    }
+
+    const playerName = getPlayerName(currentPlayerTurnId);
+
+    dispatch(
+      movePlayer({
+        playerId: currentPlayerTurnId,
+        tilePosition: airportIndex,
+      })
+    );
+    dispatch(setNoAnotherTurn(true));
+    dispatch(writeLog(`${playerName} דילג ל${nextAirport.name}`));
   };
 };
 

@@ -56,6 +56,7 @@ const initialState: GameRoom = {
   state: GameState.NOT_STARTED,
   dices: [],
   cubesRolledInTurn: false,
+  forceNoAnotherTurn: false,
   currentPlayerTurnId: null,
   canPerformTurnActions: false,
   doublesInARow: 0,
@@ -99,6 +100,7 @@ export const gameSlice = createSlice({
       state.currentPlayerTurnId = room.currentPlayerTurnId;
       state.canPerformTurnActions = room.canPerformTurnActions;
       state.cubesRolledInTurn = room.cubesRolledInTurn;
+      state.forceNoAnotherTurn = room.forceNoAnotherTurn;
       state.doublesInARow = room.doublesInARow;
       state.suspendedPlayers = room.suspendedPlayers;
       state.stats = {
@@ -416,7 +418,11 @@ export const gameSlice = createSlice({
       state.currentPlayerTurnId = nextPlayerId;
       state.canPerformTurnActions = true;
       state.cubesRolledInTurn = false;
+      state.forceNoAnotherTurn = false;
       state.doublesInARow = 0;
+    },
+    setNoAnotherTurn: (state, action: PayloadAction<boolean>) => {
+      state.forceNoAnotherTurn = action.payload;
     },
     setPlayerInDebt: (
       state,
@@ -511,6 +517,7 @@ export const {
   EXPERIMENTAL_setGameCard,
   switchTurn,
   setPlayerInDebt,
+  setNoAnotherTurn,
   bankruptPlayer,
   setWinner,
   addTrade,

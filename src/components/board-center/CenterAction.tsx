@@ -2,18 +2,28 @@ import { useAppSelector } from "@/app/hooks";
 import { selectCurrentPlayerTurn, selectGameBoard } from "@/slices/game-slice";
 import {
   PAY_OUT_FROM_JAIL_AMOUNT,
+  isAirport,
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
 import { AnimatePresence } from "framer-motion";
-import { isPlayerInJail } from "../../utils";
+import {
+  getBoardAirports,
+  getPlayerAirports,
+  isPlayerInJail,
+} from "../../utils";
 import PayOutOfJailButton from "./PayOutOfJailButton";
 import PlayerIsPlayingNotice from "./PlayerIsPlayingNotice";
 import PurchasePropertyButton from "./PurchasePropertyButton";
 import RollDices from "./RollDices";
+import MoveToNextAirportButton from "./MoveToNextAirportButton";
 
 const CenterAction = () => {
-  const { canPerformTurnActions, cubesRolledInTurn, selfPlayer } =
-    useAppSelector((state) => state.game);
+  const {
+    canPerformTurnActions,
+    cubesRolledInTurn,
+    selfPlayer,
+    forceNoAnotherTurn,
+  } = useAppSelector((state) => state.game);
   const currentPlayer = useAppSelector(selectCurrentPlayerTurn);
   const board = useAppSelector(selectGameBoard);
 
@@ -31,6 +41,11 @@ const CenterAction = () => {
 
   const tile = board[currentPlayer.tilePos];
   const canPurchase = cubesRolledInTurn && isPurchasable(tile) && !tile.owner;
+  const canMoveToNextAirport =
+    !forceNoAnotherTurn &&
+    cubesRolledInTurn &&
+    isAirport(tile) &&
+    getPlayerAirports(selfPlayer.id).length === getBoardAirports().length;
 
   return (
     <>
@@ -48,6 +63,7 @@ const CenterAction = () => {
           isDisabled={currentPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
         />
       )}
+      {canMoveToNextAirport && <MoveToNextAirportButton airport={tile} />}
       <RollDices />
     </>
   );

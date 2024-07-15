@@ -1,16 +1,26 @@
 import { Dices, X } from "lucide-react";
 import PlayerMoney from "../player/PlayerMoney";
 import { TilePricingItem, TilePricingList } from "./TilePricing";
+import { COMPANY_RENTS, ICompany } from "@ziv-carmi/monopoly-utils";
+import { getPlayerColor, getPlayerCompanies } from "@/utils";
 
-type CompanyPricingProps = {
-  rent: readonly number[];
-};
+const CompanyPricing = ({ company }: { company: ICompany }) => {
+  const ownedCompaniesCount =
+    company.owner && getPlayerCompanies(company.owner).length;
+  const ownerColor = company.owner && getPlayerColor(company.owner);
 
-const CompanyPricing = ({ rent }: CompanyPricingProps) => {
   return (
     <TilePricingList>
-      {rent.map((price, i) => (
-        <TilePricingItem className="inline-block text-center">
+      {COMPANY_RENTS.map((price, i) => (
+        <TilePricingItem
+          className="inline-block text-center w-full"
+          style={{
+            backgroundColor:
+              ownerColor && Number(ownedCompaniesCount) - 1 === i
+                ? ownerColor
+                : "",
+          }}
+        >
           אם ברשותך {i === 0 ? "חברה אחת" : `${i + 1} חברות`}
           <br />
           קבל/י&nbsp;&nbsp;

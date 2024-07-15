@@ -1,7 +1,7 @@
 import { useAppSelector } from "@/app/hooks";
 import PurchasableTilePopover from "@/components/board/PurchasableTilePopover";
 import TileIcon from "@/components/board/TileIcon";
-import { getPlayerProperties } from "@/utils";
+import { getPlayerPurchasables } from "@/utils";
 import GamePanel from "../GamePanel";
 import GamePanelContent from "../GamePanelContent";
 import PanelTitle from "../PanelTitle";
@@ -16,7 +16,7 @@ const MyPropertiesPanel = () => {
     return null;
   }
 
-  const myProperties = getPlayerProperties(selfPlayer.id);
+  const myProperties = getPlayerPurchasables(selfPlayer.id);
   const sortedMyProperties = myProperties.sort(
     (a, b) => order.indexOf(a.type) - order.indexOf(b.type)
   );

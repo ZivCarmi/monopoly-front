@@ -9,12 +9,16 @@ import {
 import {
   CountryIds,
   GameTile,
+  IAirport,
+  ICompany,
   IProperty,
   PurchasableTile,
   RentIndexes,
   SuspensionProps,
   TileTypes,
   TradeType,
+  isAirport,
+  isCompany,
   isProperty,
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
@@ -87,7 +91,7 @@ export const isPlayer = (playerId: string) => {
 
 export const isPlayerTurn = (playerId: string) => {
   const state = store.getState();
-  const player = state.game.players.find((player) => player.id === playerId);
+  const player = isPlayer(playerId);
 
   if (!player) return false;
 
@@ -101,7 +105,7 @@ export const isPlayerSuspended = (
 };
 
 export const isPlayerInJail = (playerId: string) => {
-  const suspendedPlayer = store.getState().game.suspendedPlayers[playerId];
+  const suspendedPlayer = isPlayerSuspended(playerId);
 
   if (!suspendedPlayer) return false;
 
@@ -109,8 +113,7 @@ export const isPlayerInJail = (playerId: string) => {
 };
 
 export const isPlayerInDebt = (playerId: string) => {
-  const { players } = store.getState().game;
-  const player = players.find((player) => player.id === playerId);
+  const player = isPlayer(playerId);
 
   if (!player || player.money >= 0) return null;
 
@@ -118,8 +121,7 @@ export const isPlayerInDebt = (playerId: string) => {
 };
 
 export const isPlayerCanUpgrade = (playerId: string, property: IProperty) => {
-  const { players } = store.getState().game;
-  const player = players.find((player) => player.id === playerId);
+  const player = isPlayer(playerId);
   const upgradeCost =
     property.rentIndex === RentIndexes.FOUR_HOUSES
       ? property.hotelCost
@@ -136,8 +138,7 @@ export const isPlayerCanUpgrade = (playerId: string, property: IProperty) => {
 };
 
 export const isPlayerCanDowngrade = (playerId: string, property: IProperty) => {
-  const { players } = store.getState().game;
-  const player = players.find((player) => player.id === playerId);
+  const player = isPlayer(playerId);
 
   if (!player) return false;
 
@@ -157,13 +158,25 @@ export const getCities = (countryId: CountryIds) => {
   );
 };
 
+export const getBoardAirports = () => {
+  const { board } = store.getState().game.map;
+
+  return board.filter((tile): tile is IAirport => isAirport(tile));
+};
+
+export const getBoardCompanies = () => {
+  const { board } = store.getState().game.map;
+
+  return board.filter((tile): tile is ICompany => isCompany(tile));
+};
+
 export const hasBuildings = (countryId: CountryIds) => {
   return getCities(countryId).some(
     (city) => city.rentIndex !== RentIndexes.BLANK
   );
 };
 
-export const getPlayerProperties = (playerId: string) => {
+export const getPlayerPurchasables = (playerId: string) => {
   const { board } = store.getState().game.map;
 
   const playerProperties = board.filter(
@@ -173,23 +186,36 @@ export const getPlayerProperties = (playerId: string) => {
   return playerProperties as PurchasableTile[];
 };
 
+export const getPlayerAirports = (playerId: string) => {
+  const playerAirports = getBoardAirports().filter(
+    (airport) => airport.owner === playerId
+  );
+
+  return playerAirports as IAirport[];
+};
+
+export const getPlayerCompanies = (playerId: string) => {
+  const playerCompanies = getBoardCompanies().filter(
+    (company) => company.owner === playerId
+  );
+
+  return playerCompanies as ICompany[];
+};
+
 export const getPlayerName = (playerId: string) => {
-  const { players } = store.getState().game;
-  const player = players.find((player) => player.id === playerId);
+  const player = isPlayer(playerId);
 
   return player?.name ? player.name : "";
 };
 
 export const getPlayerColor = (playerId: string) => {
-  const { players } = store.getState().game;
-  const player = players.find((player) => player.id === playerId);
+  const player = isPlayer(playerId);
 
   return player?.color;
 };
 
 export const getPlayerMoney = (playerId: string) => {
-  const { players } = store.getState().game;
-  const player = players.find((player) => player.id === playerId);
+  const player = isPlayer(playerId);
 
   return player?.money;
 };

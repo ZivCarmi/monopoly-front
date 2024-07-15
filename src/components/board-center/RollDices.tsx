@@ -30,10 +30,10 @@ export const buttonVariant: Variants = {
 };
 
 const RollDices = () => {
-  const { cubesRolledInTurn, doublesInARow, selfPlayer } = useAppSelector(
-    (state) => state.game
-  );
-  const hasExtraTurn = doublesInARow > 0 && doublesInARow < 3;
+  const { cubesRolledInTurn, doublesInARow, selfPlayer, forceNoAnotherTurn } =
+    useAppSelector((state) => state.game);
+  const hasExtraTurn =
+    !forceNoAnotherTurn && doublesInARow > 0 && doublesInARow < 3;
   const socket = useSocket();
   const isInDebt = !!selfPlayer && !!isPlayerInDebt(selfPlayer.id);
 

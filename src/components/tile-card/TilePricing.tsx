@@ -5,14 +5,14 @@ export const TilePricingList = ({
 }: {
   children: React.ReactNode;
 }) => {
-  return <ul className="space-y-2">{children}</ul>;
+  return <ul>{children}</ul>;
 };
 
 export const TilePricingInstructions = () => {
   return (
     <TilePricingItem>
       <TilePricingLabel className="text-muted-foreground underline">
-        כשברשותך
+        כשבבעלותך
       </TilePricingLabel>
       <TilePricingValue className="text-muted-foreground underline">
         קבל/י
@@ -29,7 +29,10 @@ export const TilePricingItem = ({
 }: TilePricingItemProps) => {
   return (
     <li
-      className={cn("flex items-center justify-between", className)}
+      className={cn(
+        "flex items-center justify-between rounded-sm p-1",
+        className
+      )}
       {...props}
     />
   );
