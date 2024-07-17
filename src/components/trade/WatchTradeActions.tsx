@@ -17,7 +17,7 @@ const WatchTradeActions = () => {
     return null;
   }
 
-  const isDisabled = !isValidTrade(trade);
+  const isDisabled = !isValidTrade(trade).valid;
 
   const negotiateHandler = () => {
     dispatch(setMode("editing"));
@@ -43,15 +43,10 @@ const WatchTradeActions = () => {
             variant="warning"
             className="ml-auto"
             onClick={negotiateHandler}
-            disabled={isDisabled}
           >
             ערוך הצעה
           </Button>
-          <Button
-            variant="destructive"
-            onClick={declineTradeHandler}
-            disabled={isDisabled}
-          >
+          <Button variant="destructive" onClick={declineTradeHandler}>
             סרב
           </Button>
           <Button

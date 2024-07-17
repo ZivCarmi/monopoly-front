@@ -36,7 +36,7 @@ const PropertyActions = ({ property }: { property: IProperty }) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="primaryFancy"
+            variant="primary"
             disabled={!isPlayerCanUpgrade(selfPlayer.id, property)}
             onClick={upgradeCityHandler}
             className=""
@@ -54,7 +54,7 @@ const PropertyActions = ({ property }: { property: IProperty }) => {
       <Tooltip>
         <TooltipTrigger asChild>
           <Button
-            variant="primaryFancy"
+            variant="primary"
             disabled={!isPlayerCanDowngrade(selfPlayer.id, property)}
             onClick={downgradeCityHandler}
             className=""

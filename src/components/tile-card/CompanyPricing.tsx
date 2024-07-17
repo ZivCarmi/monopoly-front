@@ -21,7 +21,7 @@ const CompanyPricing = ({ company }: { company: ICompany }) => {
                 : "",
           }}
         >
-          אם ברשותך {i === 0 ? "חברה אחת" : `${i + 1} חברות`}
+          כשבבעלותך {i === 0 ? "חברה אחת" : `${i + 1} חברות`}
           <br />
           קבל/י&nbsp;&nbsp;
           <span className="inline-flex items-center gap-1">

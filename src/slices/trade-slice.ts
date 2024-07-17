@@ -72,12 +72,34 @@ export const tradeSlice = createSlice({
           if (existTileIndex === -1) {
             state.trade.traders[traderIndex].properties.push(tileIndex);
           } else {
-            const filteredProperties = state.trade.traders[
-              traderIndex
-            ].properties.filter((propIdx) => propIdx !== tileIndex);
+            const filteredProperties = trader.properties.filter(
+              (propIdx) => propIdx !== tileIndex
+            );
 
             state.trade.traders[traderIndex].properties = filteredProperties;
           }
+        }
+      }
+    },
+    removePlayerProperties: (
+      state,
+      action: PayloadAction<{ traderId: string; tileIndexesToRemove: number[] }>
+    ) => {
+      const { traderId, tileIndexesToRemove } = action.payload;
+
+      if (state.trade) {
+        const traderIndex = state.trade.traders.findIndex(
+          (trader) => trader.id === traderId
+        );
+
+        if (traderIndex !== -1) {
+          const trader = state.trade.traders[traderIndex];
+
+          const updatedProperties = trader.properties.filter(
+            (propIdx) => !tileIndexesToRemove.includes(propIdx)
+          );
+
+          state.trade.traders[traderIndex].properties = updatedProperties;
         }
       }
     },
@@ -92,6 +114,7 @@ export const {
   setTrade,
   setPlayerMoney,
   setPlayerProperties,
+  removePlayerProperties,
 } = tradeSlice.actions;
 
 export default tradeSlice.reducer;

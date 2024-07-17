@@ -7,6 +7,7 @@ import {
   AdvancedToTileTypeCard,
   PaymentCard,
 } from "@ziv-carmi/monopoly-utils";
+import { handlePlayerLanding } from "./game-actions";
 
 export const paymentGameCard = (
   playerId: string,
@@ -71,6 +72,7 @@ export const advanceToTileGameCard = (
     }
 
     dispatch(movePlayer({ playerId, tilePosition: event.tileIndex }));
+    dispatch(handlePlayerLanding(playerId, event.tileIndex));
   };
 };
 
@@ -105,6 +107,7 @@ export const advanceToTileTypeGameCard = (
 
     if (closestTileTypeIndex !== null) {
       dispatch(movePlayer({ playerId, tilePosition: closestTileTypeIndex }));
+      dispatch(handlePlayerLanding(playerId, closestTileTypeIndex));
     }
   };
 };

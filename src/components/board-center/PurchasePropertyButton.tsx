@@ -41,7 +41,7 @@ const PurchasePropertyButton = ({
           <TooltipTrigger asChild>
             <div tabIndex={0}>
               <Button
-                variant="primaryFancy"
+                variant="primary"
                 onClick={purchasePropertyHandler}
                 disabled={isDisabled}
               >
@@ -50,9 +50,11 @@ const PurchasePropertyButton = ({
               </Button>
             </div>
           </TooltipTrigger>
-          <TooltipContent className="text-balance text-center">
-            אינך עם מספיק כסף כדי לרכוש נכס זה
-          </TooltipContent>
+          {isDisabled && (
+            <TooltipContent className="text-balance text-center">
+              אינך עם מספיק כסף כדי לרכוש נכס זה
+            </TooltipContent>
+          )}
         </Tooltip>
       </TooltipProvider>
     </motion.div>

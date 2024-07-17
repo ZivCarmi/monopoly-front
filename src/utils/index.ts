@@ -6,6 +6,7 @@ import {
   OppositeSide,
   rowSide,
 } from "@/types/Board";
+import { TradeErrorReason, TradeValidityData } from "@/types/Trade";
 import {
   CountryIds,
   GameTile,
@@ -298,23 +299,56 @@ export const isValidOffer = (trade: TradeType) => {
 };
 
 // check if both players can fulfill the offer
-export const isValidTrade = (trade: TradeType) => {
-  return trade.traders.every((trader) => {
+export const isValidTrade = (trade: TradeType): TradeValidityData => {
+  let errorMessage = "";
+  let errorPlayerId = "";
+  let errorReason: TradeErrorReason = "";
+  const isValid = trade.traders.every((trader) => {
     const playerId = trader.id;
     const player = isPlayer(playerId);
     const didOfferMoney = trader.money > 0;
     const didOfferProperties = trader.properties.length > 0;
 
     // check if player exist
-    if (!player) return false;
+    if (!player) {
+      errorPlayerId = trader.id;
+      errorMessage = "לא נמצא במשחק";
+
+      return false;
+    }
 
     // check if player has enough money
-    if (didOfferMoney && player.money < trader.money) return false;
+    if (didOfferMoney && player.money < trader.money) {
+      errorPlayerId = trader.id;
+      errorMessage = "אין מספיק כסף כדי לבצע את העסקה";
+      errorReason = "money";
+
+      return false;
+    }
 
     // check if player has all the properties
-    if (didOfferProperties && !isOwner(playerId, trader.properties))
+    if (didOfferProperties && !isOwner(playerId, trader.properties)) {
+      errorPlayerId = trader.id;
+      errorMessage = "אין את כל הנכסים שנבחרו";
+      errorReason = "properties";
+
       return false;
+    }
 
     return true;
   });
+
+  if (isValid) {
+    return { valid: true, tradeId: trade.id };
+  }
+
+  return {
+    valid: false,
+    tradeId: trade.id,
+    error: {
+      reason: errorReason,
+      message: errorMessage,
+      playerId: errorPlayerId,
+    },
+  };
 };

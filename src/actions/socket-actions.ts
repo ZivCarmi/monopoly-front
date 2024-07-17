@@ -233,7 +233,15 @@ export const tradeUpdatedThunk = (trade: TradeType): AppThunk => {
     dispatch(updateTrade(trade));
 
     if (trade.turn === state.game.selfPlayer?.id) {
-      if (!state.trade.tradeIsOpen && !state.trade.selectPlayerIsOpen) {
+      const isOnSameOldTrade =
+        state.trade.tradeIsOpen && state.trade.trade?.id === trade.id;
+      const isNotWatchingTrade =
+        !state.trade.tradeIsOpen && !state.trade.selectPlayerIsOpen;
+
+      if (isOnSameOldTrade) {
+        dispatch(setTrade(trade));
+        dispatch(setMode("watching"));
+      } else if (isNotWatchingTrade) {
         dispatch(setTradeIsOpen(true));
         dispatch(setTrade(trade));
         dispatch(setMode("watching"));

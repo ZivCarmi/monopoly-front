@@ -1,7 +1,7 @@
 import { AppThunk } from "@/app/store";
 import {
-  EXPERIMENTAL_setGameCard,
   EXPERIMENTAL_incrementPlayerPosition,
+  EXPERIMENTAL_setGameCard,
   freePlayer,
   movePlayer,
   setDices,
@@ -9,7 +9,9 @@ import {
   suspendPlayer,
   transferMoney,
 } from "@/slices/game-slice";
+import { removePlayerProperties, setPlayerMoney } from "@/slices/trade-slice";
 import { writeLog } from "@/slices/ui-slice";
+import { InvalidTrade } from "@/types/Trade";
 import {
   AIRPORT_RENTS,
   COMPANY_RENTS,
@@ -36,7 +38,7 @@ import {
   isTax,
   isVacation,
 } from "@ziv-carmi/monopoly-utils";
-import { isPlayerInJail, isPlayerSuspended } from "../utils";
+import { isPlayer, isPlayerInJail, isPlayerSuspended } from "../utils";
 import {
   advanceToTileGameCard,
   advanceToTileTypeGameCard,
@@ -187,8 +189,6 @@ export const sendPlayerToVacation = (playerId: string): AppThunk => {
       throw new Error("Vacation tile not found on the board");
     }
 
-    dispatch(movePlayer({ playerId, tilePosition: vacationTileIndex }));
-
     dispatch(
       suspendPlayer({
         playerId,
@@ -196,6 +196,7 @@ export const sendPlayerToVacation = (playerId: string): AppThunk => {
         suspensionLeft: vacationTile.suspensionAmount,
       })
     );
+    dispatch(movePlayer({ playerId, tilePosition: vacationTileIndex }));
   };
 };
 
@@ -210,8 +211,6 @@ export const sendPlayerToJail = (playerId: string): AppThunk => {
       throw new Error("Jail tile not found on the board");
     }
 
-    dispatch(movePlayer({ playerId, tilePosition: jailTileIndex }));
-
     dispatch(
       suspendPlayer({
         playerId,
@@ -219,6 +218,7 @@ export const sendPlayerToJail = (playerId: string): AppThunk => {
         suspensionLeft: jailTile.suspensionAmount,
       })
     );
+    dispatch(movePlayer({ playerId, tilePosition: jailTileIndex }));
   };
 };
 
@@ -250,11 +250,17 @@ export const handleGameCard = (card: GameCard): AppThunk => {
       case GameCardTypes.GROUP_PAYMENT:
         return dispatch(paymentGameCard(player.id, card));
       case GameCardTypes.ADVANCE_TO_TILE:
-        return dispatch(advanceToTileGameCard(player.id, card));
+        return setTimeout(
+          () => dispatch(advanceToTileGameCard(player.id, card)),
+          600
+        );
       case GameCardTypes.ADVANCE_TO_TILE_TYPE:
-        return dispatch(advanceToTileTypeGameCard(player.id, card));
+        return setTimeout(
+          () => dispatch(advanceToTileTypeGameCard(player.id, card)),
+          600
+        );
       case GameCardTypes.GO_TO_JAIL:
-        return dispatch(sendPlayerToJail(player.id));
+        return setTimeout(() => dispatch(sendPlayerToJail(player.id)), 600);
     }
   };
 };
@@ -328,5 +334,50 @@ export const handleRentPayment = (
         amount: rentAmount,
       })
     );
+  };
+};
+
+export const sanitizeTradeOnErrorThunk = (
+  tradeValidity: InvalidTrade
+): AppThunk => {
+  return (dispatch, getState) => {
+    const state = getState().game;
+    const { tradeId, error, valid } = tradeValidity;
+    const tradingPlayer = isPlayer(error.playerId);
+
+    if (valid || !tradingPlayer) return;
+
+    const trade = state.trades.find((trade) => trade.id === tradeId);
+
+    if (!trade) {
+      throw new Error("Trade not found on tradeRefineOnErrorThunk");
+    }
+
+    const errorPlayerIndex = trade.traders.findIndex(
+      (trader) => trader.id === error.playerId
+    );
+
+    if (error.reason === "properties") {
+      const playerProperties = trade.traders[errorPlayerIndex].properties;
+      const unownedPlayerProperties = playerProperties.filter(
+        (propIdx) =>
+          isPurchasable(state.map.board[propIdx]) &&
+          state.map.board[propIdx].owner !== error.playerId
+      );
+
+      dispatch(
+        removePlayerProperties({
+          traderId: error.playerId,
+          tileIndexesToRemove: unownedPlayerProperties,
+        })
+      );
+    } else if (error.reason === "money") {
+      dispatch(
+        setPlayerMoney({
+          traderId: error.playerId,
+          amount: tradingPlayer.money,
+        })
+      );
+    }
   };
 };
