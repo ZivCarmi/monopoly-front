@@ -359,11 +359,11 @@ export const sanitizeTradeOnErrorThunk = (
 
     if (error.reason === "properties") {
       const playerProperties = trade.traders[errorPlayerIndex].properties;
-      const unownedPlayerProperties = playerProperties.filter(
-        (propIdx) =>
-          isPurchasable(state.map.board[propIdx]) &&
-          state.map.board[propIdx].owner !== error.playerId
-      );
+      const unownedPlayerProperties = playerProperties.filter((propIdx) => {
+        const tile = state.map.board[propIdx];
+
+        return isPurchasable(tile) ? tile.owner !== error.playerId : false;
+      });
 
       dispatch(
         removePlayerProperties({
