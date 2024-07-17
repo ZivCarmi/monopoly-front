@@ -7,7 +7,7 @@ import {
 } from "@/components/ui/tooltip";
 import { setPlayerProperties } from "@/slices/trade-slice";
 import { BoardRow as BoardRowType } from "@/types/Board";
-import { cn, getOppositeBoardSide, hasBuildings, isValidTrade } from "@/utils";
+import { cn, getOppositeBoardSide, hasBuildings } from "@/utils";
 import { TooltipContentProps } from "@radix-ui/react-tooltip";
 import {
   TradePlayer,
