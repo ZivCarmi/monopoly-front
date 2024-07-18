@@ -250,17 +250,17 @@ export const handleGameCard = (card: GameCard): AppThunk => {
       case GameCardTypes.GROUP_PAYMENT:
         return dispatch(paymentGameCard(player.id, card));
       case GameCardTypes.ADVANCE_TO_TILE:
-        return setTimeout(
-          () => dispatch(advanceToTileGameCard(player.id, card)),
-          600
-        );
+        return setTimeout(() => {
+          dispatch(advanceToTileGameCard(player.id, card));
+        }, 600);
       case GameCardTypes.ADVANCE_TO_TILE_TYPE:
-        return setTimeout(
-          () => dispatch(advanceToTileTypeGameCard(player.id, card)),
-          600
-        );
+        return setTimeout(() => {
+          dispatch(advanceToTileTypeGameCard(player.id, card));
+        }, 600);
       case GameCardTypes.GO_TO_JAIL:
-        return setTimeout(() => dispatch(sendPlayerToJail(player.id)), 600);
+        return setTimeout(() => {
+          dispatch(sendPlayerToJail(player.id));
+        }, 600);
     }
   };
 };

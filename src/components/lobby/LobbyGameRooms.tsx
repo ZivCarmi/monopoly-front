@@ -25,7 +25,7 @@ const LobbyGameRooms = () => {
   }, []);
 
   return (
-    <div className="m-auto w-full md:w-[500px] bg-background border shadow-md p-6 rounded-lg overflow-hidden">
+    <div className="m-auto w-full md:w-[500px] bg-background border shadow-md p-4 rounded-lg overflow-hidden">
       <LobbyGameRoomsActions />
       {lobbyRooms.length > 0 ? <LobbyGameRoomsList /> : <NoRoomsAvailable />}
     </div>
