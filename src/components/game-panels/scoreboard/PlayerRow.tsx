@@ -1,12 +1,14 @@
 import { useAppSelector } from "@/app/hooks";
+import { useSocket } from "@/app/socket-context";
 import PlayerCharacter from "@/components/player/PlayerCharacter";
 import PlayerMoney from "@/components/player/PlayerMoney";
 import PlayerName from "@/components/player/PlayerName";
 import PlayerNamePlate from "@/components/player/PlayerNamePlate";
-import { cn, getTimeValues, isPlayerTurn } from "@/utils";
+import CountdownTimer from "@/components/ui/countdown-timer";
+import { cn, getPlayerName, isPlayerTurn } from "@/utils";
 import { Player, isGameNotStarted } from "@ziv-carmi/monopoly-utils";
-import { Crown, FlagTriangleRight, WifiOff } from "lucide-react";
-import { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { Crown, FlagTriangleRight, WifiOff, X } from "lucide-react";
 import { Button } from "../../ui/button";
 import {
   Tooltip,
@@ -14,10 +16,9 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../../ui/tooltip";
-import { motion } from "framer-motion";
 
 const PlayerRow = ({ player }: { player: Player }) => {
-  const { state, selfPlayer } = useAppSelector((state) => state.game);
+  const { state, selfPlayer, hostId } = useAppSelector((state) => state.game);
 
   return (
     <motion.div
@@ -38,7 +39,10 @@ const PlayerRow = ({ player }: { player: Player }) => {
       </PlayerNamePlate>
       <div className="grow text-end px-4">
         {isGameNotStarted(state) ? (
-          <ChangeAppearanceButton playerId={player.id} />
+          <>
+            {hostId === selfPlayer?.id && <KickPlayer playerId={player.id} />}
+            <ChangeAppearanceButton playerId={player.id} />
+          </>
         ) : player.bankrupted ? (
           <BankruptedIndicator />
         ) : (
@@ -46,6 +50,45 @@ const PlayerRow = ({ player }: { player: Player }) => {
         )}
       </div>
     </motion.div>
+  );
+};
+
+const KickPlayer = ({ playerId }: { playerId: string }) => {
+  const socket = useSocket();
+  const { selfPlayer } = useAppSelector((state) => state.game);
+
+  if (selfPlayer?.id === playerId) {
+    return null;
+  }
+
+  const kickPlayerHandler = () => {
+    const playerName = getPlayerName(playerId);
+    if (
+      confirm(
+        `האם אתה בטוח שברצונך להסיר את ${playerName}?\nלא ניתן יהיה לבטל פעולה זו.`
+      )
+    ) {
+      socket.emit("votekick_player", playerId);
+    }
+  };
+
+  return (
+    <TooltipProvider delayDuration={0}>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            onClick={kickPlayerHandler}
+            size="icon"
+            variant="ghost"
+            className="rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none"
+          >
+            <X className="h-4 w-4" />
+            <span className="sr-only">סגור</span>
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>הסר שחקן</TooltipContent>
+      </Tooltip>
+    </TooltipProvider>
   );
 };
 
@@ -114,30 +157,13 @@ const NotConnectedIndicator = ({
 }: {
   connectionKickAt: Date;
 }) => {
-  const [countdown, setCountdown] = useState(
-    new Date(connectionKickAt).getTime() - new Date().getTime()
-  );
-  const { minutes, seconds } = getTimeValues(countdown);
-
-  useEffect(() => {
-    if (countdown <= 1000) return;
-
-    const interval = setInterval(() => {
-      setCountdown((prevTime) => prevTime - 1000);
-    }, 1000);
-
-    return () => clearInterval(interval);
-  }, [countdown]);
-
   return (
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <div className="inline-flex items-center gap-1 text-red-500 animate-pulse duration-[1500]">
+          <div className="inline-flex items-center gap-1 text-red-500 animate-pulse">
             <WifiOff className="w-4 h-4" />
-            <time>
-              {minutes}:{seconds}
-            </time>
+            <CountdownTimer date={connectionKickAt} />
           </div>
         </TooltipTrigger>
         <TooltipContent>

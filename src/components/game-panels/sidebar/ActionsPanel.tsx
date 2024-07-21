@@ -2,6 +2,7 @@ import { useAppSelector } from "@/app/hooks";
 import GamePanel from "../GamePanel";
 import BankruptcyButton from "./BankruptcyButton";
 import GamePanelContent from "../GamePanelContent";
+import VotekickPlayer from "./VotekickPlayer";
 
 const ActionsPanel = () => {
   const { selfPlayer } = useAppSelector((state) => state.game);
@@ -12,8 +13,9 @@ const ActionsPanel = () => {
 
   return (
     <GamePanel className="bg-transparent">
-      <GamePanelContent className="mr-auto">
+      <GamePanelContent className="flex justify-between">
         <BankruptcyButton />
+        <VotekickPlayer />
       </GamePanelContent>
     </GamePanel>
   );

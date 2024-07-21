@@ -3,7 +3,6 @@ import {
   EXPERIMENTAL_incrementPlayerPosition,
   EXPERIMENTAL_setGameCard,
   freePlayer,
-  movePlayer,
   setDices,
   staySuspendedTurn,
   suspendPlayer,
@@ -38,7 +37,12 @@ import {
   isTax,
   isVacation,
 } from "@ziv-carmi/monopoly-utils";
-import { isPlayer, isPlayerInJail, isPlayerSuspended } from "../utils";
+import {
+  getPlayerName,
+  isPlayer,
+  isPlayerInJail,
+  isPlayerSuspended,
+} from "../utils";
 import {
   advanceToTileGameCard,
   advanceToTileTypeGameCard,
@@ -49,38 +53,33 @@ export const handleDices = (dices: number[]): AppThunk => {
   return (dispatch, getState) => {
     dispatch(setDices({ dices }));
 
-    const { players, currentPlayerTurnId, doublesInARow } = getState().game;
-    const player = players.find((player) => player.id === currentPlayerTurnId);
+    const { currentPlayerId, doublesInARow } = getState().game;
     const isDouble = dices[0] === dices[1];
 
-    if (!player) {
-      throw new Error("Player was not found");
+    if (!currentPlayerId) {
+      throw new Error("currentPlayerId was not found");
     }
 
-    if (!currentPlayerTurnId) {
-      throw new Error(`Current turn is not belong to ${currentPlayerTurnId}`);
-    }
+    const playerName = getPlayerName(currentPlayerId);
 
     // update suspended player
-    if (isPlayerSuspended(currentPlayerTurnId)?.reason === TileTypes.JAIL) {
+    if (isPlayerSuspended(currentPlayerId)?.reason === TileTypes.JAIL) {
       if (isDouble) {
-        dispatch(freePlayer({ playerId: currentPlayerTurnId }));
-        dispatch(writeLog(`${player.name} הטיל דאבל ושוחרר מהכלא`));
+        dispatch(freePlayer({ playerId: currentPlayerId }));
+        dispatch(writeLog(`${playerName} הטיל דאבל ושוחרר מהכלא`));
       } else {
-        dispatch(handleStaySuspendedPlayer(currentPlayerTurnId));
+        dispatch(handleStaySuspendedPlayer(currentPlayerId));
       }
       return;
     }
 
-    if (isPlayerSuspended(currentPlayerTurnId)?.reason === TileTypes.VACATION) {
-      dispatch(freePlayer({ playerId: currentPlayerTurnId }));
+    if (isPlayerSuspended(currentPlayerId)?.reason === TileTypes.VACATION) {
+      dispatch(freePlayer({ playerId: currentPlayerId }));
     }
 
     if (doublesInARow === 3) {
-      dispatch(sendPlayerToJail(player.id));
-      return dispatch(
-        writeLog(`${player.name} נשלח לכלא לאחר 3 דאבלים רצופים`)
-      );
+      dispatch(sendPlayerToJail(currentPlayerId));
+      return dispatch(writeLog(`${playerName} נשלח לכלא לאחר 3 דאבלים רצופים`));
     }
   };
 };
@@ -196,7 +195,12 @@ export const sendPlayerToVacation = (playerId: string): AppThunk => {
         suspensionLeft: vacationTile.suspensionAmount,
       })
     );
-    dispatch(movePlayer({ playerId, tilePosition: vacationTileIndex }));
+    dispatch(
+      EXPERIMENTAL_incrementPlayerPosition({
+        playerId,
+        position: vacationTileIndex,
+      })
+    );
   };
 };
 
@@ -218,7 +222,12 @@ export const sendPlayerToJail = (playerId: string): AppThunk => {
         suspensionLeft: jailTile.suspensionAmount,
       })
     );
-    dispatch(movePlayer({ playerId, tilePosition: jailTileIndex }));
+    dispatch(
+      EXPERIMENTAL_incrementPlayerPosition({
+        playerId,
+        position: jailTileIndex,
+      })
+    );
   };
 };
 
@@ -226,20 +235,21 @@ export const handleGameCard = (card: GameCard): AppThunk => {
   return (dispatch, getState) => {
     dispatch(EXPERIMENTAL_setGameCard(card));
 
-    const {
-      players,
-      currentPlayerTurnId,
-      map: { board },
-    } = getState().game;
-    const player = players.find((player) => player.id === currentPlayerTurnId);
+    const { currentPlayerId, map } = getState().game;
+
+    if (!currentPlayerId) {
+      throw new Error("currentPlayerId was not found in handleGameCard.");
+    }
+
+    const player = isPlayer(currentPlayerId);
 
     if (!player) {
-      throw new Error("No player was found in handleGameCard.");
+      throw new Error("player was not found in handleGameCard.");
     }
 
     dispatch(
       writeLog(
-        `${player.name} נחת על ${board[player.tilePos].name} והוציא: ${
+        `${player.name} נחת על ${map.board[player.tilePos].name} והוציא: ${
           card.message
         }`
       )
@@ -248,18 +258,18 @@ export const handleGameCard = (card: GameCard): AppThunk => {
     switch (card.type) {
       case GameCardTypes.PAYMENT:
       case GameCardTypes.GROUP_PAYMENT:
-        return dispatch(paymentGameCard(player.id, card));
+        return dispatch(paymentGameCard(currentPlayerId, card));
       case GameCardTypes.ADVANCE_TO_TILE:
         return setTimeout(() => {
-          dispatch(advanceToTileGameCard(player.id, card));
+          dispatch(advanceToTileGameCard(currentPlayerId, card));
         }, 600);
       case GameCardTypes.ADVANCE_TO_TILE_TYPE:
         return setTimeout(() => {
-          dispatch(advanceToTileTypeGameCard(player.id, card));
+          dispatch(advanceToTileTypeGameCard(currentPlayerId, card));
         }, 600);
       case GameCardTypes.GO_TO_JAIL:
         return setTimeout(() => {
-          dispatch(sendPlayerToJail(player.id));
+          dispatch(sendPlayerToJail(currentPlayerId));
         }, 600);
     }
   };

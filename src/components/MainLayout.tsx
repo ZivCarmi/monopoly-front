@@ -1,4 +1,5 @@
 import { resetGameRoom } from "@/actions/lobby-actions";
+import { playerKickedThunk } from "@/actions/socket-actions";
 import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import useUpdateNickname from "@/hooks/useUpdateNickname";
@@ -10,6 +11,7 @@ import { Player, Room } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
+import useBackToLobby from "@/hooks/useBackToLobby";
 
 const STORAGED_PLAYER_NAME = localStorage.getItem(PLAYER_NAME_STORAGE_KEY);
 
@@ -19,6 +21,7 @@ const MainLayout = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const updateNickname = useUpdateNickname();
+  const backToLobby = useBackToLobby();
 
   const onNicknameSelected = (nickname: string) => {
     dispatch(setNickname(nickname));
@@ -75,6 +78,18 @@ const MainLayout = () => {
     dispatch(resetGameRoom());
   };
 
+  const onPlayerKicked = (kickedPlayerId: string) => {
+    const notifyOnKicked = () => {
+      backToLobby();
+      toast({
+        variant: "destructive",
+        title: "הוסרת מהמשחק על ידי מארח החדר",
+      });
+    };
+
+    dispatch(playerKickedThunk(kickedPlayerId, notifyOnKicked));
+  };
+
   useEffect(() => {
     if (STORAGED_PLAYER_NAME) {
       updateNickname({ nickname: STORAGED_PLAYER_NAME });
@@ -87,6 +102,7 @@ const MainLayout = () => {
     socket.on("room_join_error_duplication", onRoomJoinErrorDuplication);
     socket.on("room_deleted", onRoomDeleted);
     socket.on("returned_to_lobby", onReturnedToLobby);
+    socket.on("player_votekicked", onPlayerKicked);
 
     return () => {
       socket.off("nickname_selected", onNicknameSelected);
@@ -96,6 +112,7 @@ const MainLayout = () => {
       socket.off("room_join_error_duplication", onRoomJoinErrorDuplication);
       socket.off("room_deleted", onRoomDeleted);
       socket.off("returned_to_lobby", onReturnedToLobby);
+      socket.off("player_votekicked", onPlayerKicked);
     };
   }, []);
 

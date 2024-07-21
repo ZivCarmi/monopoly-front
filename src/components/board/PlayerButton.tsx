@@ -4,8 +4,8 @@ import { Player } from "@ziv-carmi/monopoly-utils";
 import PlayerCharacter from "../player/PlayerCharacter";
 
 const PlayerButton = ({ player }: { player: Player }) => {
-  const { currentPlayerTurnId } = useAppSelector((state) => state.game);
-  const isPlayerTurn = player.id === currentPlayerTurnId;
+  const { currentPlayerId } = useAppSelector((state) => state.game);
+  const isPlayerTurn = player.id === currentPlayerId;
 
   return (
     <button

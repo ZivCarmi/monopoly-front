@@ -2,13 +2,17 @@ import { AppThunk } from "@/app/store";
 import {
   addTrade,
   completeTrade,
+  EXPERIMENTAL_incrementPlayerPosition,
   freePlayer,
-  movePlayer,
   purchaseProperty,
+  removePlayer,
   removeTrade,
+  resetVotekickers,
   sellProperty,
   setCityLevel,
+  setCurrentPlayerVotekick,
   setNoAnotherTurn,
+  setVotekickers,
   transferMoney,
   updateTrade,
 } from "@/slices/game-slice";
@@ -21,22 +25,23 @@ import {
 import { setSelectedTile, writeLog } from "@/slices/ui-slice";
 import { getPlayerName } from "@/utils";
 import {
+  getCityLevelText,
   IProperty,
   PAY_OUT_FROM_JAIL_AMOUNT,
+  Player,
   PurchasableTile,
   TradeType,
-  getCityLevelText,
 } from "@ziv-carmi/monopoly-utils";
 
 export const purchasedPropertyThunk = (propertyIndex: number): AppThunk => {
   return (dispatch, getState) => {
     const state = getState();
-    const { currentPlayerTurnId } = state.game;
+    const { currentPlayerId } = state.game;
     const { selectedTile } = state.ui;
 
-    if (!currentPlayerTurnId) return;
+    if (!currentPlayerId) return;
 
-    const playerName = getPlayerName(currentPlayerTurnId);
+    const playerName = getPlayerName(currentPlayerId);
     const tile = getState().game.map.board[propertyIndex];
 
     dispatch(purchaseProperty({ propertyIndex }));
@@ -55,12 +60,12 @@ export const purchasedPropertyThunk = (propertyIndex: number): AppThunk => {
 export const soldPropertyThunk = (propertyIndex: number): AppThunk => {
   return (dispatch, getState) => {
     const state = getState();
-    const { currentPlayerTurnId } = state.game;
+    const { currentPlayerId } = state.game;
     const { selectedTile } = state.ui;
 
-    if (!currentPlayerTurnId) return;
+    if (!currentPlayerId) return;
 
-    const playerName = getPlayerName(currentPlayerTurnId);
+    const playerName = getPlayerName(currentPlayerId);
     const tile = getState().game.map.board[propertyIndex];
 
     dispatch(sellProperty({ propertyIndex }));
@@ -85,12 +90,12 @@ export const cityLevelChangedThunk = ({
 }): AppThunk => {
   return (dispatch, getState) => {
     const state = getState();
-    const { currentPlayerTurnId } = state.game;
+    const { currentPlayerId } = state.game;
     const { selectedTile } = state.ui;
 
-    if (!currentPlayerTurnId) return;
+    if (!currentPlayerId) return;
 
-    const playerName = getPlayerName(currentPlayerTurnId);
+    const playerName = getPlayerName(currentPlayerId);
     const tile = state.game.map.board[propertyIndex] as IProperty;
 
     let cityLevelText = getCityLevelText(tile.rentIndex + 1);
@@ -114,21 +119,21 @@ export const cityLevelChangedThunk = ({
 
 export const paidOutOfJailThunk = (): AppThunk => {
   return (dispatch, getState) => {
-    const { currentPlayerTurnId } = getState().game;
+    const { currentPlayerId } = getState().game;
 
-    if (!currentPlayerTurnId) {
-      throw new Error("currentPlayerTurnId not found in paidOutOfJailThunk");
+    if (!currentPlayerId) {
+      throw new Error("currentPlayerId not found in paidOutOfJailThunk");
     }
 
-    const playerName = getPlayerName(currentPlayerTurnId);
+    const playerName = getPlayerName(currentPlayerId);
 
     dispatch(
       transferMoney({
-        payerId: currentPlayerTurnId,
+        payerId: currentPlayerId,
         amount: PAY_OUT_FROM_JAIL_AMOUNT,
       })
     );
-    dispatch(freePlayer({ playerId: currentPlayerTurnId }));
+    dispatch(freePlayer({ playerId: currentPlayerId }));
     dispatch(
       writeLog(
         `${playerName} שילם ₪${PAY_OUT_FROM_JAIL_AMOUNT} עבור שחרור מהכלא`
@@ -140,23 +145,21 @@ export const paidOutOfJailThunk = (): AppThunk => {
 export const movedToNextAirportThunk = (airportIndex: number): AppThunk => {
   return (dispatch, getState) => {
     const {
-      currentPlayerTurnId,
+      currentPlayerId,
       map: { board },
     } = getState().game;
     const nextAirport = board[airportIndex];
 
-    if (!currentPlayerTurnId) {
-      throw new Error(
-        "currentPlayerTurnId not found in movedToNextAirportThunk"
-      );
+    if (!currentPlayerId) {
+      throw new Error("currentPlayerId not found in movedToNextAirportThunk");
     }
 
-    const playerName = getPlayerName(currentPlayerTurnId);
+    const playerName = getPlayerName(currentPlayerId);
 
     dispatch(
-      movePlayer({
-        playerId: currentPlayerTurnId,
-        tilePosition: airportIndex,
+      EXPERIMENTAL_incrementPlayerPosition({
+        playerId: currentPlayerId,
+        position: airportIndex,
       })
     );
     dispatch(setNoAnotherTurn(true));
@@ -269,5 +272,58 @@ export const tradeDeletedThunk = (tradeId: string): AppThunk => {
     if (isStaleTrade) {
       dispatch(resetTrade());
     }
+  };
+};
+
+export const playerKickedThunk = (
+  kickedPlayerId: string,
+  callback: () => void
+): AppThunk => {
+  return (dispatch, getState) => {
+    const state = getState();
+    const playerName = getPlayerName(kickedPlayerId);
+
+    if (state.game.selfPlayer?.id === kickedPlayerId) {
+      callback();
+    } else {
+      dispatch(removePlayer({ playerId: kickedPlayerId }));
+      dispatch(writeLog(`${playerName} הודח מהמשחק`));
+      dispatch(resetVotekickers());
+    }
+  };
+};
+
+export const newVotekickThunk = ({
+  votekicker,
+  votekickAt,
+}: {
+  votekicker: Player;
+  votekickAt: Date;
+}): AppThunk => {
+  return (dispatch, getState) => {
+    const { currentPlayerId, players } = getState().game;
+    const currentPlayer = players.find(
+      (playerId) => currentPlayerId === playerId.id
+    );
+    const playersCountWithoutCurrentPlayer = players.length - 1;
+
+    if (!currentPlayer) {
+      throw new Error("currentPlayer was not found in newVotekickThunk");
+    }
+
+    // CHECK WHY NOT WORK
+
+    dispatch(setVotekickers({ votekickerId: votekicker.id }));
+    dispatch(setCurrentPlayerVotekick({ kickAt: votekickAt }));
+
+    let log = `${votekicker.name} בחר להדיח את ${currentPlayer.name}`;
+
+    if (players.length > 2) {
+      log += `. (${
+        getState().game.voteKickers.length
+      }/${playersCountWithoutCurrentPlayer})`;
+    }
+
+    dispatch(writeLog(log));
   };
 };

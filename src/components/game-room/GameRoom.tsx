@@ -15,6 +15,7 @@ import {
   tradeDeclinedThunk,
   tradeDeletedThunk,
   tradeUpdatedThunk,
+  newVotekickThunk,
 } from "@/actions/socket-actions";
 import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
@@ -23,6 +24,8 @@ import {
   allowTurnActions,
   bankruptPlayer,
   removePlayer,
+  resetVotekickers,
+  setCurrentPlayerVotekick,
   setGameSetting,
   setHostId,
   setPlayerConnection,
@@ -124,12 +127,12 @@ const GameRoom = () => {
 
   const onGameStarted = ({
     generatedPlayers,
-    currentPlayerTurn,
+    currentPlayerId,
   }: {
     generatedPlayers: Player[];
-    currentPlayerTurn: string;
+    currentPlayerId: string;
   }) => {
-    dispatch(startGame({ generatedPlayers, currentPlayerTurn }));
+    dispatch(startGame({ generatedPlayers, currentPlayerId }));
     dispatch(writeLog("המשחק התחיל!"));
   };
 
@@ -209,6 +212,21 @@ const GameRoom = () => {
     dispatch(setWinner({ winner }));
   };
 
+  const onNewVotekick = (votekickData: {
+    votekicker: Player;
+    votekickAt: Date;
+  }) => {
+    dispatch(newVotekickThunk(votekickData));
+  };
+
+  const onUpdateVotekick = (votekickAt: Date) => {
+    dispatch(setCurrentPlayerVotekick({ kickAt: votekickAt }));
+  };
+
+  const onVotekickEnded = () => {
+    dispatch(resetVotekickers());
+  };
+
   useEffect(() => {
     socket.on("game_updated", onGameUpdate);
     socket.on("game_settings_updated", onGameSettingsUpdated);
@@ -237,6 +255,9 @@ const GameRoom = () => {
     socket.on("player_in_debt", onPlayerInDebt);
     socket.on("player_bankrupted", onPlayerBankrupted);
     socket.on("game_ended", onGameEnded);
+    socket.on("new_votekick", onNewVotekick);
+    socket.on("update_votekick", onUpdateVotekick);
+    socket.on("votekick_ended", onVotekickEnded);
 
     return () => {
       socket.off("game_updated", onGameUpdate);
@@ -266,6 +287,9 @@ const GameRoom = () => {
       socket.off("player_in_debt", onPlayerInDebt);
       socket.off("player_bankrupted", onPlayerBankrupted);
       socket.off("game_ended", onGameEnded);
+      socket.off("new_votekick", onNewVotekick);
+      socket.off("update_votekick", onUpdateVotekick);
+      socket.off("votekick_ended", onVotekickEnded);
     };
   }, []);
 

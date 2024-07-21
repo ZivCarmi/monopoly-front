@@ -96,7 +96,7 @@ export const isPlayerTurn = (playerId: string) => {
 
   if (!player) return false;
 
-  return state.game.currentPlayerTurnId === player.id;
+  return state.game.currentPlayerId === player.id;
 };
 
 export const isPlayerSuspended = (

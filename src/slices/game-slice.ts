@@ -57,7 +57,7 @@ const initialState: GameRoom = {
   dices: [],
   cubesRolledInTurn: false,
   forceNoAnotherTurn: false,
-  currentPlayerTurnId: null,
+  currentPlayerId: null,
   canPerformTurnActions: false,
   doublesInARow: 0,
   suspendedPlayers: {},
@@ -76,6 +76,7 @@ const initialState: GameRoom = {
     randomizePlayerOrder: true,
     noRentInPrison: false,
   },
+  voteKickers: [],
 };
 
 export type TransferMoneyArgs = {
@@ -97,7 +98,7 @@ export const gameSlice = createSlice({
       state.map = room.map;
       state.state = room.state;
       state.dices = room.dices;
-      state.currentPlayerTurnId = room.currentPlayerTurnId;
+      state.currentPlayerId = room.currentPlayerId;
       state.canPerformTurnActions = room.canPerformTurnActions;
       state.cubesRolledInTurn = room.cubesRolledInTurn;
       state.forceNoAnotherTurn = room.forceNoAnotherTurn;
@@ -109,6 +110,7 @@ export const gameSlice = createSlice({
       };
       state.trades = room.trades;
       state.settings = room.settings;
+      state.voteKickers = room.voteKickers;
     },
     resetRoom: () => {
       return initialState;
@@ -146,31 +148,47 @@ export const gameSlice = createSlice({
         state.players[playerIndex].connectionKickAt = kickAt;
       }
     },
+    setCurrentPlayerVotekick: (
+      state,
+      action: PayloadAction<{ kickAt: Player["votekickedAt"] }>
+    ) => {
+      const { kickAt } = action.payload;
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === state.currentPlayerId
+      );
+
+      if (playerIndex !== -1) {
+        state.players[playerIndex].votekickedAt = kickAt;
+      }
+    },
     addPlayer: (
       state,
       action: PayloadAction<{ player: Player; isSelf?: boolean }>
     ) => {
       const { player, isSelf } = action.payload;
-      state.players.push(player);
+
+      state.players = [...state.players, player];
+
       if (isSelf) {
         state.selfPlayer = player;
       }
     },
     removePlayer: (state, action: PayloadAction<{ playerId: string }>) => {
-      const player = state.players.filter(
+      const players = state.players.filter(
         (player) => player.id !== action.payload.playerId
       );
-      state.players = player;
+
+      state.players = players;
     },
     startGame: (
       state,
       action: PayloadAction<{
         generatedPlayers: Player[];
-        currentPlayerTurn: string;
+        currentPlayerId: string;
       }>
     ) => {
       state.players = action.payload.generatedPlayers;
-      state.currentPlayerTurnId = action.payload.currentPlayerTurn;
+      state.currentPlayerId = action.payload.currentPlayerId;
       state.canPerformTurnActions = true;
       state.state = GameState.STARTED;
     },
@@ -194,22 +212,6 @@ export const gameSlice = createSlice({
 
       if (playerIndex >= 0) {
         state.players[playerIndex].tilePos = position;
-      }
-    },
-    movePlayer: (
-      state,
-      action: PayloadAction<{
-        playerId: string;
-        tilePosition: number;
-      }>
-    ) => {
-      const { playerId, tilePosition } = action.payload;
-      const playerIndex = state.players.findIndex(
-        (player) => player.id === playerId
-      );
-
-      if (playerIndex >= 0) {
-        state.players[playerIndex].tilePos = tilePosition;
       }
     },
     allowTurnActions: (state, action: PayloadAction<boolean>) => {
@@ -290,29 +292,30 @@ export const gameSlice = createSlice({
       state,
       action: PayloadAction<{ propertyIndex: number }>
     ) => {
-      const { currentPlayerTurnId } = state;
+      const { currentPlayerId } = state;
       const { propertyIndex } = action.payload;
       const tile = state.map.board[propertyIndex] as PurchasableTile;
       const playerIndex = state.players.findIndex(
-        (player) => player.id === currentPlayerTurnId
+        (player) => player.id === currentPlayerId
       );
 
       // update player
       if (playerIndex >= 0) {
         state.players[playerIndex].money -= tile.cost;
-      }
 
-      // update board
-      if (tile) {
-        tile.owner = currentPlayerTurnId;
-        state.map.board[propertyIndex] = tile;
+        // update board
+        if (tile) {
+          tile.owner = currentPlayerId;
+          state.map.board[propertyIndex] = tile;
+        }
       }
     },
     sellProperty: (state, action: PayloadAction<{ propertyIndex: number }>) => {
+      const { currentPlayerId } = state;
       const { propertyIndex } = action.payload;
       const tile = state.map.board[propertyIndex] as PurchasableTile;
       const playerIndex = state.players.findIndex(
-        (player) => player.id === state.currentPlayerTurnId
+        (player) => player.id === currentPlayerId
       );
 
       // update player
@@ -322,12 +325,12 @@ export const gameSlice = createSlice({
           state.players[playerIndex].money >= 0
             ? null
             : state.players[playerIndex].debtTo;
-      }
 
-      // update board
-      if (tile) {
-        tile.owner = null;
-        state.map.board[propertyIndex] = tile;
+        // update board
+        if (tile) {
+          tile.owner = null;
+          state.map.board[propertyIndex] = tile;
+        }
       }
     },
     setCityLevel: (
@@ -337,10 +340,11 @@ export const gameSlice = createSlice({
         changeType: "upgrade" | "downgrade";
       }>
     ) => {
+      const { currentPlayerId } = state;
       const { propertyIndex, changeType } = action.payload;
       const tile = state.map.board[propertyIndex] as IProperty;
       const playerIndex = state.players.findIndex(
-        (player) => player.id === state.currentPlayerTurnId
+        (player) => player.id === currentPlayerId
       );
 
       // update board
@@ -402,7 +406,7 @@ export const gameSlice = createSlice({
     },
     EXPERIMENTAL_setGameCard: (state, action: PayloadAction<GameCard>) => {
       const player = state.players.find(
-        (player) => player.id === state.currentPlayerTurnId
+        (player) => player.id === state.currentPlayerId
       );
 
       if (player) {
@@ -413,13 +417,20 @@ export const gameSlice = createSlice({
       }
     },
     switchTurn: (state, action: PayloadAction<{ nextPlayerId: string }>) => {
-      const { nextPlayerId } = action.payload;
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === state.currentPlayerId
+      );
 
-      state.currentPlayerTurnId = nextPlayerId;
+      if (playerIndex >= 0) {
+        state.players[playerIndex].votekickedAt = null;
+      }
+
+      state.currentPlayerId = action.payload.nextPlayerId;
       state.canPerformTurnActions = true;
       state.cubesRolledInTurn = false;
       state.forceNoAnotherTurn = false;
       state.doublesInARow = 0;
+      state.voteKickers = [];
     },
     setNoAnotherTurn: (state, action: PayloadAction<boolean>) => {
       state.forceNoAnotherTurn = action.payload;
@@ -487,6 +498,15 @@ export const gameSlice = createSlice({
         (trade) => trade.id !== action.payload.tradeId
       );
     },
+    setVotekickers: (
+      state,
+      action: PayloadAction<{ votekickerId: string }>
+    ) => {
+      state.voteKickers = [...state.voteKickers, action.payload.votekickerId];
+    },
+    resetVotekickers: (state) => {
+      state.voteKickers = [];
+    },
   },
 });
 
@@ -498,12 +518,12 @@ export const {
   setIsSpectating,
   setGameSetting,
   setPlayerConnection,
+  setCurrentPlayerVotekick,
   addPlayer,
   removePlayer,
   startGame,
   setDices,
   EXPERIMENTAL_incrementPlayerPosition,
-  movePlayer,
   allowTurnActions,
   transferMoney,
   completeTrade,
@@ -523,13 +543,13 @@ export const {
   addTrade,
   updateTrade,
   removeTrade,
+  setVotekickers,
+  resetVotekickers,
 } = gameSlice.actions;
 
 export const selectGameBoard = (state: RootState) => state.game.map.board;
 export const selectPlayers = (state: RootState) => state.game.players;
 export const selectCurrentPlayerTurn = (state: RootState) =>
-  state.game.players.find(
-    (player) => player.id === state.game.currentPlayerTurnId
-  );
+  state.game.players.find((player) => player.id === state.game.currentPlayerId);
 
 export default gameSlice.reducer;

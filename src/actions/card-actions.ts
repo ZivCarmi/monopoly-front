@@ -1,5 +1,8 @@
 import { AppThunk } from "@/app/store";
-import { movePlayer, transferMoney } from "@/slices/game-slice";
+import {
+  EXPERIMENTAL_incrementPlayerPosition,
+  transferMoney,
+} from "@/slices/game-slice";
 import {
   GameCardTypes,
   PaymentTypes,
@@ -71,7 +74,12 @@ export const advanceToTileGameCard = (
       }
     }
 
-    dispatch(movePlayer({ playerId, tilePosition: event.tileIndex }));
+    dispatch(
+      EXPERIMENTAL_incrementPlayerPosition({
+        playerId,
+        position: event.tileIndex,
+      })
+    );
     dispatch(handlePlayerLanding(playerId, event.tileIndex));
   };
 };
@@ -106,7 +114,12 @@ export const advanceToTileTypeGameCard = (
     }
 
     if (closestTileTypeIndex !== null) {
-      dispatch(movePlayer({ playerId, tilePosition: closestTileTypeIndex }));
+      dispatch(
+        EXPERIMENTAL_incrementPlayerPosition({
+          playerId,
+          position: closestTileTypeIndex,
+        })
+      );
       dispatch(handlePlayerLanding(playerId, closestTileTypeIndex));
     }
   };
