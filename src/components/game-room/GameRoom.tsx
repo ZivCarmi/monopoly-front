@@ -23,8 +23,8 @@ import {
   addPlayer,
   allowTurnActions,
   bankruptPlayer,
+  clearPlayers,
   removePlayer,
-  resetVotekickers,
   setCurrentPlayerVotekick,
   setGameSetting,
   setHostId,
@@ -211,6 +211,7 @@ const GameRoom = () => {
   };
 
   const onGameEnded = (winner: Player) => {
+    dispatch(clearPlayers());
     dispatch(setWinner({ winner }));
   };
 
@@ -223,10 +224,6 @@ const GameRoom = () => {
 
   const onUpdateVotekick = (votekickAt: Date) => {
     dispatch(setCurrentPlayerVotekick({ kickAt: votekickAt }));
-  };
-
-  const onVotekickEnded = () => {
-    dispatch(resetVotekickers());
   };
 
   const onColorChanged = ({
@@ -269,7 +266,6 @@ const GameRoom = () => {
     socket.on("game_ended", onGameEnded);
     socket.on("new_votekick", onNewVotekick);
     socket.on("update_votekick", onUpdateVotekick);
-    socket.on("votekick_ended", onVotekickEnded);
     socket.on("color_changed", onColorChanged);
 
     return () => {
@@ -302,7 +298,6 @@ const GameRoom = () => {
       socket.off("game_ended", onGameEnded);
       socket.off("new_votekick", onNewVotekick);
       socket.off("update_votekick", onUpdateVotekick);
-      socket.off("votekick_ended", onVotekickEnded);
       socket.off("color_changed", onColorChanged);
     };
   }, []);

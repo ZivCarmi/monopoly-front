@@ -16,10 +16,12 @@ import {
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
 
-type RoomWithoutParticipants = Omit<Room["stats"], "participants">;
+type RoomWithoutParticipantsStats = Omit<Room["stats"], "participants">;
+type Stats = RoomWithoutParticipantsStats & { participants: Player[] };
 type MapWithoutCards = Omit<Room["map"], "chances" | "surprises">;
-type RoomBase = Omit<Room, "players" | "stats" | "id" | "map"> &
-  RoomWithoutParticipants;
+type RoomBase = Omit<Room, "players" | "stats" | "map"> & {
+  stats: Stats;
+};
 
 export interface GameRoom extends RoomBase {
   players: Player[];
@@ -31,10 +33,11 @@ export interface GameRoom extends RoomBase {
     card: GameCard | null;
   };
   map: MapWithoutCards;
-  stats: RoomWithoutParticipants & { participants: Player[] };
+  stats: Stats;
 }
 
 const initialState: GameRoom = {
+  id: "",
   isInRoom: false,
   hostId: null,
   players: [],
@@ -86,6 +89,7 @@ export const gameSlice = createSlice({
     setRoom: (state, action: PayloadAction<Room>) => {
       const room = action.payload;
 
+      state.id = room.id;
       state.isInRoom = true;
       state.hostId = room.hostId;
       state.players = Object.values(room.players);
@@ -482,6 +486,14 @@ export const gameSlice = createSlice({
         state.players[playerIndex].bankrupted = true;
       }
     },
+    clearPlayers: (state) => {
+      state.players = state.players.map((player) => {
+        player.connectionKickAt = null;
+        player.votekickedAt = null;
+
+        return player;
+      });
+    },
     setWinner: (state, action: PayloadAction<{ winner: Player }>) => {
       state.stats.winner = action.payload.winner;
       state.stats.endedAt = new Date();
@@ -547,6 +559,7 @@ export const {
   setPlayerInDebt,
   setNoAnotherTurn,
   bankruptPlayer,
+  clearPlayers,
   setWinner,
   addTrade,
   updateTrade,

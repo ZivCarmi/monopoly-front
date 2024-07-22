@@ -73,8 +73,10 @@ const MainLayout = () => {
     });
   };
 
-  const onReturnedToLobby = () => {
-    navigate("/");
+  const onReturnedToLobby = (shouldReturnToLobby: boolean) => {
+    if (shouldReturnToLobby) {
+      navigate("/");
+    }
     dispatch(resetGameRoom());
   };
 

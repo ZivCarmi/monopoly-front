@@ -1,10 +1,10 @@
 import { useSocket } from "@/app/socket-context";
 
-const useBackToLobby = () => {
+const useBackToLobby = (shouldReturnToLobby: boolean = true) => {
   const socket = useSocket();
 
   const backToLobbyHandler = () => {
-    socket.emit("return_to_lobby");
+    socket.emit("return_to_lobby", shouldReturnToLobby);
   };
 
   return backToLobbyHandler;
