@@ -1,14 +1,19 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
+import { CharacterSelection } from "@/components/game-room/PlayersForm";
 import PlayerCharacter from "@/components/player/PlayerCharacter";
 import PlayerMoney from "@/components/player/PlayerMoney";
 import PlayerName from "@/components/player/PlayerName";
 import PlayerNamePlate from "@/components/player/PlayerNamePlate";
 import CountdownTimer from "@/components/ui/countdown-timer";
 import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
   cn,
   getAllColors,
-  getAvailableColors,
   getPlayerName,
   isColorTaken,
   isPlayerTurn,
@@ -16,6 +21,7 @@ import {
 import { Colors, Player, isGameNotStarted } from "@ziv-carmi/monopoly-utils";
 import { motion } from "framer-motion";
 import { Crown, FlagTriangleRight, WifiOff, X } from "lucide-react";
+import { useState } from "react";
 import { Button } from "../../ui/button";
 import {
   Tooltip,
@@ -23,13 +29,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../../ui/tooltip";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { CharacterSelection } from "@/components/game-room/PlayersForm";
-import { useState } from "react";
 
 const PlayerRow = ({ player }: { player: Player }) => {
   const { state, selfPlayer, hostId } = useAppSelector((state) => state.game);
