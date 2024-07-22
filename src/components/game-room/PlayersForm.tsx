@@ -9,21 +9,22 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { selectPlayers } from "@/slices/game-slice";
+import { setNickname } from "@/slices/user-slice";
+import { getAllColors, getAvailableRandomColor, isColorTaken } from "@/utils";
+import { PLAYER_NAME_STORAGE_KEY } from "@/utils/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Colors, PlayerSchema } from "@ziv-carmi/monopoly-utils";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import PlayerCharacter from "../player/PlayerCharacter";
+import PlayerCharacter, {
+  PlayerCharacterProps,
+} from "../player/PlayerCharacter";
+import { Input } from "../ui/input";
 import Modal from "../ui/modal";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import { Input } from "../ui/input";
-import { PLAYER_NAME_STORAGE_KEY } from "@/utils/constants";
-import { setNickname } from "@/slices/user-slice";
 
 const PlayersForm = () => {
-  const [hoveredChar, setHoveredChar] = useState("");
   const socket = useSocket();
   const { nickname } = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
@@ -35,7 +36,6 @@ const PlayersForm = () => {
     },
   });
   const colorWatch = form.watch("color");
-  const players = useAppSelector(selectPlayers);
 
   const submitHandler = (player: z.infer<typeof PlayerSchema>) => {
     socket.emit("create_player", player);
@@ -44,24 +44,7 @@ const PlayersForm = () => {
   };
 
   useEffect(() => {
-    const getAvailableColors = () => {
-      const colors = Object.keys(Colors);
-      const takenColors = players.map(({ color }) => color.toLowerCase());
-      const availableColors: string[] = [];
-
-      colors.forEach((color) => {
-        if (!takenColors.includes(color)) {
-          availableColors.push(color);
-        }
-      });
-
-      return availableColors;
-    };
-
-    const colors = getAvailableColors();
-    const randomColor = colors[Math.floor(Math.random() * colors.length)];
-
-    form.setValue("color", randomColor as Colors);
+    form.setValue("color", getAvailableRandomColor());
   }, []);
 
   return (
@@ -103,38 +86,24 @@ const PlayersForm = () => {
                     onValueChange={(e: Colors) => field.onChange(e)}
                     className="flex flex-wrap justify-center gap-10"
                   >
-                    {Object.values(Colors).map((_color) => {
-                      const takenColor = players.find(
-                        ({ color }) => color === _color
-                      );
-                      const isSelected =
-                        colorWatch === _color || hoveredChar === _color;
+                    {getAllColors().map((color) => {
+                      const takenColor = isColorTaken(color);
 
                       return (
-                        <FormItem key={_color}>
+                        <FormItem key={color}>
                           <FormControl>
                             <RadioGroupItem
-                              disabled={!!takenColor}
-                              value={_color}
+                              disabled={takenColor}
+                              value={color}
                               className="hidden"
                             />
                           </FormControl>
                           <FormLabel>
-                            <PlayerCharacter
-                              className={
-                                !!takenColor
-                                  ? "opacity-25 cursor-not-allowed"
-                                  : "cursor-pointer"
-                              }
-                              color={_color as Colors}
+                            <CharacterSelection
                               size={1.75}
-                              onMouseEnter={() => setHoveredChar(_color)}
-                              onMouseLeave={() => setHoveredChar("")}
-                              style={{
-                                filter: isSelected
-                                  ? `drop-shadow(0px 0px 16px ${_color})`
-                                  : undefined,
-                              }}
+                              color={color}
+                              isDisabled={takenColor}
+                              isSelected={colorWatch === color}
                             />
                           </FormLabel>
                         </FormItem>
@@ -154,6 +123,36 @@ const PlayersForm = () => {
         </form>
       </Form>
     </Modal>
+  );
+};
+
+type CharacterSelectionProps = {
+  isDisabled: boolean;
+  isSelected?: boolean;
+} & PlayerCharacterProps;
+
+export const CharacterSelection = ({
+  color,
+  isDisabled,
+  isSelected,
+  ...props
+}: CharacterSelectionProps) => {
+  const [hoveredChar, setHoveredChar] = useState("");
+  isSelected = isSelected || hoveredChar === color;
+
+  return (
+    <PlayerCharacter
+      className={
+        isDisabled ? "opacity-25 cursor-not-allowed" : "cursor-pointer"
+      }
+      color={color}
+      onMouseEnter={() => setHoveredChar(color)}
+      onMouseLeave={() => setHoveredChar("")}
+      style={{
+        filter: isSelected ? `drop-shadow(0px 0px 16px ${color})` : undefined,
+      }}
+      {...props}
+    />
   );
 };
 

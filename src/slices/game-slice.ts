@@ -1,6 +1,7 @@
 import { RootState } from "@/app/store";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import {
+  Colors,
   GameCard,
   GameSetting,
   GameState,
@@ -16,8 +17,8 @@ import {
 } from "@ziv-carmi/monopoly-utils";
 
 type RoomWithoutParticipants = Omit<Room["stats"], "participants">;
-
-type RoomBase = Omit<Room, "players" | "stats" | "id"> &
+type MapWithoutCards = Omit<Room["map"], "chances" | "surprises">;
+type RoomBase = Omit<Room, "players" | "stats" | "id" | "map"> &
   RoomWithoutParticipants;
 
 export interface GameRoom extends RoomBase {
@@ -29,6 +30,7 @@ export interface GameRoom extends RoomBase {
     tileIndex: number | null;
     card: GameCard | null;
   };
+  map: MapWithoutCards;
   stats: RoomWithoutParticipants & { participants: Player[] };
 }
 
@@ -40,14 +42,6 @@ const initialState: GameRoom = {
   isSpectating: false,
   map: {
     board: [],
-    chances: {
-      cards: [],
-      currentIndex: 0,
-    },
-    surprises: {
-      cards: [],
-      currentIndex: 0,
-    },
     goRewards: {
       pass: 200,
       land: 300,
@@ -171,6 +165,19 @@ export const gameSlice = createSlice({
 
       if (isSelf) {
         state.selfPlayer = player;
+      }
+    },
+    setPlayerColor: (
+      state,
+      action: PayloadAction<{ playerId: string; color: Colors }>
+    ) => {
+      const { playerId, color } = action.payload;
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === playerId
+      );
+
+      if (playerIndex >= 0) {
+        state.players[playerIndex].color = color;
       }
     },
     removePlayer: (state, action: PayloadAction<{ playerId: string }>) => {
@@ -520,6 +527,7 @@ export const {
   setPlayerConnection,
   setCurrentPlayerVotekick,
   addPlayer,
+  setPlayerColor,
   removePlayer,
   startGame,
   setDices,

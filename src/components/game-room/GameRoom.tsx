@@ -7,6 +7,7 @@ import {
 import {
   cityLevelChangedThunk,
   movedToNextAirportThunk,
+  newVotekickThunk,
   paidOutOfJailThunk,
   purchasedPropertyThunk,
   soldPropertyThunk,
@@ -15,7 +16,6 @@ import {
   tradeDeclinedThunk,
   tradeDeletedThunk,
   tradeUpdatedThunk,
-  newVotekickThunk,
 } from "@/actions/socket-actions";
 import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
@@ -28,6 +28,7 @@ import {
   setCurrentPlayerVotekick,
   setGameSetting,
   setHostId,
+  setPlayerColor,
   setPlayerConnection,
   setPlayerInDebt,
   setRoom,
@@ -39,6 +40,7 @@ import { resetTrade } from "@/slices/trade-slice";
 import { writeLog } from "@/slices/ui-slice";
 import { getPlayerName } from "@/utils";
 import {
+  Colors,
   GameCard,
   GameSetting,
   Player,
@@ -227,6 +229,16 @@ const GameRoom = () => {
     dispatch(resetVotekickers());
   };
 
+  const onColorChanged = ({
+    playerId,
+    color,
+  }: {
+    playerId: string;
+    color: Colors;
+  }) => {
+    dispatch(setPlayerColor({ playerId, color }));
+  };
+
   useEffect(() => {
     socket.on("game_updated", onGameUpdate);
     socket.on("game_settings_updated", onGameSettingsUpdated);
@@ -258,6 +270,7 @@ const GameRoom = () => {
     socket.on("new_votekick", onNewVotekick);
     socket.on("update_votekick", onUpdateVotekick);
     socket.on("votekick_ended", onVotekickEnded);
+    socket.on("color_changed", onColorChanged);
 
     return () => {
       socket.off("game_updated", onGameUpdate);
@@ -290,6 +303,7 @@ const GameRoom = () => {
       socket.off("new_votekick", onNewVotekick);
       socket.off("update_votekick", onUpdateVotekick);
       socket.off("votekick_ended", onVotekickEnded);
+      socket.off("color_changed", onColorChanged);
     };
   }, []);
 

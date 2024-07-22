@@ -5,8 +5,15 @@ import PlayerMoney from "@/components/player/PlayerMoney";
 import PlayerName from "@/components/player/PlayerName";
 import PlayerNamePlate from "@/components/player/PlayerNamePlate";
 import CountdownTimer from "@/components/ui/countdown-timer";
-import { cn, getPlayerName, isPlayerTurn } from "@/utils";
-import { Player, isGameNotStarted } from "@ziv-carmi/monopoly-utils";
+import {
+  cn,
+  getAllColors,
+  getAvailableColors,
+  getPlayerName,
+  isColorTaken,
+  isPlayerTurn,
+} from "@/utils";
+import { Colors, Player, isGameNotStarted } from "@ziv-carmi/monopoly-utils";
 import { motion } from "framer-motion";
 import { Crown, FlagTriangleRight, WifiOff, X } from "lucide-react";
 import { Button } from "../../ui/button";
@@ -16,15 +23,23 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "../../ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { CharacterSelection } from "@/components/game-room/PlayersForm";
+import { useState } from "react";
 
 const PlayerRow = ({ player }: { player: Player }) => {
   const { state, selfPlayer, hostId } = useAppSelector((state) => state.game);
+  const isSelfPlayer = selfPlayer?.id === player.id;
 
   return (
     <motion.div
       className={cn(
         "flex items-center text-center p-2 relative rounded-lg",
-        selfPlayer?.id === player.id && "bg-background/50"
+        isSelfPlayer && "bg-background/50"
       )}
       layout
     >
@@ -41,7 +56,7 @@ const PlayerRow = ({ player }: { player: Player }) => {
         {isGameNotStarted(state) ? (
           <>
             {hostId === selfPlayer?.id && <KickPlayer playerId={player.id} />}
-            <ChangeAppearanceButton playerId={player.id} />
+            {isSelfPlayer && <ChangeAppearanceButton />}
           </>
         ) : player.bankrupted ? (
           <BankruptedIndicator />
@@ -50,6 +65,41 @@ const PlayerRow = ({ player }: { player: Player }) => {
         )}
       </div>
     </motion.div>
+  );
+};
+
+const ChangeAppearanceButton = () => {
+  const [isOpen, setIsOpen] = useState(false);
+  const socket = useSocket();
+
+  const changeColorHandler = (color: Colors) => {
+    socket.emit("change_color", color);
+    setIsOpen(false);
+  };
+
+  return (
+    <Popover open={isOpen} onOpenChange={setIsOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" className="mx-auto text-xs">
+          שנה נראות
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-60 grid grid-cols-4 place-items-center gap-x-2 gap-y-4">
+        {getAllColors().map((color) => {
+          const takenColor = isColorTaken(color);
+
+          return (
+            <button key={color} onClick={() => changeColorHandler(color)}>
+              <CharacterSelection
+                size={1.5}
+                color={color}
+                isDisabled={takenColor}
+              />
+            </button>
+          );
+        })}
+      </PopoverContent>
+    </Popover>
   );
 };
 
@@ -89,20 +139,6 @@ const KickPlayer = ({ playerId }: { playerId: string }) => {
         <TooltipContent>הסר שחקן</TooltipContent>
       </Tooltip>
     </TooltipProvider>
-  );
-};
-
-const ChangeAppearanceButton = ({ playerId }: { playerId: string }) => {
-  const { selfPlayer } = useAppSelector((state) => state.game);
-
-  if (selfPlayer?.id !== playerId) {
-    return null;
-  }
-
-  return (
-    <Button variant="ghost" className="mx-auto text-xs">
-      שנה נראות
-    </Button>
   );
 };
 

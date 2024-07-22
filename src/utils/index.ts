@@ -8,6 +8,7 @@ import {
 } from "@/types/Board";
 import { TradeErrorReason, TradeValidityData } from "@/types/Trade";
 import {
+  Colors,
   CountryIds,
   GameTile,
   IAirport,
@@ -351,4 +352,34 @@ export const isValidTrade = (trade: TradeType): TradeValidityData => {
       playerId: errorPlayerId,
     },
   };
+};
+
+export const getAllColors = () => Object.values(Colors);
+
+export const getAvailableColors = () => {
+  const { players } = store.getState().game;
+  const colors = Object.keys(Colors);
+  const takenColors = players.map(({ color }) => color.toLowerCase());
+  const availableColors: string[] = [];
+
+  colors.forEach((color) => {
+    if (!takenColors.includes(color)) {
+      availableColors.push(color);
+    }
+  });
+
+  return availableColors as Colors[];
+};
+
+export const getAvailableRandomColor = () => {
+  const colors = getAvailableColors();
+  return colors[Math.floor(Math.random() * colors.length)] as Colors;
+};
+
+export const isColorTaken = (color: Colors) => {
+  const { players } = store.getState().game;
+
+  const existColor = players.find((_player) => _player.color === color);
+
+  return !!existColor;
 };
