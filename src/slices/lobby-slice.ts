@@ -5,14 +5,12 @@ export interface LobbyState {
   lobbyRooms: LobbyRoom[];
   nextUpdate: Date | null;
   isFetching: boolean;
-  counter: number;
 }
 
 const initialState: LobbyState = {
   lobbyRooms: [],
   nextUpdate: null,
   isFetching: false,
-  counter: 10,
 };
 
 export const lobbySlice = createSlice({
@@ -28,13 +26,10 @@ export const lobbySlice = createSlice({
     setIsFetching: (state, action: PayloadAction<boolean>) => {
       state.isFetching = action.payload;
     },
-    setCounter: (state, action: PayloadAction<number>) => {
-      state.counter = action.payload;
-    },
   },
 });
 
-export const { setLobbyRooms, setNextUpdate, setIsFetching, setCounter } =
+export const { setLobbyRooms, setNextUpdate, setIsFetching } =
   lobbySlice.actions;
 
 export default lobbySlice.reducer;

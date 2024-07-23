@@ -2,7 +2,6 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import useFetchLobbyRooms from "@/hooks/useFetchLobbyRooms";
 import {
-  setCounter,
   setIsFetching,
   setLobbyRooms,
   setNextUpdate,

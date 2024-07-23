@@ -12,7 +12,7 @@ import useBackToLobby from "@/hooks/useBackToLobby";
 import type { unstable_Blocker as Blocker } from "react-router-dom";
 
 const ConfirmNavigationMidGame = ({ blocker }: { blocker: Blocker }) => {
-  const backToLobby = useBackToLobby(false);
+  const backToLobby = useBackToLobby();
 
   if (blocker.state === "blocked") {
     return (
