@@ -4,9 +4,16 @@ import { Gamepad2, Users2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import Icon from "../ui/icon";
 import NicknameForm from "./NicknameForm";
+import { useEffect } from "react";
+import { useSocket } from "@/app/socket-context";
 
 const LobbyMainMenu = () => {
+  const socket = useSocket();
   const createRoom = useJoinRoom();
+
+  useEffect(() => {
+    socket.emit("lobby");
+  }, []);
 
   return (
     <div className="m-auto">

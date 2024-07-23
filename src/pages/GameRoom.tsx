@@ -4,23 +4,23 @@ import GameBoardProvider from "@/components/board/GameBoardProvider";
 import ConfirmNavigationMidGame from "@/components/game-room/ConfirmNavigationMidGame";
 import GameRoom from "@/components/game-room/GameRoom";
 import useJoinRoom from "@/hooks/useJoinRoom";
-import { isGameStarted } from "@ziv-carmi/monopoly-utils";
+import { isSelfPlayerParticipating } from "@/utils";
 import { useCallback, useEffect, useRef } from "react";
 import type { unstable_BlockerFunction as BlockerFunction } from "react-router-dom";
 import { useBlocker, useParams } from "react-router-dom";
 
 const GameRoomPage = () => {
   const { roomId } = useParams();
-  const { state, selfPlayer, isInRoom } = useAppSelector((state) => state.game);
+  const { isInRoom } = useAppSelector((state) => state.game);
   const isFirstRender = useRef(true);
   const socket = useSocket();
   const joinRoom = useJoinRoom();
-  const isPlayingInRunningGame = isGameStarted(state) && !!selfPlayer;
+  const isSelfParticipating = isSelfPlayerParticipating();
   const shouldBlock = useCallback<BlockerFunction>(
     ({ currentLocation, nextLocation }) =>
-      isPlayingInRunningGame &&
+      isSelfPlayerParticipating() &&
       currentLocation.pathname !== nextLocation.pathname,
-    [isPlayingInRunningGame]
+    [isSelfParticipating]
   );
   const blocker = useBlocker(shouldBlock);
 

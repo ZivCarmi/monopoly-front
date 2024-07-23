@@ -21,6 +21,7 @@ import {
   TradeType,
   isAirport,
   isCompany,
+  isGameStarted,
   isProperty,
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
@@ -149,6 +150,12 @@ export const isPlayerCanDowngrade = (playerId: string, property: IProperty) => {
     !isPlayerSuspended(playerId) &&
     property.rentIndex !== RentIndexes.BLANK
   );
+};
+
+export const isSelfPlayerParticipating = () => {
+  const { selfPlayer, state } = store.getState().game;
+
+  return isGameStarted(state) && !!selfPlayer;
 };
 
 export const getCities = (countryId: CountryIds) => {

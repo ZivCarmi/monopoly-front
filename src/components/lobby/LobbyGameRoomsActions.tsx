@@ -1,30 +1,12 @@
-import { useSocket } from "@/app/socket-context";
-import { ArrowRight, PlusSquare, RefreshCcw } from "lucide-react";
-import { useEffect } from "react";
+import useJoinRoom from "@/hooks/useJoinRoom";
+import { ArrowRight, PlusSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
-import useJoinRoom from "@/hooks/useJoinRoom";
+import FetchLobbyRoomsButton from "./FetchLobbyRoomsButton";
 
 const LobbyGameRoomsActions = () => {
-  const socket = useSocket();
   const createRoom = useJoinRoom();
-
-  const fetchAllRooms = () => {
-    socket.emit("get_lobby_rooms");
-  };
-
-  useEffect(() => {
-    fetchAllRooms();
-
-    const fetchRoomsInterval = setInterval(() => {
-      fetchAllRooms();
-    }, 10000);
-
-    return () => {
-      clearInterval(fetchRoomsInterval);
-    };
-  }, []);
 
   return (
     <div className="mb-8 flex items-center justify-between">
@@ -35,9 +17,7 @@ const LobbyGameRoomsActions = () => {
         </Link>
       </Button>
       <div className="flex gap-2">
-        <Button variant="outline" onClick={fetchAllRooms}>
-          <RefreshCcw className="h-4 w-4" />
-        </Button>
+        <FetchLobbyRoomsButton />
         <Button onClick={() => createRoom()} variant="primaryFancy">
           <Icon icon={PlusSquare} />
           חדר חדש

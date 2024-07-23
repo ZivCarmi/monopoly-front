@@ -1,7 +1,13 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import { setLobbyRooms } from "@/slices/lobby-slice";
-import { LobbyRoom } from "@ziv-carmi/monopoly-utils";
+import useFetchLobbyRooms from "@/hooks/useFetchLobbyRooms";
+import {
+  setCounter,
+  setIsFetching,
+  setLobbyRooms,
+  setNextUpdate,
+} from "@/slices/lobby-slice";
+import { LobbyRoomsResponse } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
 import LobbyGameRoomsActions from "./LobbyGameRoomsActions";
 import LobbyGameRoomsList from "./LobbyGameRoomsList";
@@ -11,12 +17,17 @@ const LobbyGameRooms = () => {
   const { lobbyRooms } = useAppSelector((state) => state.lobby);
   const socket = useSocket();
   const dispatch = useAppDispatch();
+  const fetchLobbyRooms = useFetchLobbyRooms();
 
-  const setRooms = (lobbyRooms: LobbyRoom[]) => {
-    dispatch(setLobbyRooms(lobbyRooms));
+  const setRooms = ({ rooms, nextUpdateAt }: LobbyRoomsResponse) => {
+    dispatch(setLobbyRooms(rooms));
+    dispatch(setIsFetching(false));
+    dispatch(setNextUpdate(nextUpdateAt));
   };
 
   useEffect(() => {
+    fetchLobbyRooms();
+
     socket.on("rooms_list", setRooms);
 
     return () => {

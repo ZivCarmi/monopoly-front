@@ -9,9 +9,10 @@ import { setNickname, setUserId } from "@/slices/user-slice";
 import { PLAYER_NAME_STORAGE_KEY } from "@/utils/constants";
 import { Player, Room } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
+import { Outlet, useNavigate, useNavigationType } from "react-router-dom";
 import { useToast } from "./ui/use-toast";
 import useBackToLobby from "@/hooks/useBackToLobby";
+import { isSelfPlayerParticipating } from "@/utils";
 
 const STORAGED_PLAYER_NAME = localStorage.getItem(PLAYER_NAME_STORAGE_KEY);
 
@@ -22,6 +23,7 @@ const MainLayout = () => {
   const navigate = useNavigate();
   const updateNickname = useUpdateNickname();
   const backToLobby = useBackToLobby();
+  const navigationType = useNavigationType();
 
   const onNicknameSelected = (nickname: string) => {
     dispatch(setNickname(nickname));
@@ -73,10 +75,7 @@ const MainLayout = () => {
     });
   };
 
-  const onReturnedToLobby = (shouldReturnToLobby: boolean) => {
-    if (shouldReturnToLobby) {
-      navigate("/");
-    }
+  const onReturnedToLobby = () => {
     dispatch(resetGameRoom());
   };
 
@@ -91,6 +90,12 @@ const MainLayout = () => {
 
     dispatch(playerKickedThunk(kickedPlayerId, notifyOnKicked));
   };
+
+  useEffect(() => {
+    if (!isSelfPlayerParticipating() && navigationType === "POP") {
+      backToLobby();
+    }
+  }, [navigationType]);
 
   useEffect(() => {
     if (STORAGED_PLAYER_NAME) {
