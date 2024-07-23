@@ -47,6 +47,7 @@ import {
   advanceToTileGameCard,
   advanceToTileTypeGameCard,
   paymentGameCard,
+  renovationGameCard,
 } from "./card-actions";
 
 export const handleDices = (dices: number[]): AppThunk => {
@@ -270,6 +271,15 @@ export const handleGameCard = (card: GameCard): AppThunk => {
       case GameCardTypes.GO_TO_JAIL:
         return setTimeout(() => {
           dispatch(sendPlayerToJail(currentPlayerId));
+        }, 600);
+      // case GameCardTypes.PARDON:
+      // return setTimeout(() => {
+      // console.log("pardon card");
+      // dispatch(sendPlayerToJail(currentPlayerId));
+      // }, 600);
+      case GameCardTypes.RENOVATION:
+        return setTimeout(() => {
+          dispatch(renovationGameCard(currentPlayerId, card));
         }, 600);
     }
   };

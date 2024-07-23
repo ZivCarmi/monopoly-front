@@ -9,8 +9,12 @@ import {
   AdvancedToTileCard,
   AdvancedToTileTypeCard,
   PaymentCard,
+  RenovationCard,
+  isProperty,
+  RentIndexes,
 } from "@ziv-carmi/monopoly-utils";
 import { handlePlayerLanding } from "./game-actions";
+import { hasBuildings, isPlayer } from "@/utils";
 
 export const paymentGameCard = (
   playerId: string,
@@ -122,5 +126,57 @@ export const advanceToTileTypeGameCard = (
       );
       dispatch(handlePlayerLanding(playerId, closestTileTypeIndex));
     }
+  };
+};
+
+export const renovationGameCard = (
+  playerId: string,
+  drawnGameCard: RenovationCard
+): AppThunk => {
+  return (dispatch, getState) => {
+    const {
+      map: { board },
+    } = getState().game;
+    const {
+      event: { amountPerHouse, amountPerHotel },
+    } = drawnGameCard;
+    const player = isPlayer(playerId);
+
+    if (!player) {
+      throw new Error("Player not found before renovating");
+    }
+
+    const arrayToSum = board.map((tile) => {
+      if (
+        isProperty(tile) &&
+        tile.owner === playerId &&
+        hasBuildings(tile.country.id)
+      ) {
+        const isHouse =
+          tile.rentIndex > RentIndexes.BLANK &&
+          tile.rentIndex < RentIndexes.HOTEL;
+        const isHotel = tile.rentIndex === RentIndexes.HOTEL;
+
+        if (isHouse) {
+          return amountPerHouse * tile.rentIndex;
+        } else if (isHotel) {
+          return amountPerHotel;
+        }
+      }
+
+      return 0;
+    });
+
+    const totalPayment = arrayToSum.reduce(
+      (acc, currentValue) => acc + currentValue,
+      0
+    );
+
+    dispatch(
+      transferMoney({
+        payerId: playerId,
+        amount: totalPayment,
+      })
+    );
   };
 };
