@@ -130,16 +130,7 @@ export const isPlayerCanUpgrade = (playerId: string, property: IProperty) => {
       ? property.hotelCost
       : property.houseCost;
 
-  console.log("player", player);
-
   if (!player) return false;
-
-  console.log(
-    isPlayerTurn(playerId),
-    !isPlayerSuspended(playerId),
-    player.money >= upgradeCost,
-    property.rentIndex !== RentIndexes.HOTEL
-  );
 
   return (
     isPlayerTurn(playerId) &&

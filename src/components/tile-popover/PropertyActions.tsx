@@ -1,7 +1,7 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import { selectGameBoard } from "@/slices/game-slice";
-import { selectPurchasableTileIndex } from "@/slices/ui-slice";
+import { selectSelectedTileIndex } from "@/slices/ui-slice";
 import { isPlayerCanDowngrade, isPlayerCanUpgrade } from "@/utils";
 import {
   IProperty,
@@ -16,7 +16,7 @@ const PropertyActions = ({ property }: { property: IProperty }) => {
   const socket = useSocket();
   const { selfPlayer } = useAppSelector((state) => state.game);
   const board = useAppSelector(selectGameBoard);
-  const propertyIndex = useAppSelector(selectPurchasableTileIndex);
+  const propertyIndex = useAppSelector(selectSelectedTileIndex);
 
   if (!selfPlayer || !hasMonopoly(board, property.country.id)) return null;
 
@@ -30,8 +30,6 @@ const PropertyActions = ({ property }: { property: IProperty }) => {
   const downgradeCityHandler = () => {
     socket.emit("downgrade_city", propertyIndex);
   };
-
-  console.log(isPlayerCanUpgrade(selfPlayer.id, property));
 
   return (
     <>

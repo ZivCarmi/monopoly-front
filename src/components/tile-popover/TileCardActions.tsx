@@ -1,6 +1,6 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import { selectPurchasableTileIndex } from "@/slices/ui-slice";
+import { selectSelectedTileIndex } from "@/slices/ui-slice";
 import { hasBuildings, isPlayerSuspended, isPlayerTurn } from "@/utils";
 import {
   PurchasableTile,
@@ -21,7 +21,7 @@ import { selectGameBoard } from "@/slices/game-slice";
 
 const TileCardActions = ({ tile }: { tile: PurchasableTile }) => {
   const socket = useSocket();
-  const propertyIndex = useAppSelector(selectPurchasableTileIndex);
+  const propertyIndex = useAppSelector(selectSelectedTileIndex);
   const { canPerformTurnActions, selfPlayer } = useAppSelector(
     (state) => state.game
   );

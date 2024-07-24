@@ -22,11 +22,16 @@ import {
   setTrade,
   setTradeIsOpen,
 } from "@/slices/trade-slice";
-import { setSelectedTile, writeLog } from "@/slices/ui-slice";
+import {
+  selectSelectedTileIndex,
+  setSelectedTile,
+  writeLog,
+} from "@/slices/ui-slice";
 import { getPlayerName } from "@/utils";
 import {
   getCityLevelText,
-  IProperty,
+  isProperty,
+  isPurchasable,
   PAY_OUT_FROM_JAIL_AMOUNT,
   Player,
   PurchasableTile,
@@ -37,22 +42,24 @@ export const purchasedPropertyThunk = (propertyIndex: number): AppThunk => {
   return (dispatch, getState) => {
     const state = getState();
     const { currentPlayerId } = state.game;
-    const { selectedTile } = state.ui;
 
     if (!currentPlayerId) return;
 
     const playerName = getPlayerName(currentPlayerId);
     const tile = getState().game.map.board[propertyIndex];
+    const selectedTileIndex = selectSelectedTileIndex(state);
 
-    dispatch(purchaseProperty({ propertyIndex }));
-    dispatch(writeLog(`${playerName} רכש את ${tile.name}`));
+    if (isPurchasable(tile)) {
+      dispatch(purchaseProperty({ propertyIndex }));
+      dispatch(writeLog(`${playerName} רכש את ${tile.name}`));
 
-    if (selectedTile) {
-      dispatch(
-        setSelectedTile(
-          getState().game.map.board[propertyIndex] as PurchasableTile
-        )
-      );
+      if (selectedTileIndex === propertyIndex) {
+        dispatch(
+          setSelectedTile(
+            getState().game.map.board[selectedTileIndex] as PurchasableTile
+          )
+        );
+      }
     }
   };
 };
@@ -61,22 +68,24 @@ export const soldPropertyThunk = (propertyIndex: number): AppThunk => {
   return (dispatch, getState) => {
     const state = getState();
     const { currentPlayerId } = state.game;
-    const { selectedTile } = state.ui;
 
     if (!currentPlayerId) return;
 
     const playerName = getPlayerName(currentPlayerId);
     const tile = getState().game.map.board[propertyIndex];
+    const selectedTileIndex = selectSelectedTileIndex(state);
 
-    dispatch(sellProperty({ propertyIndex }));
-    dispatch(writeLog(`${playerName} מכר את ${tile.name}`));
+    if (isPurchasable(tile)) {
+      dispatch(sellProperty({ propertyIndex }));
+      dispatch(writeLog(`${playerName} מכר את ${tile.name}`));
 
-    if (selectedTile) {
-      dispatch(
-        setSelectedTile(
-          getState().game.map.board[propertyIndex] as PurchasableTile
-        )
-      );
+      if (selectedTileIndex === propertyIndex) {
+        dispatch(
+          setSelectedTile(
+            getState().game.map.board[selectedTileIndex] as PurchasableTile
+          )
+        );
+      }
     }
   };
 };
@@ -96,23 +105,28 @@ export const cityLevelChangedThunk = ({
     if (!currentPlayerId) return;
 
     const playerName = getPlayerName(currentPlayerId);
-    const tile = state.game.map.board[propertyIndex] as IProperty;
+    const tile = state.game.map.board[propertyIndex];
+    const selectedTileIndex = selectSelectedTileIndex(state);
 
-    let cityLevelText = getCityLevelText(tile.rentIndex + 1);
-    let message = `${playerName} שדרג ל${cityLevelText} ב${tile.name}`;
+    if (isProperty(tile)) {
+      let cityLevelText = getCityLevelText(tile.rentIndex + 1);
+      let message = `${playerName} שדרג ל${cityLevelText} ב${tile.name}`;
 
-    if (changeType === "downgrade") {
-      cityLevelText = getCityLevelText(tile.rentIndex - 1);
-      message = `${playerName} שנמך ל${cityLevelText} ב${tile.name}`;
-    }
+      if (changeType === "downgrade") {
+        cityLevelText = getCityLevelText(tile.rentIndex - 1);
+        message = `${playerName} שנמך ל${cityLevelText} ב${tile.name}`;
+      }
 
-    dispatch(setCityLevel({ propertyIndex, changeType }));
-    dispatch(writeLog(message));
+      dispatch(setCityLevel({ propertyIndex, changeType }));
+      dispatch(writeLog(message));
 
-    if (selectedTile) {
-      dispatch(
-        setSelectedTile(getState().game.map.board[propertyIndex] as IProperty)
-      );
+      if (isProperty(selectedTile) && selectedTileIndex === propertyIndex) {
+        dispatch(
+          setSelectedTile(
+            getState().game.map.board[selectedTileIndex] as PurchasableTile
+          )
+        );
+      }
     }
   };
 };

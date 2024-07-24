@@ -1,7 +1,7 @@
 import { useAppDispatch } from "@/app/hooks";
 import { setSelectedTile } from "@/slices/ui-slice";
 import { PurchasableTile as PurchasableTileType } from "@ziv-carmi/monopoly-utils";
-import TileCard from "../tile-card/TileCard";
+import TileCard from "../tile-popover/TileCard";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import { cn } from "@/utils";
 import { PopoverContentProps } from "@radix-ui/react-popover";

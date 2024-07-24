@@ -36,7 +36,7 @@ export const uiSlice = createSlice({
 
 export const { resetUi, writeLog, setSelectedTile } = uiSlice.actions;
 
-export const selectPurchasableTileIndex = (state: RootState) =>
+export const selectSelectedTileIndex = (state: RootState) =>
   state.game.map.board.findIndex(
     (tile) => tile.name === state.ui.selectedTile?.name
   );
