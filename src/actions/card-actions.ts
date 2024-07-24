@@ -12,9 +12,11 @@ import {
   RenovationCard,
   isProperty,
   RentIndexes,
+  getGoTile,
 } from "@ziv-carmi/monopoly-utils";
 import { handlePlayerLanding } from "./game-actions";
 import { hasBuildings, isPlayer } from "@/utils";
+import { writeLog } from "@/slices/ui-slice";
 
 export const paymentGameCard = (
   playerId: string,
@@ -57,7 +59,7 @@ export const advanceToTileGameCard = (
   return (dispatch, getState) => {
     const {
       players,
-      map: { goRewards },
+      map: { board, goRewards },
     } = getState().game;
     const { event } = drawnGameCard;
     const player = players.find((player) => player.id === playerId);
@@ -69,6 +71,13 @@ export const advanceToTileGameCard = (
         event.tileIndex !== 0 && player.tilePos > event.tileIndex;
 
       if (shouldGetPassReward) {
+        const goTile = getGoTile(board);
+
+        dispatch(
+          writeLog(
+            `${player.name} עבר ב${goTile.name} והרוויח ₪${goRewards.pass}`
+          )
+        );
         dispatch(
           transferMoney({
             recieverId: playerId,

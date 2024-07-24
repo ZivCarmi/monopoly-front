@@ -19,7 +19,7 @@ import {
 import { useMemo } from "react";
 import BoardRow from "../board/BoardRow";
 import BoardRowTile from "../board/BoardRowTile";
-import { useGameBoard } from "../board/GameBoardProvider";
+import { useGameRoom } from "../game-room/GameRoomProvider";
 import OwnerIndicator from "../board/OwnerIndicator";
 import PropertyIcon from "../board/PropertyIcon";
 import { TileWrapper } from "../board/Tile";
@@ -29,7 +29,7 @@ import TradeBoardTile from "./TradeBoardTile";
 
 const TradeBoardRows = ({ trader }: { trader: TradePlayer }) => {
   const dispatch = useAppDispatch();
-  const gameBoard = useGameBoard();
+  const { gameBoard } = useGameRoom();
   const { mode } = useAppSelector((state) => state.trade);
 
   const setPropertiesHandler = (tileIndex: number) => {

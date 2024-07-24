@@ -2,6 +2,7 @@ import {
   handleDices,
   handleGameCard,
   handlePlayerLanding,
+  handleSwitchTurn,
   walkPlayer,
 } from "@/actions/game-actions";
 import {
@@ -9,6 +10,7 @@ import {
   movedToNextAirportThunk,
   newVotekickThunk,
   paidOutOfJailThunk,
+  playerKickedThunk,
   purchasedPropertyThunk,
   soldPropertyThunk,
   tradeAcceptedThunk,
@@ -19,6 +21,7 @@ import {
 } from "@/actions/socket-actions";
 import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
+import useBackToLobby from "@/hooks/useBackToLobby";
 import {
   addPlayer,
   allowTurnActions,
@@ -49,15 +52,22 @@ import {
   WalkObject,
 } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import SidebarPanel from "../game-panels/SidebarPanel";
 import InfoPanel from "../game-panels/general/InfoPanel";
 import InvitationPanel from "../game-panels/general/InvitationPanel";
 import ScoreboardPanel from "../game-panels/scoreboard/ScoreboardPanel";
+import { useToast } from "../ui/use-toast";
+import { useGameRoom } from "./GameRoomProvider";
 import MainBoard from "./MainBoard";
 
 const GameRoom = () => {
   const socket = useSocket();
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { setIsVotekicked } = useGameRoom();
+  const backToLobby = useBackToLobby();
 
   const onGameUpdate = (room: Room) => {
     dispatch(setRoom(room));
@@ -145,7 +155,7 @@ const GameRoom = () => {
   };
 
   const onSwitchedTurn = (nextPlayerId: string) => {
-    dispatch(switchTurn({ nextPlayerId }));
+    dispatch(handleSwitchTurn(nextPlayerId));
   };
 
   const onPurchasedProperty = (propertyIndex: number) => {
@@ -236,6 +246,25 @@ const GameRoom = () => {
     dispatch(setPlayerColor({ playerId, color }));
   };
 
+  const onPlayerKicked = (kickedPlayerId: string) => {
+    const notifyOnKicked = () => {
+      if (setIsVotekicked) {
+        setIsVotekicked(true);
+      }
+
+      setTimeout(() => {
+        navigate("/");
+        backToLobby();
+        toast({
+          variant: "destructive",
+          title: "הוסרת מהמשחק על ידי מארח החדר",
+        });
+      }, 0);
+    };
+
+    dispatch(playerKickedThunk(kickedPlayerId, notifyOnKicked));
+  };
+
   useEffect(() => {
     socket.on("game_updated", onGameUpdate);
     socket.on("game_settings_updated", onGameSettingsUpdated);
@@ -267,6 +296,7 @@ const GameRoom = () => {
     socket.on("new_votekick", onNewVotekick);
     socket.on("update_votekick", onUpdateVotekick);
     socket.on("color_changed", onColorChanged);
+    socket.on("player_votekicked", onPlayerKicked);
 
     return () => {
       socket.off("game_updated", onGameUpdate);
@@ -299,6 +329,7 @@ const GameRoom = () => {
       socket.off("new_votekick", onNewVotekick);
       socket.off("update_votekick", onUpdateVotekick);
       socket.off("color_changed", onColorChanged);
+      socket.off("player_votekicked", onPlayerKicked);
     };
   }, []);
 

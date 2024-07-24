@@ -1,14 +1,14 @@
 import { rowSide } from "@/types/Board";
 import { isCorner } from "@ziv-carmi/monopoly-utils";
+import { useGameRoom } from "../game-room/GameRoomProvider";
 import BoardRow from "./BoardRow";
 import BoardRowTile from "./BoardRowTile";
 import CornerTile from "./CornerTile";
-import { useGameBoard } from "./GameBoardProvider";
 import MappedPlayers from "./MappedPlayers";
 import NormalTile from "./NormalTile";
 
 const GameBoardRows = () => {
-  const gameBoard = useGameBoard();
+  const { gameBoard } = useGameRoom();
 
   return gameBoard.map((row, rowIndex) => (
     <BoardRow key={rowIndex} area={row.area}>

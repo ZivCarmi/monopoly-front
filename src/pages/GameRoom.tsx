@@ -1,13 +1,10 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import GameBoardProvider from "@/components/board/GameBoardProvider";
-import ConfirmNavigationMidGame from "@/components/game-room/ConfirmNavigationMidGame";
 import GameRoom from "@/components/game-room/GameRoom";
+import GameRoomProvider from "@/components/game-room/GameRoomProvider";
 import useJoinRoom from "@/hooks/useJoinRoom";
-import { isSelfPlayerParticipating } from "@/utils";
-import { useCallback, useEffect, useRef } from "react";
-import type { unstable_BlockerFunction as BlockerFunction } from "react-router-dom";
-import { useBlocker, useParams } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import { useParams } from "react-router-dom";
 
 const GameRoomPage = () => {
   const { roomId } = useParams();
@@ -15,14 +12,6 @@ const GameRoomPage = () => {
   const isFirstRender = useRef(true);
   const socket = useSocket();
   const joinRoom = useJoinRoom();
-  const isSelfParticipating = isSelfPlayerParticipating();
-  const shouldBlock = useCallback<BlockerFunction>(
-    ({ currentLocation, nextLocation }) =>
-      isSelfPlayerParticipating() &&
-      currentLocation.pathname !== nextLocation.pathname,
-    [isSelfParticipating]
-  );
-  const blocker = useBlocker(shouldBlock);
 
   useEffect(() => {
     if (roomId && !isInRoom && isFirstRender.current) {
@@ -42,10 +31,9 @@ const GameRoomPage = () => {
   }, []);
 
   return (
-    <GameBoardProvider>
+    <GameRoomProvider>
       <GameRoom />
-      {blocker ? <ConfirmNavigationMidGame blocker={blocker} /> : null}
-    </GameBoardProvider>
+    </GameRoomProvider>
   );
 };
 

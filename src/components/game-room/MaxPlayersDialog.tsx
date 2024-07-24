@@ -1,14 +1,13 @@
 import { useAppDispatch } from "@/app/hooks";
-import useBackToLobby from "@/hooks/useBackToLobby";
 import { setIsSpectating } from "@/slices/game-slice";
 import { Eye, Home } from "lucide-react";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
 import Modal from "../ui/modal";
+import BackToLobbyLink from "./BackToLobbyLink";
 
 const MaxPlayersDialog = () => {
   const dispatch = useAppDispatch();
-  const backToLobby = useBackToLobby();
 
   return (
     <Modal>
@@ -21,10 +20,14 @@ const MaxPlayersDialog = () => {
           <Icon icon={Eye} />
           צפה במשחק
         </Button>
-        <Button onClick={backToLobby} variant="outline">
-          <Icon icon={Home} />
-          חזרה ללובי
-        </Button>
+        <BackToLobbyLink>
+          <Button variant="primary" asChild>
+            <span>
+              <Icon icon={Home} />
+              חזרה ללובי
+            </span>
+          </Button>
+        </BackToLobbyLink>
       </div>
     </Modal>
   );

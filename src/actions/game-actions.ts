@@ -6,6 +6,7 @@ import {
   setDices,
   staySuspendedTurn,
   suspendPlayer,
+  switchTurn,
   transferMoney,
 } from "@/slices/game-slice";
 import { removePlayerProperties, setPlayerMoney } from "@/slices/trade-slice";
@@ -50,6 +51,16 @@ import {
   renovationGameCard,
 } from "./card-actions";
 
+export const handleSwitchTurn = (nextPlayerId: string): AppThunk => {
+  return (dispatch) => {
+    if (isPlayerSuspended(nextPlayerId)?.reason === TileTypes.VACATION) {
+      dispatch(freePlayer({ playerId: nextPlayerId }));
+    }
+
+    dispatch(switchTurn({ nextPlayerId }));
+  };
+};
+
 export const handleDices = (dices: number[]): AppThunk => {
   return (dispatch, getState) => {
     dispatch(setDices({ dices }));
@@ -58,7 +69,7 @@ export const handleDices = (dices: number[]): AppThunk => {
     const isDouble = dices[0] === dices[1];
 
     if (!currentPlayerId) {
-      throw new Error("currentPlayerId was not found");
+      throw new Error("currentPlayerId was not found in handleSwitchTurn");
     }
 
     const playerName = getPlayerName(currentPlayerId);

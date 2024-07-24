@@ -130,7 +130,16 @@ export const isPlayerCanUpgrade = (playerId: string, property: IProperty) => {
       ? property.hotelCost
       : property.houseCost;
 
+  console.log("player", player);
+
   if (!player) return false;
+
+  console.log(
+    isPlayerTurn(playerId),
+    !isPlayerSuspended(playerId),
+    player.money >= upgradeCost,
+    property.rentIndex !== RentIndexes.HOTEL
+  );
 
   return (
     isPlayerTurn(playerId) &&
@@ -152,10 +161,16 @@ export const isPlayerCanDowngrade = (playerId: string, property: IProperty) => {
   );
 };
 
-export const isSelfPlayerParticipating = () => {
-  const { selfPlayer, state } = store.getState().game;
+export const isInIdleRoom = () => {
+  const { isInRoom, state } = store.getState().game;
 
-  return isGameStarted(state) && !!selfPlayer;
+  return isInRoom && !isGameStarted(state);
+};
+
+export const isSelfPlayerParticipating = () => {
+  const { isInRoom, selfPlayer, state } = store.getState().game;
+
+  return isInRoom && isGameStarted(state) && !!selfPlayer;
 };
 
 export const getCities = (countryId: CountryIds) => {

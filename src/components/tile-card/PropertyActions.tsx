@@ -31,6 +31,8 @@ const PropertyActions = ({ property }: { property: IProperty }) => {
     socket.emit("downgrade_city", propertyIndex);
   };
 
+  console.log(isPlayerCanUpgrade(selfPlayer.id, property));
+
   return (
     <>
       <Tooltip>

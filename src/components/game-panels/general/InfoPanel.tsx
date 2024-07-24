@@ -1,23 +1,11 @@
+import BackToLobbyLink from "@/components/game-room/BackToLobbyLink";
 import { ToggleTheme } from "@/components/theme/ThemeToggle";
-import useBackToLobby from "@/hooks/useBackToLobby";
-import { isSelfPlayerParticipating } from "@/utils";
-import { Link } from "react-router-dom";
 
 const InfoPanel = () => {
-  const returnToLobby = useBackToLobby();
-
-  const backToLobbyHandler = () => {
-    if (!isSelfPlayerParticipating()) {
-      returnToLobby();
-    }
-  };
-
   return (
     <div className="flex items-center justify-between">
       <h1 className="text-5xl font-bold cursor-pointer">
-        <Link to="/" onClick={backToLobbyHandler}>
-          מונופולי
-        </Link>
+        <BackToLobbyLink>מונופולי</BackToLobbyLink>
       </h1>
       <ToggleTheme />
     </div>
