@@ -19,6 +19,9 @@ module.exports = {
       },
     },
     extend: {
+      boxShadow: {
+        "pardon-card-shadow": "0px 0px 23px 2px rgba(65, 50, 152, 0.76) inset",
+      },
       backgroundSize: {
         "size-100-400": "100% 400%",
       },

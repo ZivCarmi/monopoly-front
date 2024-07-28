@@ -3,24 +3,35 @@ import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import {
   Colors,
   GameCard,
+  GameCardDeck,
   GameSetting,
   GameState,
+  GameStats,
   IProperty,
   Player,
   PurchasableTile,
   RentIndexes,
   Room,
+  RoomGameCards,
   SuspensionTileTypes,
   TradeType,
   isProperty,
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
 
-type RoomWithoutParticipantsStats = Omit<Room["stats"], "participants">;
-type Stats = RoomWithoutParticipantsStats & { participants: Player[] };
+type StatsWithoutParticipants = Omit<GameStats, "participants">;
+type _GameStats = StatsWithoutParticipants & { participants: Player[] };
+type CardsWithPardonCardHolderAndDeck = Pick<
+  RoomGameCards,
+  "pardonCardHolder" | "deck"
+>;
 type MapWithoutCards = Omit<Room["map"], "chances" | "surprises">;
+type _GameMap = MapWithoutCards & {
+  surprises: CardsWithPardonCardHolderAndDeck;
+  chances: CardsWithPardonCardHolderAndDeck;
+};
 type RoomBase = Omit<Room, "players" | "stats" | "map"> & {
-  stats: Stats;
+  stats: _GameStats;
 };
 
 export interface GameRoom extends RoomBase {
@@ -32,8 +43,8 @@ export interface GameRoom extends RoomBase {
     tileIndex: number | null;
     card: GameCard | null;
   };
-  map: MapWithoutCards;
-  stats: Stats;
+  map: _GameMap;
+  stats: _GameStats;
 }
 
 const initialState: GameRoom = {
@@ -44,6 +55,14 @@ const initialState: GameRoom = {
   selfPlayer: null,
   isSpectating: false,
   map: {
+    chances: {
+      pardonCardHolder: null,
+      deck: GameCardDeck.CHANCE,
+    },
+    surprises: {
+      pardonCardHolder: null,
+      deck: GameCardDeck.SURPRISE,
+    },
     board: [],
     goRewards: {
       pass: 200,
@@ -93,7 +112,17 @@ export const gameSlice = createSlice({
       state.isInRoom = true;
       state.hostId = room.hostId;
       state.players = Object.values(room.players);
-      state.map = room.map;
+      state.map = {
+        ...room.map,
+        chances: {
+          deck: room.map.chances.deck,
+          pardonCardHolder: room.map.chances.pardonCardHolder,
+        },
+        surprises: {
+          deck: room.map.surprises.deck,
+          pardonCardHolder: room.map.surprises.pardonCardHolder,
+        },
+      };
       state.state = room.state;
       state.dices = room.dices;
       state.currentPlayerId = room.currentPlayerId;
@@ -253,6 +282,9 @@ export const gameSlice = createSlice({
       const wereTradingProperties = traders.some(
         (trader) => trader.properties.length > 0
       );
+      const wereTradingPardonCards = traders.some(
+        (trader) => trader.pardonCards.length > 0
+      );
 
       const firstPlayerIndex = state.players.findIndex(
         (player) => player.id === firstPlayer.id
@@ -297,6 +329,51 @@ export const gameSlice = createSlice({
 
           return tile;
         });
+      }
+
+      if (wereTradingPardonCards) {
+        const { chances, surprises } = state.map;
+        const firstTraderOfferedFromChances = firstPlayer.pardonCards.find(
+          (pardonCard) => pardonCard.deck === chances.deck
+        );
+        const secondTraderOfferedFromChances = secondPlayer.pardonCards.find(
+          (pardonCard) => pardonCard.deck === chances.deck
+        );
+
+        if (
+          chances.pardonCardHolder === firstPlayer.id &&
+          firstTraderOfferedFromChances
+        ) {
+          state.map.chances.pardonCardHolder = secondPlayer.id;
+        }
+
+        if (
+          chances.pardonCardHolder === secondPlayer.id &&
+          secondTraderOfferedFromChances
+        ) {
+          state.map.chances.pardonCardHolder = firstPlayer.id;
+        }
+
+        const firstTraderOfferedFromSurprises = firstPlayer.pardonCards.find(
+          (pardonCard) => pardonCard.deck === surprises.deck
+        );
+        const secondTraderOfferedFromSurprises = secondPlayer.pardonCards.find(
+          (pardonCard) => pardonCard.deck === surprises.deck
+        );
+
+        if (
+          surprises.pardonCardHolder === firstPlayer.id &&
+          firstTraderOfferedFromSurprises
+        ) {
+          state.map.surprises.pardonCardHolder = secondPlayer.id;
+        }
+
+        if (
+          surprises.pardonCardHolder === secondPlayer.id &&
+          secondTraderOfferedFromSurprises
+        ) {
+          state.map.surprises.pardonCardHolder = firstPlayer.id;
+        }
       }
     },
     purchaseProperty: (
@@ -526,6 +603,21 @@ export const gameSlice = createSlice({
     resetVotekickers: (state) => {
       state.voteKickers = [];
     },
+    setPardonCardHolder: (
+      state,
+      action: PayloadAction<{
+        holder: CardsWithPardonCardHolderAndDeck["pardonCardHolder"];
+        deck: GameCardDeck;
+      }>
+    ) => {
+      const { holder, deck } = action.payload;
+
+      if (deck === GameCardDeck.SURPRISE) {
+        state.map.surprises.pardonCardHolder = holder;
+      } else {
+        state.map.chances.pardonCardHolder = holder;
+      }
+    },
   },
 });
 
@@ -566,6 +658,7 @@ export const {
   removeTrade,
   setVotekickers,
   resetVotekickers,
+  setPardonCardHolder,
 } = gameSlice.actions;
 
 export const selectGameBoard = (state: RootState) => state.game.map.board;

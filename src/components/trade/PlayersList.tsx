@@ -22,7 +22,7 @@ const PlayersList = () => {
   };
 
   return (
-    <ul className="flex items-center justify-center flex-wrap gap-4">
+    <ul className="flex items-center justify-center flex-wrap gap-6">
       {playersExceptSelf.map((player) => (
         <li key={player.id}>
           <button

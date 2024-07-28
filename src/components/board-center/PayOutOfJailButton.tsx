@@ -1,7 +1,7 @@
 import { useSocket } from "@/app/socket-context";
 import { PAY_OUT_FROM_JAIL_AMOUNT } from "@ziv-carmi/monopoly-utils";
 import { motion } from "framer-motion";
-import { ShoppingCart } from "lucide-react";
+import { DollarSign } from "lucide-react";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
 
@@ -24,8 +24,8 @@ const PayOutOfJailButton = ({ isDisabled }: { isDisabled: boolean }) => {
       transition={{ duration: 0.25 }}
       viewport={{ once: true }}
     >
-      <Icon icon={ShoppingCart} />
-      שלם ₪{PAY_OUT_FROM_JAIL_AMOUNT} להשתחרר מהכלא
+      <Icon icon={DollarSign} />
+      השתחרר עבור ₪{PAY_OUT_FROM_JAIL_AMOUNT}
     </MotionButton>
   );
 };

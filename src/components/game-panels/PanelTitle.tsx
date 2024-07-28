@@ -1,8 +1,16 @@
-const PanelTitle = ({ children }: { children: React.ReactNode }) => {
+import { cn } from "@/utils";
+
+interface PanelTitleProps extends React.HTMLAttributes<HTMLHeadingElement> {}
+
+const PanelTitle = ({ className, ...props }: PanelTitleProps) => {
   return (
-    <h2 className="text-center text-pretty text-muted-foreground">
-      {children}
-    </h2>
+    <h2
+      className={cn(
+        "text-center text-pretty text-muted-foreground p-4",
+        className
+      )}
+      {...props}
+    />
   );
 };
 

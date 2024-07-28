@@ -1,4 +1,4 @@
-import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { useAppDispatch } from "@/app/hooks";
 import {
   Tooltip,
   TooltipContent,
@@ -19,18 +19,23 @@ import {
 import { useMemo } from "react";
 import BoardRow from "../board/BoardRow";
 import BoardRowTile from "../board/BoardRowTile";
-import { useGameRoom } from "../game-room/GameRoomProvider";
 import OwnerIndicator from "../board/OwnerIndicator";
 import PropertyIcon from "../board/PropertyIcon";
 import { TileWrapper } from "../board/Tile";
 import TileBackgroundImage from "../board/TileBackgroundImage";
 import TileIcon from "../board/TileIcon";
+import { useGameRoom } from "../game-room/GameRoomProvider";
 import TradeBoardTile from "./TradeBoardTile";
 
-const TradeBoardRows = ({ trader }: { trader: TradePlayer }) => {
+const TradeBoardRows = ({
+  trader,
+  isDisabled,
+}: {
+  trader: TradePlayer;
+  isDisabled: boolean;
+}) => {
   const dispatch = useAppDispatch();
   const { gameBoard } = useGameRoom();
-  const { mode } = useAppSelector((state) => state.trade);
 
   const setPropertiesHandler = (tileIndex: number) => {
     dispatch(setPlayerProperties({ traderId: trader.id, tileIndex }));
@@ -52,10 +57,7 @@ const TradeBoardRows = ({ trader }: { trader: TradePlayer }) => {
                   <TradeBoardTile
                     isOwned={tile.owner === trader.id}
                     onClick={() => setPropertiesHandler(tileIndex)}
-                    disabled={
-                      (mode !== "creating" && mode !== "editing") ||
-                      isPropertyHasBuilds
-                    }
+                    disabled={isDisabled || isPropertyHasBuilds}
                     className={cn(
                       "w-full h-full flex justify-between rounded-sm",
                       trader.properties.includes(tileIndex) &&
@@ -129,7 +131,7 @@ const TradeBoardRows = ({ trader }: { trader: TradePlayer }) => {
           })}
         </BoardRow>
       )),
-    [trader.properties, mode, gameBoard]
+    [trader.properties, isDisabled, gameBoard]
   );
 
   return memoizedBoard;

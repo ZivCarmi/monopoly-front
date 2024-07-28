@@ -6,11 +6,12 @@ import {
   isProperty,
 } from "@ziv-carmi/monopoly-utils";
 import BuildsIndicator from "./BuildsIndicator";
+import CardPopover from "./CardPopover";
 import OwnerIndicator from "./OwnerIndicator";
-import PurchasableTilePopover from "./PurchasableTilePopover";
 import Tile from "./Tile";
 import TileBackgroundImage from "./TileBackgroundImage";
 import TileCostBadge from "./TileCostBadge";
+import SelectedPurchasablePopover from "../tile-popover/SelectedPurchasablePopover";
 
 type PurchaseableTileProps = {
   tile: PurchasableTileType;
@@ -19,12 +20,8 @@ type PurchaseableTileProps = {
 
 const PurchasableTile = ({ tile, rowSide }: PurchaseableTileProps) => {
   const hasBuilds = isProperty(tile) && tile.rentIndex !== RentIndexes.BLANK;
-
-  return (
-    <PurchasableTilePopover
-      tile={tile}
-      popoverContentProps={{ side: getOppositeBoardSide(rowSide) }}
-    >
+  const popoverTrigger = (
+    <>
       {isProperty(tile) && <TileBackgroundImage tile={tile} />}
       <Tile tile={tile} className="justify-between relative" rowSide={rowSide}>
         <div className="flex items-center justify-center grow [max-block-size:2.25rem]">
@@ -37,7 +34,17 @@ const PurchasableTile = ({ tile, rowSide }: PurchaseableTileProps) => {
           )}
         </div>
       </Tile>
-    </PurchasableTilePopover>
+    </>
+  );
+
+  return (
+    <CardPopover
+      _content={tile}
+      popoverTrigger={{ children: popoverTrigger }}
+      side={getOppositeBoardSide(rowSide)}
+    >
+      <SelectedPurchasablePopover />
+    </CardPopover>
   );
 };
 

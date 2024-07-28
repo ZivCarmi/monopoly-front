@@ -1,7 +1,7 @@
 import { useAppSelector } from "@/app/hooks";
 import { TradePlayer } from "@ziv-carmi/monopoly-utils";
-import BoardCenter from "../board-center/BoardCenter";
 import Board from "../board/Board";
+import TradeBoardCenter from "./TradeBoardCenter";
 import TradeBoardRows from "./TradeBoardRows";
 
 const TradeBoard = ({ trader }: { trader: TradePlayer }) => {
@@ -10,8 +10,8 @@ const TradeBoard = ({ trader }: { trader: TradePlayer }) => {
 
   return (
     <Board className={`tradeBoard ${isDisabled ? "opacity-50" : ""}`}>
-      <BoardCenter className="min-w-[15rem] min-h-[15rem]" />
-      <TradeBoardRows trader={trader} />
+      <TradeBoardCenter trader={trader} isDisabled={isDisabled} />
+      <TradeBoardRows trader={trader} isDisabled={isDisabled} />
     </Board>
   );
 };

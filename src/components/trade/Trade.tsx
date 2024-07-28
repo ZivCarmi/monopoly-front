@@ -22,7 +22,6 @@ const Trade = () => {
       <AlertDialogContent className="min-w-[500px] max-w-max">
         <TradeDialogCancel />
         <TradeOffers />
-
         {!tradeValidity.valid && <TradeErrorMessage validity={tradeValidity} />}
         {mode === "creating" && <CreateTradeActions />}
         {mode === "watching" && <WatchTradeActions />}

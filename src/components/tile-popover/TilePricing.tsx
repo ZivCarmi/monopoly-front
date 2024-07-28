@@ -15,7 +15,7 @@ export const TilePricingInstructions = () => {
         כשבבעלותך
       </TilePricingLabel>
       <TilePricingValue className="text-muted-foreground underline">
-        קבל/י
+        קבל
       </TilePricingValue>
     </TilePricingItem>
   );

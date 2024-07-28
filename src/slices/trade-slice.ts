@@ -1,5 +1,5 @@
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
-import { TradeType } from "@ziv-carmi/monopoly-utils";
+import { PardonCard, TradeType } from "@ziv-carmi/monopoly-utils";
 
 export type TradeMode = "creating" | "watching" | "editing" | "idle";
 
@@ -49,6 +49,35 @@ export const tradeSlice = createSlice({
 
         if (traderIndex !== -1) {
           state.trade.traders[traderIndex].money = amount;
+        }
+      }
+    },
+    setPlayerPardonCard: (
+      state,
+      action: PayloadAction<{ traderId: string; pardonCard: PardonCard }>
+    ) => {
+      const { traderId, pardonCard } = action.payload;
+
+      if (state.trade) {
+        const traderIndex = state.trade.traders.findIndex(
+          (trader) => trader.id === traderId
+        );
+
+        if (traderIndex !== -1) {
+          const trader = state.trade.traders[traderIndex];
+          const existPardonCard = trader.pardonCards.findIndex(
+            ({ deck }) => deck === pardonCard.deck
+          );
+
+          if (existPardonCard === -1) {
+            state.trade.traders[traderIndex].pardonCards.push(pardonCard);
+          } else {
+            const filteredPardonCards = trader.pardonCards.filter(
+              ({ deck }) => deck !== pardonCard.deck
+            );
+
+            state.trade.traders[traderIndex].pardonCards = filteredPardonCards;
+          }
         }
       }
     },
@@ -113,6 +142,7 @@ export const {
   setMode,
   setTrade,
   setPlayerMoney,
+  setPlayerPardonCard,
   setPlayerProperties,
   removePlayerProperties,
 } = tradeSlice.actions;

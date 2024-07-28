@@ -16,6 +16,7 @@ import PlayerIsPlayingNotice from "./PlayerIsPlayingNotice";
 import PurchasePropertyButton from "./PurchasePropertyButton";
 import RollDices from "./RollDices";
 import MoveToNextAirportButton from "./MoveToNextAirportButton";
+import UsePardonCardButton from "./UsePardonCardButton";
 
 const CenterAction = () => {
   const {
@@ -59,9 +60,12 @@ const CenterAction = () => {
         )}
       </AnimatePresence>
       {selfPlayer && isPlayerInJail(selfPlayer.id) && !cubesRolledInTurn && (
-        <PayOutOfJailButton
-          isDisabled={currentPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
-        />
+        <>
+          <PayOutOfJailButton
+            isDisabled={currentPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
+          />
+          <UsePardonCardButton />
+        </>
       )}
       {canMoveToNextAirport && <MoveToNextAirportButton airport={tile} />}
       <RollDices />

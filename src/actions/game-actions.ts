@@ -4,6 +4,7 @@ import {
   EXPERIMENTAL_setGameCard,
   freePlayer,
   setDices,
+  setPardonCardHolder,
   staySuspendedTurn,
   suspendPlayer,
   switchTurn,
@@ -248,6 +249,7 @@ export const handleGameCard = (card: GameCard): AppThunk => {
     dispatch(EXPERIMENTAL_setGameCard(card));
 
     const { currentPlayerId, map } = getState().game;
+    const { message, event } = card;
 
     if (!currentPlayerId) {
       throw new Error("currentPlayerId was not found in handleGameCard.");
@@ -261,37 +263,34 @@ export const handleGameCard = (card: GameCard): AppThunk => {
 
     dispatch(
       writeLog(
-        `${player.name} נחת על ${map.board[player.tilePos].name} והוציא: ${
-          card.message
-        }`
+        `${player.name} נחת על ${
+          map.board[player.tilePos].name
+        } והוציא: ${message}`
       )
     );
 
-    switch (card.type) {
+    switch (event.type) {
       case GameCardTypes.PAYMENT:
       case GameCardTypes.GROUP_PAYMENT:
-        return dispatch(paymentGameCard(currentPlayerId, card));
+        return dispatch(paymentGameCard(currentPlayerId, event));
       case GameCardTypes.ADVANCE_TO_TILE:
         return setTimeout(() => {
-          dispatch(advanceToTileGameCard(currentPlayerId, card));
+          dispatch(advanceToTileGameCard(currentPlayerId, event));
         }, 600);
       case GameCardTypes.ADVANCE_TO_TILE_TYPE:
         return setTimeout(() => {
-          dispatch(advanceToTileTypeGameCard(currentPlayerId, card));
+          dispatch(advanceToTileTypeGameCard(currentPlayerId, event));
         }, 600);
       case GameCardTypes.GO_TO_JAIL:
         return setTimeout(() => {
           dispatch(sendPlayerToJail(currentPlayerId));
         }, 600);
-      // case GameCardTypes.PARDON:
-      // return setTimeout(() => {
-      // console.log("pardon card");
-      // dispatch(sendPlayerToJail(currentPlayerId));
-      // }, 600);
+      case GameCardTypes.PARDON:
+        return dispatch(
+          setPardonCardHolder({ holder: currentPlayerId, deck: event.deck })
+        );
       case GameCardTypes.RENOVATION:
-        return setTimeout(() => {
-          dispatch(renovationGameCard(currentPlayerId, card));
-        }, 600);
+        return dispatch(renovationGameCard(currentPlayerId, event));
     }
   };
 };

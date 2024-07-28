@@ -1,7 +1,8 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
+import { selectGameBoard } from "@/slices/game-slice";
 import { selectSelectedTileIndex } from "@/slices/ui-slice";
-import { hasBuildings, isPlayerSuspended, isPlayerTurn } from "@/utils";
+import { isPlayerCanSell } from "@/utils";
 import {
   PurchasableTile,
   hasMonopoly,
@@ -17,24 +18,18 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 import PropertyActions from "./PropertyActions";
-import { selectGameBoard } from "@/slices/game-slice";
 
 const TileCardActions = ({ tile }: { tile: PurchasableTile }) => {
   const socket = useSocket();
   const propertyIndex = useAppSelector(selectSelectedTileIndex);
-  const { canPerformTurnActions, selfPlayer } = useAppSelector(
-    (state) => state.game
-  );
+  const { selfPlayer } = useAppSelector((state) => state.game);
   const board = useAppSelector(selectGameBoard);
 
-  const canSellProperty =
-    !!selfPlayer &&
-    canPerformTurnActions &&
-    isPlayerTurn(selfPlayer.id) &&
-    !isPlayerSuspended(selfPlayer.id);
-  const canSell = isProperty(tile)
-    ? canSellProperty && !hasBuildings(tile.country.id)
-    : canSellProperty;
+  if (!selfPlayer) {
+    return null;
+  }
+
+  const canSell = isPlayerCanSell(selfPlayer.id, tile);
 
   const sellPropertyHandler = () => {
     socket.emit("sell_property", propertyIndex);
@@ -44,26 +39,30 @@ const TileCardActions = ({ tile }: { tile: PurchasableTile }) => {
     <div className="space-y-2">
       <Separator className="my-4" />
       <div className="flex gap-2">
-        <TooltipProvider delayDuration={500}>
+        <TooltipProvider delayDuration={0}>
           {isProperty(tile) && <PropertyActions property={tile} />}
           <Tooltip delayDuration={0}>
             <TooltipTrigger asChild>
-              <Button
-                variant="destructive"
-                disabled={!canSell}
-                onClick={sellPropertyHandler}
-                size="icon"
+              <span
+                tabIndex={0}
                 className={
                   isProperty(tile) && hasMonopoly(board, tile.country.id)
                     ? "mr-auto"
                     : "mx-auto"
                 }
               >
-                <Trash2 className="w-4 h-4" />
-              </Button>
+                <Button
+                  variant="destructive"
+                  disabled={!canSell.isValid}
+                  onClick={sellPropertyHandler}
+                  size="icon"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </Button>
+              </span>
             </TooltipTrigger>
-            <TooltipContent className="text-balance text-center">
-              מכור עבור ₪{tile.cost / 2}
+            <TooltipContent className="text-balance text-center max-w-60">
+              {canSell.error ? canSell.error : `מכור עבור ₪${tile.cost / 2}`}
             </TooltipContent>
           </Tooltip>
         </TooltipProvider>

@@ -1,5 +1,6 @@
-import { cn } from "@/utils";
+import { cn, convertRemToPixels } from "@/utils";
 import { Colors } from "@ziv-carmi/monopoly-utils";
+import { useMemo } from "react";
 
 export interface PlayerCharacterProps
   extends React.HTMLAttributes<HTMLDivElement> {
@@ -11,10 +12,20 @@ const PlayerCharacter = ({
   color,
   size = 1,
   className,
+  style,
   ...props
 }: PlayerCharacterProps) => {
+  const totalHeight = useMemo(() => {
+    const remInPixels = convertRemToPixels(size);
+    return remInPixels * 2 - remInPixels / 4;
+  }, [size]);
+
   return (
-    <div className={cn("duration-200", className)} {...props}>
+    <div
+      className={cn("duration-200", className)}
+      style={{ height: totalHeight, ...style }}
+      {...props}
+    >
       <div
         className={cn("rounded-full")}
         style={{

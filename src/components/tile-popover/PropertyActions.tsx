@@ -18,10 +18,14 @@ const PropertyActions = ({ property }: { property: IProperty }) => {
   const board = useAppSelector(selectGameBoard);
   const propertyIndex = useAppSelector(selectSelectedTileIndex);
 
-  if (!selfPlayer || !hasMonopoly(board, property.country.id)) return null;
+  if (!selfPlayer || !hasMonopoly(board, property.country.id)) {
+    return null;
+  }
 
   const upgradedCityLevelText = getCityLevelText(property.rentIndex + 1);
   const downgradedCityLevelText = getCityLevelText(property.rentIndex - 1);
+  const upgrade = isPlayerCanUpgrade(selfPlayer.id, property);
+  const downgrade = isPlayerCanDowngrade(selfPlayer.id, property);
 
   const upgradeCityHandler = () => {
     socket.emit("upgrade_city", propertyIndex);
@@ -33,40 +37,44 @@ const PropertyActions = ({ property }: { property: IProperty }) => {
 
   return (
     <>
-      <Tooltip>
+      <Tooltip delayDuration={0}>
         <TooltipTrigger asChild>
-          <Button
-            variant="primary"
-            disabled={!isPlayerCanUpgrade(selfPlayer.id, property)}
-            onClick={upgradeCityHandler}
-            className=""
-            size="icon"
-          >
-            <ArrowUpFromLine className="w-4 h-4" />
-          </Button>
+          <span tabIndex={0}>
+            <Button
+              variant="primary"
+              disabled={!upgrade.isValid}
+              onClick={upgradeCityHandler}
+              size="icon"
+            >
+              <ArrowUpFromLine className="w-4 h-4" />
+            </Button>
+          </span>
         </TooltipTrigger>
-        <TooltipContent className="text-balance text-center">
-          {upgradedCityLevelText
-            ? `שדרג ל${upgradedCityLevelText}`
-            : "במקסימום"}
+        <TooltipContent className="text-pretty text-center max-w-52">
+          {!upgrade.isValid
+            ? upgrade.error
+            : `שדרג ל${upgradedCityLevelText} עבור ₪${property.houseCost}`}
         </TooltipContent>
       </Tooltip>
-      <Tooltip>
+      <Tooltip delayDuration={0}>
         <TooltipTrigger asChild>
-          <Button
-            variant="primary"
-            disabled={!isPlayerCanDowngrade(selfPlayer.id, property)}
-            onClick={downgradeCityHandler}
-            className=""
-            size="icon"
-          >
-            <ArrowDownToLine className="w-4 h-4" />
-          </Button>
+          <span tabIndex={0}>
+            <Button
+              variant="primary"
+              disabled={!downgrade.isValid}
+              onClick={downgradeCityHandler}
+              size="icon"
+            >
+              <ArrowDownToLine className="w-4 h-4" />
+            </Button>
+          </span>
         </TooltipTrigger>
-        <TooltipContent className="text-balance text-center">
-          {downgradedCityLevelText
-            ? `שנמך ל${downgradedCityLevelText}`
-            : "נכס ללא בתים"}
+        <TooltipContent className="text-pretty text-center max-w-52">
+          {!downgrade.isValid
+            ? downgrade.error
+            : `שנמך ל${downgradedCityLevelText} עבור ₪${
+                property.houseCost / 2
+              }`}
         </TooltipContent>
       </Tooltip>
     </>

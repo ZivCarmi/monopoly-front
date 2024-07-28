@@ -6,11 +6,11 @@ import StartGameButton from "./StartGameButton";
 
 const GameWaitingToStart = () => {
   const { hostId, selfPlayer } = useAppSelector((state) => state.game);
-  const isSocketHost = hostId === selfPlayer?.id;
+  const isSelfHost = hostId === selfPlayer?.id;
 
   return (
     <div className="text-center min-h-12 flex items-center justify-center">
-      {isSocketHost ? <StartGameButton /> : <WaitingToStartNotice />}
+      {isSelfHost ? <StartGameButton /> : <WaitingToStartNotice />}
     </div>
   );
 };

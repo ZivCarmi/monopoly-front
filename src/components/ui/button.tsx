@@ -24,6 +24,8 @@ const buttonVariants = cva(
           "bg-gradient-to-tl from-purple-600 to-purple-700 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-500",
         blueFancy:
           "bg-gradient-to-tl from-green-500 to-blue-600 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-500",
+        yellowFancy:
+          "bg-gradient-to-tl from-amber-500 to-yellow-600 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-500",
       },
       size: {
         default: "h-10 px-4 py-2",

@@ -14,6 +14,7 @@ import {
   IAirport,
   ICompany,
   IProperty,
+  PardonCard,
   PurchasableTile,
   RentIndexes,
   SuspensionProps,
@@ -124,32 +125,96 @@ export const isPlayerInDebt = (playerId: string) => {
 };
 
 export const isPlayerCanUpgrade = (playerId: string, property: IProperty) => {
+  const canUpgrade = { isValid: false, error: "" };
   const player = isPlayer(playerId);
   const upgradeCost =
     property.rentIndex === RentIndexes.FOUR_HOUSES
       ? property.hotelCost
       : property.houseCost;
 
-  if (!player) return false;
+  if (!player) return canUpgrade;
 
-  return (
-    isPlayerTurn(playerId) &&
-    !isPlayerSuspended(playerId) &&
-    player.money >= upgradeCost &&
-    property.rentIndex !== RentIndexes.HOTEL
-  );
+  if (!isPlayerTurn(playerId)) {
+    canUpgrade.error = "באפשרותך לשדרג נכסים רק בתורך";
+    return canUpgrade;
+  }
+
+  if (isPlayerSuspended(playerId)) {
+    canUpgrade.error = "אין באפשרותך לשדרג נכסים כשאתה נמצא בכלא";
+    return canUpgrade;
+  }
+
+  if (player.money < upgradeCost) {
+    canUpgrade.error = "אין ברשותך מספיק כסף כדי לשדרג נכס זה";
+    return canUpgrade;
+  }
+
+  if (property.rentIndex === RentIndexes.HOTEL) {
+    canUpgrade.error = "הנכס נמצא ברמה הגבוהה ביותר שלו";
+    return canUpgrade;
+  }
+
+  canUpgrade.isValid = true;
+
+  return canUpgrade;
 };
 
 export const isPlayerCanDowngrade = (playerId: string, property: IProperty) => {
+  const canDowngrade = { isValid: false, error: "" };
   const player = isPlayer(playerId);
 
-  if (!player) return false;
+  if (!player) return canDowngrade;
 
-  return (
-    isPlayerTurn(playerId) &&
-    !isPlayerSuspended(playerId) &&
-    property.rentIndex !== RentIndexes.BLANK
-  );
+  if (!isPlayerTurn(playerId)) {
+    canDowngrade.error = "באפשרותך לשנמך נכסים רק בתורך";
+    return canDowngrade;
+  }
+
+  if (isPlayerSuspended(playerId)) {
+    canDowngrade.error = "אין באפשרותך לשנמך נכסים כשאתה נמצא בכלא";
+    return canDowngrade;
+  }
+
+  if (property.rentIndex === RentIndexes.BLANK) {
+    canDowngrade.error = "הנכס נמצא ברמה הנמוכה ביותר שלו";
+    return canDowngrade;
+  }
+
+  canDowngrade.isValid = true;
+
+  return canDowngrade;
+};
+
+export const isPlayerCanSell = (
+  playerId: string,
+  property: PurchasableTile
+) => {
+  const { canPerformTurnActions } = store.getState().game;
+  const canSell = { isValid: false, error: "" };
+  const player = isPlayer(playerId);
+
+  if (!player) return canSell;
+
+  if (!isPlayerTurn(playerId)) {
+    canSell.error = "באפשרותך למכור נכס רק בתורך";
+    return canSell;
+  }
+
+  if (isPlayerSuspended(playerId)) {
+    canSell.error = "אין באפשרותך למכור נכס כשאתה נמצא בכלא";
+    return canSell;
+  }
+
+  if (isProperty(property) && hasBuildings(property.country.id)) {
+    canSell.error = "אין באפשרותך למכור נכס עם בניינים עליו או על נכסים סמוכים";
+    return canSell;
+  }
+
+  if (canPerformTurnActions) {
+    canSell.isValid = true;
+  }
+
+  return canSell;
 };
 
 export const isInIdleRoom = () => {
@@ -217,6 +282,21 @@ export const getPlayerCompanies = (playerId: string) => {
   return playerCompanies as ICompany[];
 };
 
+export const getPlayerPardonCards = (playerId: string) => {
+  const { chances, surprises } = store.getState().game.map;
+  const pardonCards: PardonCard[] = [];
+
+  if (chances.pardonCardHolder === playerId) {
+    pardonCards.push({ deck: chances.deck });
+  }
+
+  if (surprises.pardonCardHolder === playerId) {
+    pardonCards.push({ deck: surprises.deck });
+  }
+
+  return pardonCards;
+};
+
 export const getPlayerName = (playerId: string) => {
   const player = isPlayer(playerId);
 
@@ -251,11 +331,13 @@ export const createTrade = (offerorId: string, offereeId: string) => {
         id: offerorId,
         money: 0,
         properties: [],
+        pardonCards: [],
       },
       {
         id: offereeId,
         money: 0,
         properties: [],
+        pardonCards: [],
       },
     ],
     createdBy: offerorId,
@@ -304,7 +386,11 @@ export const isOwner = (
 
 export const isValidOffer = (trade: TradeType) => {
   return trade.traders.some((trader) => {
-    if (trader.money > 0 || trader.properties.length > 0) {
+    if (
+      trader.money > 0 ||
+      trader.properties.length > 0 ||
+      trader.pardonCards.length > 0
+    ) {
       return true;
     }
 
@@ -395,4 +481,8 @@ export const isColorTaken = (color: Colors) => {
   const existColor = players.find((_player) => _player.color === color);
 
   return !!existColor;
+};
+
+export const convertRemToPixels = (rem: number) => {
+  return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
 };

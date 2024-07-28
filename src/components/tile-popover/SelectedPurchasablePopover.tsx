@@ -1,25 +1,27 @@
 import { useAppSelector } from "@/app/hooks";
-import TileCardContent from "./TileCardContent";
-import TileCardFooter from "./TileCardFooter";
+import { isProperty, isPurchasable } from "@ziv-carmi/monopoly-utils";
+import TileBackgroundImage from "../board/TileBackgroundImage";
 import TileIcon from "../board/TileIcon";
 import TileName from "../board/TileName";
-import { isProperty } from "@ziv-carmi/monopoly-utils";
-import TileBackgroundImage from "../board/TileBackgroundImage";
+import TileCardContent from "./TileCardContent";
+import TileCardFooter from "./TileCardFooter";
 
-const TileCard = () => {
+const SelectedPurchasablePopover = () => {
   const { selectedTile } = useAppSelector((state) => state.ui);
 
-  if (!selectedTile) return null;
+  if (!selectedTile || !isPurchasable(selectedTile)) {
+    return null;
+  }
 
   return (
     <>
       {isProperty(selectedTile) && (
         <TileBackgroundImage tile={selectedTile} className="opacity-15" />
       )}
-      <div className="rtl text-right relative">
+      <div className="relative">
         <div className="flex flex-col text-center">
           <div className="space-y-2 mb-4">
-            {!isProperty(selectedTile) && selectedTile?.icon && (
+            {!isProperty(selectedTile) && selectedTile.icon && (
               <TileIcon tile={selectedTile} className="w-6 h-6 p-0 m-auto" />
             )}
             <TileName className="text-lg">{selectedTile.name}</TileName>
@@ -34,4 +36,4 @@ const TileCard = () => {
   );
 };
 
-export default TileCard;
+export default SelectedPurchasablePopover;

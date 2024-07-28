@@ -13,7 +13,7 @@ const SettingsModal = () => {
         </Button>
       </DialogTrigger>
       <DialogContent>
-        <GameSettings className="my-4" />
+        <GameSettings />
       </DialogContent>
     </Dialog>
   );

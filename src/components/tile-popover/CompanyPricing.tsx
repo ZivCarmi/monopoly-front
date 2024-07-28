@@ -23,7 +23,7 @@ const CompanyPricing = ({ company }: { company: ICompany }) => {
         >
           כשבבעלותך {i === 0 ? "חברה אחת" : `${i + 1} חברות`}
           <br />
-          קבל/י&nbsp;&nbsp;
+          קבל&nbsp;&nbsp;
           <span className="inline-flex items-center gap-1">
             <PlayerMoney money={price} /> <X className="w-3 h-3" />
             <Dices className="w-4 h-4" />

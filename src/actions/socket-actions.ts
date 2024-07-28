@@ -12,6 +12,7 @@ import {
   setCityLevel,
   setCurrentPlayerVotekick,
   setNoAnotherTurn,
+  setPardonCardHolder,
   setVotekickers,
   transferMoney,
   updateTrade,
@@ -29,6 +30,7 @@ import {
 } from "@/slices/ui-slice";
 import { getPlayerName } from "@/utils";
 import {
+  GameCardDeck,
   getCityLevelText,
   isProperty,
   isPurchasable,
@@ -153,6 +155,30 @@ export const paidOutOfJailThunk = (): AppThunk => {
         `${playerName} שילם ₪${PAY_OUT_FROM_JAIL_AMOUNT} עבור שחרור מהכלא`
       )
     );
+  };
+};
+
+export const usedPardonCardThunk = (fromDeck: GameCardDeck): AppThunk => {
+  return (dispatch, getState) => {
+    const {
+      map: { chances },
+      currentPlayerId,
+    } = getState().game;
+
+    if (!currentPlayerId) {
+      throw new Error("currentPlayerId not found in usedPardonCardThunk");
+    }
+
+    const playerName = getPlayerName(currentPlayerId);
+
+    dispatch(writeLog(`${playerName} השתמש בכרטיס חנינה כדי לצאת מהכלא`));
+    dispatch(freePlayer({ playerId: currentPlayerId }));
+
+    if (chances.deck === fromDeck) {
+      dispatch(setPardonCardHolder({ deck: fromDeck, holder: null }));
+    } else {
+      dispatch(setPardonCardHolder({ deck: fromDeck, holder: null }));
+    }
   };
 };
 
