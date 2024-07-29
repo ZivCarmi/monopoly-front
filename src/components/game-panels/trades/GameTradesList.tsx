@@ -5,7 +5,7 @@ const GameTradesList = () => {
   const { trades } = useAppSelector((state) => state.game);
 
   return trades.length > 0 ? (
-    <ul className="divide-y-2">
+    <ul className="divide-y">
       {[...trades]
         .sort((a, b) => +new Date(b.updatedAt) - +new Date(a.updatedAt))
         .map((trade) => (

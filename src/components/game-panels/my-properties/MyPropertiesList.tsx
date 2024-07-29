@@ -23,7 +23,7 @@ const MyPropertiesList = ({
   );
 
   return (
-    <ul className="divide-y-2">
+    <ul className="divide-y">
       {sortedMyProperties.map((tile) => (
         <MyProperty key={tile.name} tile={tile} />
       ))}

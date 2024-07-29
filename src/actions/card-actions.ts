@@ -1,8 +1,5 @@
 import { AppThunk } from "@/app/store";
-import {
-  EXPERIMENTAL_incrementPlayerPosition,
-  transferMoney,
-} from "@/slices/game-slice";
+import { setPlayerPosition, transferMoney } from "@/slices/game-slice";
 import { writeLog } from "@/slices/ui-slice";
 import { hasBuildings, isPlayer } from "@/utils";
 import {
@@ -85,7 +82,7 @@ export const advanceToTileGameCard = (
     }
 
     dispatch(
-      EXPERIMENTAL_incrementPlayerPosition({
+      setPlayerPosition({
         playerId,
         position: event.tileIndex,
       })
@@ -125,7 +122,7 @@ export const advanceToTileTypeGameCard = (
 
     if (closestTileTypeIndex !== null) {
       dispatch(
-        EXPERIMENTAL_incrementPlayerPosition({
+        setPlayerPosition({
           playerId,
           position: closestTileTypeIndex,
         })

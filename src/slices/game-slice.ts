@@ -142,10 +142,10 @@ export const gameSlice = createSlice({
     resetRoom: () => {
       return initialState;
     },
-    setHostId: (state, action: PayloadAction<string>) => {
+    setHostId: (state, action: PayloadAction<Room["hostId"]>) => {
       state.hostId = action.payload;
     },
-    setSelfPlayer: (state, action: PayloadAction<Player>) => {
+    setSelfPlayer: (state, action: PayloadAction<Player | null>) => {
       state.selfPlayer = action.payload;
     },
     setIsSpectating: (state, action: PayloadAction<boolean>) => {
@@ -175,17 +175,53 @@ export const gameSlice = createSlice({
         state.players[playerIndex].connectionKickAt = kickAt;
       }
     },
-    setCurrentPlayerVotekick: (
+    setPlayerColor: (
       state,
-      action: PayloadAction<{ kickAt: Player["votekickedAt"] }>
+      action: PayloadAction<{ playerId: string; color: Colors }>
     ) => {
-      const { kickAt } = action.payload;
+      const { playerId, color } = action.payload;
       const playerIndex = state.players.findIndex(
-        (player) => player.id === state.currentPlayerId
+        (player) => player.id === playerId
+      );
+
+      if (playerIndex >= 0) {
+        state.players[playerIndex].color = color;
+      }
+    },
+    setPlayerPosition: (
+      state,
+      action: PayloadAction<{ playerId: string; position: number }>
+    ) => {
+      const { playerId, position } = action.payload;
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === playerId
+      );
+
+      if (playerIndex >= 0) {
+        state.players[playerIndex].tilePos = position;
+      }
+    },
+    setPlayerInDebt: (
+      state,
+      action: PayloadAction<{ playerId: string; debtTo: Player["debtTo"] }>
+    ) => {
+      const { playerId, debtTo } = action.payload;
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === playerId
+      );
+
+      if (playerIndex >= 0) {
+        state.players[playerIndex].debtTo = debtTo;
+      }
+    },
+    setPlayerBankrupt: (state, action: PayloadAction<{ playerId: string }>) => {
+      const { playerId } = action.payload;
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === playerId
       );
 
       if (playerIndex !== -1) {
-        state.players[playerIndex].votekickedAt = kickAt;
+        state.players[playerIndex].bankrupted = true;
       }
     },
     addPlayer: (
@@ -200,25 +236,10 @@ export const gameSlice = createSlice({
         state.selfPlayer = player;
       }
     },
-    setPlayerColor: (
-      state,
-      action: PayloadAction<{ playerId: string; color: Colors }>
-    ) => {
-      const { playerId, color } = action.payload;
-      const playerIndex = state.players.findIndex(
-        (player) => player.id === playerId
-      );
-
-      if (playerIndex >= 0) {
-        state.players[playerIndex].color = color;
-      }
-    },
     removePlayer: (state, action: PayloadAction<{ playerId: string }>) => {
-      const players = state.players.filter(
+      state.players = state.players.filter(
         (player) => player.id !== action.payload.playerId
       );
-
-      state.players = players;
     },
     startGame: (
       state,
@@ -231,6 +252,23 @@ export const gameSlice = createSlice({
       state.currentPlayerId = action.payload.currentPlayerId;
       state.canPerformTurnActions = true;
       state.state = GameState.STARTED;
+      state.stats = {
+        participants: state.players,
+        startedAt: new Date(),
+      };
+    },
+    setCurrentPlayerVotekick: (
+      state,
+      action: PayloadAction<{ kickAt: Player["votekickedAt"] }>
+    ) => {
+      const { kickAt } = action.payload;
+      const playerIndex = state.players.findIndex(
+        (player) => player.id === state.currentPlayerId
+      );
+
+      if (playerIndex !== -1) {
+        state.players[playerIndex].votekickedAt = kickAt;
+      }
     },
     setDices: (state, action: PayloadAction<{ dices: number[] }>) => {
       const { dices } = action.payload;
@@ -240,19 +278,6 @@ export const gameSlice = createSlice({
       state.canPerformTurnActions = false;
       state.cubesRolledInTurn = true;
       state.doublesInARow = isDouble ? ++state.doublesInARow : 0;
-    },
-    EXPERIMENTAL_incrementPlayerPosition: (
-      state,
-      action: PayloadAction<{ playerId: string; position: number }>
-    ) => {
-      const { playerId, position } = action.payload;
-      const playerIndex = state.players.findIndex(
-        (player) => player.id === playerId
-      );
-
-      if (playerIndex >= 0) {
-        state.players[playerIndex].tilePos = position;
-      }
     },
     allowTurnActions: (state, action: PayloadAction<boolean>) => {
       state.canPerformTurnActions = action.payload;
@@ -523,34 +548,16 @@ export const gameSlice = createSlice({
     setNoAnotherTurn: (state, action: PayloadAction<boolean>) => {
       state.forceNoAnotherTurn = action.payload;
     },
-    setPlayerInDebt: (
-      state,
-      action: PayloadAction<{ playerId: string; debtTo: Player["debtTo"] }>
-    ) => {
-      const { playerId, debtTo } = action.payload;
-
-      state.players.map((player) => {
-        if (player.id === playerId) {
-          player.debtTo = debtTo;
-        }
-
-        return player;
-      });
-    },
-    bankruptPlayer: (state, action: PayloadAction<{ playerId: string }>) => {
+    resetOwner: (state, action: PayloadAction<{ playerId: string }>) => {
       const { playerId } = action.payload;
       const playerIndex = state.players.findIndex(
         (player) => player.id === playerId
       );
 
       if (playerIndex !== -1) {
-        const player = state.players[playerIndex];
-
-        // reset owned properties
-        state.map.board.map((tile) => {
+        state.map.board = state.map.board.map((tile) => {
           if (isPurchasable(tile) && tile.owner === playerId) {
-            const newOwner = player.debtTo === "bank" ? null : player.debtTo;
-            tile.owner = newOwner;
+            tile.owner = null;
 
             if (isProperty(tile)) {
               tile.rentIndex = RentIndexes.BLANK;
@@ -559,8 +566,6 @@ export const gameSlice = createSlice({
 
           return tile;
         });
-
-        state.players[playerIndex].bankrupted = true;
       }
     },
     clearPlayers: (state) => {
@@ -635,7 +640,7 @@ export const {
   removePlayer,
   startGame,
   setDices,
-  EXPERIMENTAL_incrementPlayerPosition,
+  setPlayerPosition,
   allowTurnActions,
   transferMoney,
   completeTrade,
@@ -650,7 +655,8 @@ export const {
   switchTurn,
   setPlayerInDebt,
   setNoAnotherTurn,
-  bankruptPlayer,
+  resetOwner,
+  setPlayerBankrupt,
   clearPlayers,
   setWinner,
   addTrade,

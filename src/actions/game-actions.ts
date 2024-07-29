@@ -1,16 +1,23 @@
 import { AppThunk } from "@/app/store";
 import {
-  EXPERIMENTAL_incrementPlayerPosition,
   EXPERIMENTAL_setGameCard,
   freePlayer,
+  removeTrade,
+  resetOwner,
   setDices,
   setPardonCardHolder,
+  setPlayerPosition,
+  setSelfPlayer,
   staySuspendedTurn,
   suspendPlayer,
   switchTurn,
   transferMoney,
 } from "@/slices/game-slice";
-import { removePlayerProperties, setPlayerMoney } from "@/slices/trade-slice";
+import {
+  removePlayerProperties,
+  resetTrade,
+  setPlayerMoney,
+} from "@/slices/trade-slice";
 import { writeLog } from "@/slices/ui-slice";
 import { InvalidTrade } from "@/types/Trade";
 import {
@@ -106,7 +113,7 @@ export const walkPlayer = ({
   return (dispatch, getState) => {
     const { players, map } = getState().game;
 
-    dispatch(EXPERIMENTAL_incrementPlayerPosition({ playerId, position }));
+    dispatch(setPlayerPosition({ playerId, position }));
 
     if (passedGo) {
       const walkingPlayer = players.find((player) => playerId === player.id);
@@ -209,7 +216,7 @@ export const sendPlayerToVacation = (playerId: string): AppThunk => {
       })
     );
     dispatch(
-      EXPERIMENTAL_incrementPlayerPosition({
+      setPlayerPosition({
         playerId,
         position: vacationTileIndex,
       })
@@ -236,7 +243,7 @@ export const sendPlayerToJail = (playerId: string): AppThunk => {
       })
     );
     dispatch(
-      EXPERIMENTAL_incrementPlayerPosition({
+      setPlayerPosition({
         playerId,
         position: jailTileIndex,
       })
@@ -409,5 +416,35 @@ export const sanitizeTradeOnErrorThunk = (
         })
       );
     }
+  };
+};
+
+export const clearPlayerParticipation = (playerId: string): AppThunk => {
+  return (dispatch, getState) => {
+    const { map, selfPlayer, trades } = getState().game;
+
+    [map.chances, map.surprises].forEach(({ deck, pardonCardHolder }) => {
+      if (pardonCardHolder === playerId) {
+        dispatch(setPardonCardHolder({ deck, holder: null }));
+      }
+    });
+
+    if (selfPlayer?.id === playerId) {
+      dispatch(setSelfPlayer(null));
+    }
+
+    const playerTrades = trades.filter(
+      (trade) =>
+        trade.traders[0].id === playerId || trade.traders[1].id === playerId
+    );
+
+    playerTrades.forEach((trade) =>
+      dispatch(removeTrade({ tradeId: trade.id }))
+    );
+
+    dispatch(resetTrade());
+    dispatch(resetOwner({ playerId }));
+    dispatch(freePlayer({ playerId }));
+    dispatch(setPlayerPosition({ playerId, position: -1 }));
   };
 };

@@ -1,4 +1,5 @@
 import {
+  clearPlayerParticipation,
   handleDices,
   handleGameCard,
   handlePlayerLanding,
@@ -12,6 +13,7 @@ import {
   paidOutOfJailThunk,
   playerKickedThunk,
   purchasedPropertyThunk,
+  removeParticipation,
   soldPropertyThunk,
   tradeAcceptedThunk,
   tradeCreatedThunk,
@@ -26,12 +28,10 @@ import useBackToLobby from "@/hooks/useBackToLobby";
 import {
   addPlayer,
   allowTurnActions,
-  bankruptPlayer,
   clearPlayers,
-  removePlayer,
   setCurrentPlayerVotekick,
   setGameSetting,
-  setHostId,
+  setPlayerBankrupt,
   setPlayerColor,
   setPlayerConnection,
   setPlayerInDebt,
@@ -126,16 +126,10 @@ const GameRoom = () => {
     hostId,
   }: {
     playerId: string;
-    hostId?: string;
+    hostId: Room["hostId"];
   }) => {
-    const player = getPlayerName(playerId);
-
-    dispatch(removePlayer({ playerId }));
-    dispatch(writeLog(`${player} עזב את המשחק`));
-
-    if (hostId) {
-      dispatch(setHostId(hostId));
-    }
+    dispatch(removeParticipation({ playerId, hostId }));
+    dispatch(writeLog(`${getPlayerName(playerId)} עזב את המשחק`));
   };
 
   const onGameStarted = ({
@@ -221,7 +215,8 @@ const GameRoom = () => {
   };
 
   const onPlayerBankrupted = (playerId: string) => {
-    dispatch(bankruptPlayer({ playerId }));
+    dispatch(setPlayerBankrupt({ playerId }));
+    dispatch(clearPlayerParticipation(playerId));
     dispatch(writeLog(`${getPlayerName(playerId)} פשט את הרגל`));
   };
 
@@ -251,7 +246,10 @@ const GameRoom = () => {
     dispatch(setPlayerColor({ playerId, color }));
   };
 
-  const onPlayerKicked = (kickedPlayerId: string) => {
+  const onPlayerKicked = (kickData: {
+    kickedPlayerId: string;
+    hostId: Room["hostId"];
+  }) => {
     const notifyOnKicked = () => {
       if (setIsVotekicked) {
         setIsVotekicked(true);
@@ -267,7 +265,7 @@ const GameRoom = () => {
       }, 0);
     };
 
-    dispatch(playerKickedThunk(kickedPlayerId, notifyOnKicked));
+    dispatch(playerKickedThunk(kickData, notifyOnKicked));
   };
 
   useEffect(() => {

@@ -2,7 +2,7 @@ import { AppThunk } from "@/app/store";
 import {
   addTrade,
   completeTrade,
-  EXPERIMENTAL_incrementPlayerPosition,
+  setPlayerPosition,
   freePlayer,
   purchaseProperty,
   removePlayer,
@@ -16,6 +16,7 @@ import {
   setVotekickers,
   transferMoney,
   updateTrade,
+  setHostId,
 } from "@/slices/game-slice";
 import {
   resetTrade,
@@ -37,8 +38,10 @@ import {
   PAY_OUT_FROM_JAIL_AMOUNT,
   Player,
   PurchasableTile,
+  Room,
   TradeType,
 } from "@ziv-carmi/monopoly-utils";
+import { clearPlayerParticipation } from "./game-actions";
 
 export const purchasedPropertyThunk = (propertyIndex: number): AppThunk => {
   return (dispatch, getState) => {
@@ -197,7 +200,7 @@ export const movedToNextAirportThunk = (airportIndex: number): AppThunk => {
     const playerName = getPlayerName(currentPlayerId);
 
     dispatch(
-      EXPERIMENTAL_incrementPlayerPosition({
+      setPlayerPosition({
         playerId: currentPlayerId,
         position: airportIndex,
       })
@@ -315,18 +318,36 @@ export const tradeDeletedThunk = (tradeId: string): AppThunk => {
   };
 };
 
+export const removeParticipation = ({
+  playerId,
+  hostId,
+}: {
+  playerId: string;
+  hostId: Room["hostId"];
+}): AppThunk => {
+  return (dispatch) => {
+    dispatch(clearPlayerParticipation(playerId));
+    dispatch(removePlayer({ playerId }));
+    dispatch(setHostId(hostId));
+  };
+};
+
 export const playerKickedThunk = (
-  kickedPlayerId: string,
+  kickData: {
+    kickedPlayerId: string;
+    hostId: Room["hostId"];
+  },
   callback: () => void
 ): AppThunk => {
   return (dispatch, getState) => {
+    const { kickedPlayerId, hostId } = kickData;
     const state = getState();
     const playerName = getPlayerName(kickedPlayerId);
 
     if (state.game.selfPlayer?.id === kickedPlayerId) {
       callback();
     } else {
-      dispatch(removePlayer({ playerId: kickedPlayerId }));
+      dispatch(removeParticipation({ playerId: kickedPlayerId, hostId }));
       dispatch(writeLog(`${playerName} הודח מהמשחק`));
       dispatch(resetVotekickers());
     }
@@ -350,8 +371,6 @@ export const newVotekickThunk = ({
     if (!currentPlayer) {
       throw new Error("currentPlayer was not found in newVotekickThunk");
     }
-
-    // CHECK WHY NOT WORK
 
     dispatch(setVotekickers({ votekickerId: votekicker.id }));
     dispatch(setCurrentPlayerVotekick({ kickAt: votekickAt }));

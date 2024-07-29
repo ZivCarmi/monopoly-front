@@ -19,9 +19,9 @@ import {
   isPlayerTurn,
 } from "@/utils";
 import { Colors, Player, isGameNotStarted } from "@ziv-carmi/monopoly-utils";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { Crown, FlagTriangleRight, Trophy, WifiOff, X } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "../../ui/button";
 import {
   Tooltip,
@@ -37,7 +37,7 @@ const PlayerRow = ({ player }: { player: Player }) => {
   return (
     <motion.div
       className={cn(
-        "flex items-center text-center p-2 relative rounded-lg",
+        "flex items-center text-center px-2 py-4 relative rounded-lg",
         isSelfPlayer && "bg-background/50"
       )}
       layout
@@ -45,7 +45,7 @@ const PlayerRow = ({ player }: { player: Player }) => {
       <TooltipProvider delayDuration={0}>
         {isPlayerTurn(player.id) && <TurnIndicator player={player} />}
         <PlayerNamePlate>
-          <PlayerCharacter color={player.color} />
+          <PlayerCharacter color={player.color} size={1} />
           <PlayerName name={player.name} className="text-sm" />
           <HostIndicator playerId={player.id} />
           {!player.isConnected && player.connectionKickAt && (
@@ -83,7 +83,49 @@ const RowActions = ({ player }: { player: Player }) => {
   ) : player.bankrupted ? (
     <BankruptedIndicator />
   ) : (
-    <PlayerMoney money={player.money} />
+    <PlayerMoneyIndicator playerMoney={player.money} />
+  );
+};
+
+const PlayerMoneyIndicator = ({ playerMoney }: { playerMoney: number }) => {
+  const [money, setMoney] = useState(playerMoney);
+  const [moneyDiff, setMoneyDiff] = useState(0);
+
+  useEffect(() => {
+    if (playerMoney === money) return;
+
+    setMoneyDiff(playerMoney - money);
+    setMoney(money);
+
+    const timeout = setTimeout(() => {
+      setMoneyDiff(0);
+    }, 1000);
+
+    return () => {
+      clearTimeout(timeout);
+    };
+  }, [money]);
+
+  return (
+    <div className="relative inline-flex justify-end">
+      <AnimatePresence>
+        {moneyDiff !== 0 && (
+          <motion.div
+            className={cn(
+              "absolute inset-y-0 left-0 text-center",
+              moneyDiff > 0 ? "text-green-500" : "text-red-500"
+            )}
+            initial={{ opacity: 0, y: moneyDiff > 0 ? 5 : -5 }}
+            animate={{ opacity: 1, y: moneyDiff > 0 ? -20 : 20 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1.5 }}
+          >
+            <PlayerMoney money={moneyDiff} className="text-xs" />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <PlayerMoney money={playerMoney} />
+    </div>
   );
 };
 
