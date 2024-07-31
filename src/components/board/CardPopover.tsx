@@ -1,5 +1,5 @@
 import { useAppDispatch } from "@/app/hooks";
-import { setSelectedTile } from "@/slices/ui-slice";
+import { setSelectedPopover } from "@/slices/game-slice";
 import { cn } from "@/utils";
 import {
   PopoverContentProps,
@@ -20,6 +20,7 @@ const CardPopover = ({
   _content,
   popoverTrigger: {
     className: popoverTriggerClassname,
+    children: popoverTriggerChildren,
     ...popoverTriggerProps
   },
   className,
@@ -30,10 +31,16 @@ const CardPopover = ({
   return (
     <Popover>
       <PopoverTrigger
-        onClick={() => dispatch(setSelectedTile(_content))}
-        className={cn("w-full h-full flex", popoverTriggerClassname)}
+        asChild
+        className={cn(
+          "w-full h-full flex cursor-pointer",
+          popoverTriggerClassname
+        )}
+        onClick={() => dispatch(setSelectedPopover(_content))}
         {...popoverTriggerProps}
-      />
+      >
+        <div>{popoverTriggerChildren}</div>
+      </PopoverTrigger>
       <PopoverContent
         className={cn("w-64 border-none", className)}
         onOpenAutoFocus={(event) => {

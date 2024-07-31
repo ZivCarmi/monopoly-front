@@ -7,14 +7,15 @@ import PlayerCharacter from "../player/PlayerCharacter";
 import { isPurchasable } from "@ziv-carmi/monopoly-utils";
 
 const TileCardFooter = () => {
-  const { players, selfPlayer } = useAppSelector((state) => state.game);
-  const { selectedTile } = useAppSelector((state) => state.ui);
+  const { players, selfPlayer, selectedPopover } = useAppSelector(
+    (state) => state.game
+  );
 
-  if (!isPurchasable(selectedTile)) {
+  if (!isPurchasable(selectedPopover)) {
     return null;
   }
 
-  const owner = selectedTile.owner;
+  const owner = selectedPopover.owner;
 
   if (!owner) {
     return null;
@@ -24,7 +25,7 @@ const TileCardFooter = () => {
   const tileOwner = players.find((player) => player.id === owner);
 
   if (selfPlayerIsOwner) {
-    return <TileCardActions tile={selectedTile} />;
+    return <TileCardActions tile={selectedPopover} />;
   }
 
   if (tileOwner) {

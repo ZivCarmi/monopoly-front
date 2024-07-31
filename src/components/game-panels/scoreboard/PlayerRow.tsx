@@ -21,7 +21,7 @@ import {
 import { Colors, Player, isGameNotStarted } from "@ziv-carmi/monopoly-utils";
 import { AnimatePresence, motion } from "framer-motion";
 import { Crown, FlagTriangleRight, Trophy, WifiOff, X } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Button } from "../../ui/button";
 import {
   Tooltip,
@@ -87,42 +87,56 @@ const RowActions = ({ player }: { player: Player }) => {
   );
 };
 
+type MoneyNotification = {
+  id: number;
+  difference: number;
+};
+
 const PlayerMoneyIndicator = ({ playerMoney }: { playerMoney: number }) => {
-  const [money, setMoney] = useState(playerMoney);
-  const [moneyDiff, setMoneyDiff] = useState(0);
+  const [changes, setChanges] = useState<MoneyNotification[]>([]);
+  const prevMoneyRef = useRef(playerMoney);
 
   useEffect(() => {
-    if (playerMoney === money) return;
+    const prevMoney = prevMoneyRef.current;
 
-    setMoneyDiff(playerMoney - money);
-    setMoney(money);
+    if (playerMoney !== prevMoney) {
+      const difference = playerMoney - prevMoney;
+      const change: MoneyNotification = {
+        id: new Date().getTime(),
+        difference,
+      };
+      setChanges((prevChanges) => [...prevChanges, change]);
 
-    const timeout = setTimeout(() => {
-      setMoneyDiff(0);
-    }, 1000);
+      // Update the ref with the current money for next comparison
+      prevMoneyRef.current = playerMoney;
 
-    return () => {
-      clearTimeout(timeout);
-    };
-  }, [money]);
+      // Remove the difference display after 3 seconds
+      setTimeout(() => {
+        setChanges((prevChanges) =>
+          prevChanges.filter((chg) => chg.id !== change.id)
+        );
+      }, 1750);
+    }
+  }, [playerMoney]);
 
   return (
     <div className="relative inline-flex justify-end">
-      <AnimatePresence>
-        {moneyDiff !== 0 && (
+      <AnimatePresence initial={false}>
+        {changes.map(({ id, difference }) => (
           <motion.div
+            key={id}
             className={cn(
-              "absolute inset-y-0 left-0 text-center",
-              moneyDiff > 0 ? "text-green-500" : "text-red-500"
+              "flex items-center absolute inset-y-0 left-0 text-center",
+              difference > 0 ? "text-green-500" : "text-red-500"
             )}
-            initial={{ opacity: 0, y: moneyDiff > 0 ? 5 : -5 }}
-            animate={{ opacity: 1, y: moneyDiff > 0 ? -20 : 20 }}
+            initial={{ opacity: 0, y: difference > 0 ? 5 : -5 }}
+            animate={{ opacity: 1, y: difference > 0 ? -22 : 22 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.5 }}
+            transition={{ y: { duration: 2.25 }, opacity: { duration: 1.25 } }}
           >
-            <PlayerMoney money={moneyDiff} className="text-xs" />
+            <PlayerMoney money={difference} className="text-xs" />
           </motion.div>
-        )}
+        ))}
       </AnimatePresence>
       <PlayerMoney money={playerMoney} />
     </div>
@@ -146,19 +160,15 @@ const ChangeAppearanceButton = () => {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-60 grid grid-cols-4 place-items-center gap-x-2 gap-y-4">
-        {getAllColors().map((color) => {
-          const takenColor = isColorTaken(color);
-
-          return (
-            <button key={color} onClick={() => changeColorHandler(color)}>
-              <CharacterSelection
-                size={1.5}
-                color={color}
-                isDisabled={takenColor}
-              />
-            </button>
-          );
-        })}
+        {getAllColors().map((color) => (
+          <button key={color} onClick={() => changeColorHandler(color)}>
+            <CharacterSelection
+              size={1.5}
+              color={color}
+              isDisabled={isColorTaken(color)}
+            />
+          </button>
+        ))}
       </PopoverContent>
     </Popover>
   );

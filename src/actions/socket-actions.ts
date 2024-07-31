@@ -2,21 +2,24 @@ import { AppThunk } from "@/app/store";
 import {
   addTrade,
   completeTrade,
-  setPlayerPosition,
   freePlayer,
   purchaseProperty,
   removePlayer,
   removeTrade,
   resetVotekickers,
+  selectSelectedTileIndex,
   sellProperty,
   setCityLevel,
   setCurrentPlayerVotekick,
+  setHostId,
   setNoAnotherTurn,
   setPardonCardHolder,
+  setPlayerPosition,
+  setSelectedPopover,
   setVotekickers,
   transferMoney,
   updateTrade,
-  setHostId,
+  writeLog,
 } from "@/slices/game-slice";
 import {
   resetTrade,
@@ -24,11 +27,6 @@ import {
   setTrade,
   setTradeIsOpen,
 } from "@/slices/trade-slice";
-import {
-  selectSelectedTileIndex,
-  setSelectedTile,
-  writeLog,
-} from "@/slices/ui-slice";
 import { getPlayerName } from "@/utils";
 import {
   GameCardDeck,
@@ -42,6 +40,7 @@ import {
   TradeType,
 } from "@ziv-carmi/monopoly-utils";
 import { clearPlayerParticipation } from "./game-actions";
+import purchase_sound from "/sounds/purchase-property.wav";
 
 export const purchasedPropertyThunk = (propertyIndex: number): AppThunk => {
   return (dispatch, getState) => {
@@ -60,12 +59,16 @@ export const purchasedPropertyThunk = (propertyIndex: number): AppThunk => {
 
       if (selectedTileIndex === propertyIndex) {
         dispatch(
-          setSelectedTile(
+          setSelectedPopover(
             getState().game.map.board[selectedTileIndex] as PurchasableTile
           )
         );
       }
     }
+
+    const sound = new Audio(purchase_sound);
+    sound.volume = state.ui.volume;
+    sound.play();
   };
 };
 
@@ -86,7 +89,7 @@ export const soldPropertyThunk = (propertyIndex: number): AppThunk => {
 
       if (selectedTileIndex === propertyIndex) {
         dispatch(
-          setSelectedTile(
+          setSelectedPopover(
             getState().game.map.board[selectedTileIndex] as PurchasableTile
           )
         );
@@ -104,8 +107,7 @@ export const cityLevelChangedThunk = ({
 }): AppThunk => {
   return (dispatch, getState) => {
     const state = getState();
-    const { currentPlayerId } = state.game;
-    const { selectedTile } = state.ui;
+    const { currentPlayerId, selectedPopover } = state.game;
 
     if (!currentPlayerId) return;
 
@@ -125,9 +127,9 @@ export const cityLevelChangedThunk = ({
       dispatch(setCityLevel({ propertyIndex, changeType }));
       dispatch(writeLog(message));
 
-      if (isProperty(selectedTile) && selectedTileIndex === propertyIndex) {
+      if (isProperty(selectedPopover) && selectedTileIndex === propertyIndex) {
         dispatch(
-          setSelectedTile(
+          setSelectedPopover(
             getState().game.map.board[selectedTileIndex] as PurchasableTile
           )
         );

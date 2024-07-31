@@ -1,6 +1,9 @@
 import { AppThunk } from "@/app/store";
-import { setPlayerPosition, transferMoney } from "@/slices/game-slice";
-import { writeLog } from "@/slices/ui-slice";
+import {
+  setPlayerPosition,
+  transferMoney,
+  writeLog,
+} from "@/slices/game-slice";
 import { hasBuildings, isPlayer } from "@/utils";
 import {
   AdvancedToTileGameCardEvent,

@@ -7,27 +7,27 @@ import TileCardContent from "./TileCardContent";
 import TileCardFooter from "./TileCardFooter";
 
 const SelectedPurchasablePopover = () => {
-  const { selectedTile } = useAppSelector((state) => state.ui);
+  const { selectedPopover } = useAppSelector((state) => state.game);
 
-  if (!selectedTile || !isPurchasable(selectedTile)) {
+  if (!selectedPopover || !isPurchasable(selectedPopover)) {
     return null;
   }
 
   return (
     <>
-      {isProperty(selectedTile) && (
-        <TileBackgroundImage tile={selectedTile} className="opacity-15" />
+      {isProperty(selectedPopover) && (
+        <TileBackgroundImage tile={selectedPopover} className="opacity-15" />
       )}
       <div className="relative">
         <div className="flex flex-col text-center">
           <div className="space-y-2 mb-4">
-            {!isProperty(selectedTile) && selectedTile.icon && (
-              <TileIcon tile={selectedTile} className="w-6 h-6 p-0 m-auto" />
+            {!isProperty(selectedPopover) && selectedPopover.icon && (
+              <TileIcon tile={selectedPopover} className="w-6 h-6 p-0 m-auto" />
             )}
-            <TileName className="text-lg">{selectedTile.name}</TileName>
+            <TileName className="text-lg">{selectedPopover.name}</TileName>
           </div>
           <div className="grow flex flex-col text-sm">
-            <TileCardContent tile={selectedTile} />
+            <TileCardContent tile={selectedPopover} />
           </div>
           <TileCardFooter />
         </div>

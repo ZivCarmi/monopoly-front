@@ -1,7 +1,7 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import { selectGameBoard } from "@/slices/game-slice";
-import { selectSelectedTileIndex } from "@/slices/ui-slice";
+import { selectSelectedTileIndex } from "@/slices/game-slice";
 import { isPlayerCanSell } from "@/utils";
 import {
   PurchasableTile,

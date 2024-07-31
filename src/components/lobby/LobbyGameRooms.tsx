@@ -18,14 +18,14 @@ const LobbyGameRooms = () => {
   const dispatch = useAppDispatch();
   const fetchLobbyRooms = useFetchLobbyRooms();
 
-  const setRooms = ({ rooms, nextUpdateAt }: LobbyRoomsResponse) => {
-    dispatch(setLobbyRooms(rooms));
-    dispatch(setIsFetching(false));
-    dispatch(setNextUpdate(nextUpdateAt));
-  };
-
   useEffect(() => {
     fetchLobbyRooms();
+
+    const setRooms = ({ rooms, nextUpdateAt }: LobbyRoomsResponse) => {
+      dispatch(setLobbyRooms(rooms));
+      dispatch(setIsFetching(false));
+      dispatch(setNextUpdate(nextUpdateAt));
+    };
 
     socket.on("rooms_list", setRooms);
 

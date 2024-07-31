@@ -37,18 +37,18 @@ const NicknameForm = () => {
     form.setValue("nickname", nickname.nickname);
   };
 
-  const onNicknameSelected = (nickname: string) => {
-    localStorage.setItem(PLAYER_NAME_STORAGE_KEY, nickname);
-    form.setValue("nickname", nickname);
-    dispatch(setNickname(nickname));
-  };
-
   useEffect(() => {
     const STORAGED_NAME = localStorage.getItem(PLAYER_NAME_STORAGE_KEY);
 
     if (STORAGED_NAME?.trim()) {
       form.setValue("nickname", STORAGED_NAME);
     }
+
+    const onNicknameSelected = (nickname: string) => {
+      localStorage.setItem(PLAYER_NAME_STORAGE_KEY, nickname);
+      form.setValue("nickname", nickname);
+      dispatch(setNickname(nickname));
+    };
 
     socket.on("nickname_selected", onNicknameSelected);
 

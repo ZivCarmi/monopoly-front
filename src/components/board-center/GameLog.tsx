@@ -1,10 +1,10 @@
 import { useAppSelector } from "@/app/hooks";
-import { GameLogType } from "@/slices/ui-slice";
+import { GameLogType } from "@/slices/game-slice";
 import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
 const GameLog = () => {
-  const gameLog = useAppSelector((state) => state.ui.gameLog);
+  const gameLog = useAppSelector((state) => state.game.gameLog);
 
   return (
     <div className="flex flex-col flex-grow mt-4 overflow-y-auto relative before:content-[''] before:absolute before:bottom-0 before:left-0 before:h-1/2 before:w-full before:pointer-events-none before:bg-gradient-to-b before:from-transparent before:to-background before:z-10">

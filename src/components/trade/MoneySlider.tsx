@@ -63,7 +63,6 @@ const MoneySlider = ({ trader }: { trader: TradePlayer }) => {
         onValueChange={(amounts) => setMoneyHandler(amounts[0])}
         disabled={isDisabled}
       />
-
       <div className="mt-1 text-center">
         <PlayerMoney money={trader.money} />
       </div>

@@ -38,9 +38,9 @@ import {
   setRoom,
   setWinner,
   startGame,
+  writeLog,
 } from "@/slices/game-slice";
 import { resetTrade } from "@/slices/trade-slice";
-import { writeLog } from "@/slices/ui-slice";
 import { getPlayerName } from "@/utils";
 import {
   Colors,
@@ -70,205 +70,203 @@ const GameRoom = () => {
   const { setIsVotekicked } = useGameRoom();
   const backToLobby = useBackToLobby();
 
-  const onGameUpdate = (room: Room) => {
-    dispatch(setRoom(room));
-  };
-
-  const onGameSettingsUpdated = (setting: GameSetting) => {
-    dispatch(setGameSetting(setting));
-  };
-
-  const onPlayerWalking = (walkData: WalkObject) => {
-    dispatch(walkPlayer(walkData));
-  };
-
-  const onPlayerLanded = ({
-    playerId,
-    landedIndex,
-  }: {
-    playerId: string;
-    landedIndex: number;
-  }) => {
-    dispatch(handlePlayerLanding(playerId, landedIndex));
-  };
-
-  const onGameCard = (card: GameCard) => {
-    dispatch(handleGameCard(card));
-  };
-
-  const onAllowedTurnActions = (isAllowed: boolean) => {
-    dispatch(allowTurnActions(isAllowed));
-  };
-
-  const onPlayerConnectivity = ({
-    playerId,
-    isConnected,
-    kickAt,
-  }: {
-    playerId: string;
-    isConnected: boolean;
-    kickAt: Player["connectionKickAt"];
-  }) => {
-    dispatch(setPlayerConnection({ playerId, isConnected, kickAt }));
-  };
-
-  const onPlayerCreated = (player: Player) => {
-    dispatch(addPlayer({ player, isSelf: true }));
-  };
-
-  const onPlayerJoined = (player: Player) => {
-    dispatch(addPlayer({ player }));
-    dispatch(writeLog(`${player.name} נכנס למשחק`));
-  };
-
-  const onPlayerLeft = ({
-    playerId,
-    hostId,
-  }: {
-    playerId: string;
-    hostId: Room["hostId"];
-  }) => {
-    dispatch(removeParticipation({ playerId, hostId }));
-    dispatch(writeLog(`${getPlayerName(playerId)} עזב את המשחק`));
-  };
-
-  const onGameStarted = ({
-    generatedPlayers,
-    currentPlayerId,
-  }: {
-    generatedPlayers: Player[];
-    currentPlayerId: string;
-  }) => {
-    dispatch(startGame({ generatedPlayers, currentPlayerId }));
-    dispatch(writeLog("המשחק התחיל!"));
-  };
-
-  const onDiceRolled = (dices: number[]) => {
-    if (document.visibilityState === "hidden") return;
-
-    dispatch(handleDices(dices));
-  };
-
-  const onSwitchedTurn = (nextPlayerId: string) => {
-    dispatch(handleSwitchTurn(nextPlayerId));
-  };
-
-  const onPurchasedProperty = (propertyIndex: number) => {
-    dispatch(purchasedPropertyThunk(propertyIndex));
-  };
-
-  const onSoldProperty = (propertyIndex: number) => {
-    dispatch(soldPropertyThunk(propertyIndex));
-  };
-
-  const onCityLevelChange = (data: {
-    propertyIndex: number;
-    changeType: "upgrade" | "downgrade";
-  }) => {
-    dispatch(cityLevelChangedThunk(data));
-  };
-
-  const onPaidOutOfJail = () => {
-    dispatch(paidOutOfJailThunk());
-  };
-
-  const onUsedPardonCard = (fromDeck: GameCardDeck) => {
-    dispatch(usedPardonCardThunk(fromDeck));
-  };
-
-  const onMovedToNextAirport = (airportIndex: number) => {
-    dispatch(movedToNextAirportThunk(airportIndex));
-  };
-
-  const onTradeCreated = (trade: TradeType) => {
-    dispatch(tradeCreatedThunk(trade));
-  };
-
-  const onTradeAccepted = (tradeId: string) => {
-    dispatch(tradeAcceptedThunk(tradeId));
-  };
-
-  const onTradeDeclined = (tradeId: string) => {
-    dispatch(tradeDeclinedThunk(tradeId));
-  };
-
-  const onTradeUpdated = (trade: TradeType) => {
-    dispatch(tradeUpdatedThunk(trade));
-  };
-
-  const onTradeDeleted = (tradeId: string) => {
-    dispatch(tradeDeletedThunk(tradeId));
-  };
-
-  const onTradeReset = () => {
-    dispatch(resetTrade());
-  };
-
-  const onPlayerInDebt = ({
-    playerId,
-    debtTo,
-  }: {
-    playerId: string;
-    debtTo: Player["debtTo"];
-  }) => {
-    dispatch(setPlayerInDebt({ playerId, debtTo }));
-  };
-
-  const onPlayerBankrupted = (playerId: string) => {
-    dispatch(setPlayerBankrupt({ playerId }));
-    dispatch(clearPlayerParticipation(playerId));
-    dispatch(writeLog(`${getPlayerName(playerId)} פשט את הרגל`));
-  };
-
-  const onGameEnded = (winner: Player) => {
-    dispatch(clearPlayers());
-    dispatch(setWinner({ winner }));
-  };
-
-  const onNewVotekick = (votekickData: {
-    votekicker: Player;
-    votekickAt: Date;
-  }) => {
-    dispatch(newVotekickThunk(votekickData));
-  };
-
-  const onUpdateVotekick = (votekickAt: Date) => {
-    dispatch(setCurrentPlayerVotekick({ kickAt: votekickAt }));
-  };
-
-  const onColorChanged = ({
-    playerId,
-    color,
-  }: {
-    playerId: string;
-    color: Colors;
-  }) => {
-    dispatch(setPlayerColor({ playerId, color }));
-  };
-
-  const onPlayerKicked = (kickData: {
-    kickedPlayerId: string;
-    hostId: Room["hostId"];
-  }) => {
-    const notifyOnKicked = () => {
-      if (setIsVotekicked) {
-        setIsVotekicked(true);
-      }
-
-      setTimeout(() => {
-        navigate("/");
-        backToLobby();
-        toast({
-          variant: "destructive",
-          title: "הוסרת מהמשחק על ידי מארח החדר",
-        });
-      }, 0);
+  useEffect(() => {
+    const onGameUpdate = (room: Room) => {
+      dispatch(setRoom(room));
     };
 
-    dispatch(playerKickedThunk(kickData, notifyOnKicked));
-  };
+    const onGameSettingsUpdated = (setting: GameSetting) => {
+      dispatch(setGameSetting(setting));
+    };
 
-  useEffect(() => {
+    const onPlayerWalking = (walkData: WalkObject) => {
+      dispatch(walkPlayer(walkData));
+    };
+
+    const onPlayerLanded = ({
+      playerId,
+      landedIndex,
+    }: {
+      playerId: string;
+      landedIndex: number;
+    }) => {
+      dispatch(handlePlayerLanding(playerId, landedIndex));
+    };
+
+    const onGameCard = (card: GameCard) => {
+      dispatch(handleGameCard(card));
+    };
+
+    const onAllowedTurnActions = (isAllowed: boolean) => {
+      dispatch(allowTurnActions(isAllowed));
+    };
+
+    const onPlayerConnectivity = ({
+      playerId,
+      isConnected,
+      kickAt,
+    }: {
+      playerId: string;
+      isConnected: boolean;
+      kickAt: Player["connectionKickAt"];
+    }) => {
+      dispatch(setPlayerConnection({ playerId, isConnected, kickAt }));
+    };
+
+    const onPlayerCreated = (player: Player) => {
+      dispatch(addPlayer({ player, isSelf: true }));
+    };
+
+    const onPlayerJoined = (player: Player) => {
+      dispatch(addPlayer({ player }));
+      dispatch(writeLog(`${player.name} נכנס למשחק`));
+    };
+
+    const onPlayerLeft = ({
+      playerId,
+      hostId,
+    }: {
+      playerId: string;
+      hostId: Room["hostId"];
+    }) => {
+      dispatch(removeParticipation({ playerId, hostId }));
+      dispatch(writeLog(`${getPlayerName(playerId)} עזב את המשחק`));
+    };
+
+    const onGameStarted = ({
+      generatedPlayers,
+      currentPlayerId,
+    }: {
+      generatedPlayers: Player[];
+      currentPlayerId: string;
+    }) => {
+      dispatch(startGame({ generatedPlayers, currentPlayerId }));
+      dispatch(writeLog("המשחק התחיל!"));
+    };
+
+    const onDiceRolled = (dices: number[]) => {
+      dispatch(handleDices(dices));
+    };
+
+    const onSwitchedTurn = (nextPlayerId: string) => {
+      dispatch(handleSwitchTurn(nextPlayerId));
+    };
+
+    const onPurchasedProperty = (propertyIndex: number) => {
+      dispatch(purchasedPropertyThunk(propertyIndex));
+    };
+
+    const onSoldProperty = (propertyIndex: number) => {
+      dispatch(soldPropertyThunk(propertyIndex));
+    };
+
+    const onCityLevelChange = (data: {
+      propertyIndex: number;
+      changeType: "upgrade" | "downgrade";
+    }) => {
+      dispatch(cityLevelChangedThunk(data));
+    };
+
+    const onPaidOutOfJail = () => {
+      dispatch(paidOutOfJailThunk());
+    };
+
+    const onUsedPardonCard = (fromDeck: GameCardDeck) => {
+      dispatch(usedPardonCardThunk(fromDeck));
+    };
+
+    const onMovedToNextAirport = (airportIndex: number) => {
+      dispatch(movedToNextAirportThunk(airportIndex));
+    };
+
+    const onTradeCreated = (trade: TradeType) => {
+      dispatch(tradeCreatedThunk(trade));
+    };
+
+    const onTradeAccepted = (tradeId: string) => {
+      dispatch(tradeAcceptedThunk(tradeId));
+    };
+
+    const onTradeDeclined = (tradeId: string) => {
+      dispatch(tradeDeclinedThunk(tradeId));
+    };
+
+    const onTradeUpdated = (trade: TradeType) => {
+      dispatch(tradeUpdatedThunk(trade));
+    };
+
+    const onTradeDeleted = (tradeId: string) => {
+      dispatch(tradeDeletedThunk(tradeId));
+    };
+
+    const onTradeReset = () => {
+      dispatch(resetTrade());
+    };
+
+    const onPlayerInDebt = ({
+      playerId,
+      debtTo,
+    }: {
+      playerId: string;
+      debtTo: Player["debtTo"];
+    }) => {
+      dispatch(setPlayerInDebt({ playerId, debtTo }));
+    };
+
+    const onPlayerBankrupted = (playerId: string) => {
+      dispatch(setPlayerBankrupt({ playerId }));
+      dispatch(clearPlayerParticipation(playerId));
+      dispatch(writeLog(`${getPlayerName(playerId)} פשט את הרגל`));
+    };
+
+    const onGameEnded = (winner: Player) => {
+      dispatch(clearPlayers());
+      dispatch(setWinner({ winner }));
+    };
+
+    const onNewVotekick = (votekickData: {
+      votekicker: Player;
+      votekickAt: Date;
+    }) => {
+      dispatch(newVotekickThunk(votekickData));
+    };
+
+    const onUpdateVotekick = (votekickAt: Date) => {
+      dispatch(setCurrentPlayerVotekick({ kickAt: votekickAt }));
+    };
+
+    const onColorChanged = ({
+      playerId,
+      color,
+    }: {
+      playerId: string;
+      color: Colors;
+    }) => {
+      dispatch(setPlayerColor({ playerId, color }));
+    };
+
+    const onPlayerKicked = (kickData: {
+      kickedPlayerId: string;
+      hostId: Room["hostId"];
+    }) => {
+      const notifyOnKicked = () => {
+        if (setIsVotekicked) {
+          setIsVotekicked(true);
+        }
+
+        setTimeout(() => {
+          navigate("/");
+          backToLobby();
+          toast({
+            variant: "destructive",
+            title: "הוסרת מהמשחק על ידי מארח החדר",
+          });
+        }, 0);
+      };
+
+      dispatch(playerKickedThunk(kickData, notifyOnKicked));
+    };
+
     socket.on("game_updated", onGameUpdate);
     socket.on("game_settings_updated", onGameSettingsUpdated);
     socket.on("player_walking", onPlayerWalking);

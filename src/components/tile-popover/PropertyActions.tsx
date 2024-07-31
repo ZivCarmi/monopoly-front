@@ -1,7 +1,6 @@
 import { useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import { selectGameBoard } from "@/slices/game-slice";
-import { selectSelectedTileIndex } from "@/slices/ui-slice";
+import { selectGameBoard, selectSelectedTileIndex } from "@/slices/game-slice";
 import { isPlayerCanDowngrade, isPlayerCanUpgrade } from "@/utils";
 import {
   IProperty,

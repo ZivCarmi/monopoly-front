@@ -8,6 +8,7 @@ import {
   GameState,
   GameStats,
   IProperty,
+  PardonCard,
   Player,
   PurchasableTile,
   RentIndexes,
@@ -30,6 +31,7 @@ type _GameMap = MapWithoutCards & {
   surprises: CardsWithPardonCardHolderAndDeck;
   chances: CardsWithPardonCardHolderAndDeck;
 };
+export type GameLogType = { id: number; message: string; date: Date };
 type RoomBase = Omit<Room, "players" | "stats" | "map"> & {
   stats: _GameStats;
 };
@@ -45,6 +47,8 @@ export interface GameRoom extends RoomBase {
   };
   map: _GameMap;
   stats: _GameStats;
+  gameLog: GameLogType[];
+  selectedPopover: PurchasableTile | PardonCard | null;
 }
 
 const initialState: GameRoom = {
@@ -93,6 +97,8 @@ const initialState: GameRoom = {
     noRentInPrison: false,
   },
   voteKickers: [],
+  gameLog: [],
+  selectedPopover: null,
 };
 
 export type TransferMoneyArgs = {
@@ -623,6 +629,19 @@ export const gameSlice = createSlice({
         state.map.chances.pardonCardHolder = holder;
       }
     },
+    writeLog: (state, action: PayloadAction<string>) => {
+      state.gameLog.unshift({
+        id: state.gameLog.length + 1,
+        message: action.payload,
+        date: new Date(),
+      });
+    },
+    setSelectedPopover: (
+      state,
+      action: PayloadAction<PurchasableTile | PardonCard>
+    ) => {
+      state.selectedPopover = action.payload;
+    },
   },
 });
 
@@ -665,11 +684,20 @@ export const {
   setVotekickers,
   resetVotekickers,
   setPardonCardHolder,
+  writeLog,
+  setSelectedPopover,
 } = gameSlice.actions;
 
 export const selectGameBoard = (state: RootState) => state.game.map.board;
 export const selectPlayers = (state: RootState) => state.game.players;
 export const selectCurrentPlayerTurn = (state: RootState) =>
   state.game.players.find((player) => player.id === state.game.currentPlayerId);
+export const selectSelectedTileIndex = (state: RootState) =>
+  state.game.map.board.findIndex(
+    (tile) =>
+      state.game.selectedPopover &&
+      isPurchasable(state.game.selectedPopover) &&
+      tile.name === state.game.selectedPopover.name
+  );
 
 export default gameSlice.reducer;

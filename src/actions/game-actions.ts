@@ -12,13 +12,13 @@ import {
   suspendPlayer,
   switchTurn,
   transferMoney,
+  writeLog,
 } from "@/slices/game-slice";
 import {
   removePlayerProperties,
   resetTrade,
   setPlayerMoney,
 } from "@/slices/trade-slice";
-import { writeLog } from "@/slices/ui-slice";
 import { InvalidTrade } from "@/types/Trade";
 import {
   AIRPORT_RENTS,
@@ -58,14 +58,27 @@ import {
   paymentGameCard,
   renovationGameCard,
 } from "./card-actions";
+import dices_sound1 from "/sounds/dices1.mp3";
+import dices_sound2 from "/sounds/dices2.mp3";
+import recievedTurn_sound from "/sounds/recieved-turn.wav";
+import step_sound from "/sounds/step.ogg";
+import payingRent_sound from "/sounds/paying-rent.wav";
 
 export const handleSwitchTurn = (nextPlayerId: string): AppThunk => {
-  return (dispatch) => {
+  return (dispatch, getState) => {
+    const state = getState();
+
     if (isPlayerSuspended(nextPlayerId)?.reason === TileTypes.VACATION) {
       dispatch(freePlayer({ playerId: nextPlayerId }));
     }
 
     dispatch(switchTurn({ nextPlayerId }));
+
+    if (nextPlayerId === state.user.userId) {
+      const sound = new Audio(recievedTurn_sound);
+      sound.volume = state.ui.volume;
+      sound.play();
+    }
   };
 };
 
@@ -101,6 +114,11 @@ export const handleDices = (dices: number[]): AppThunk => {
       dispatch(sendPlayerToJail(currentPlayerId));
       return dispatch(writeLog(`${playerName} נשלח לכלא לאחר 3 דאבלים רצופים`));
     }
+
+    const sounds = [new Audio(dices_sound1), new Audio(dices_sound2)];
+    const sound = sounds[Math.floor(Math.random() * sounds.length)];
+    sound.volume = getState().ui.volume;
+    sound.play();
   };
 };
 
@@ -136,6 +154,10 @@ export const walkPlayer = ({
     if (isLastStep) {
       dispatch(handlePlayerLanding(playerId, position));
     }
+
+    const sound = new Audio(step_sound);
+    sound.volume = getState().ui.volume;
+    sound.play();
   };
 };
 
@@ -156,6 +178,9 @@ export const handlePlayerLanding = (
     const landedTile = map.board[landedIndex];
     const goRewardOnLand = map.goRewards.land;
 
+    const paySound = new Audio(payingRent_sound);
+    paySound.volume = getState().ui.volume;
+
     if (isGo(landedTile)) {
       const goTile = getGoTile(map.board);
 
@@ -169,8 +194,10 @@ export const handlePlayerLanding = (
       if (!landedTile.owner || landedTile.owner === playerId) return;
 
       dispatch(handleRentPayment(player, landedTile));
+      paySound.play();
     } else if (isTax(landedTile)) {
       dispatch(handleTaxPayment(player, landedTile));
+      paySound.play();
     } else if (isVacation(landedTile)) {
       dispatch(sendPlayerToVacation(playerId));
       dispatch(writeLog(`${player.name} יצא לחופשה`));
