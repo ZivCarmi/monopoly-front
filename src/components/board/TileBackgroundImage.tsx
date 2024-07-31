@@ -20,7 +20,7 @@ const TileBackgroundImage = ({
     >
       <img
         src={`/${tile.icon}-icon.svg`}
-        className="w-full h-full brightness-[40%] tileImg [min-inline-size:fit-content] [min-block-size:fit-content]"
+        className="max-w-none brightness-[40%] tileImg [min-inline-size:100%] [min-block-size:100%] shrink-0"
       />
     </div>
   );

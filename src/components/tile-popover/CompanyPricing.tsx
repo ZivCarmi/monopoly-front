@@ -13,6 +13,7 @@ const CompanyPricing = ({ company }: { company: ICompany }) => {
     <TilePricingList>
       {COMPANY_RENTS.map((price, i) => (
         <TilePricingItem
+          key={price}
           className="inline-block text-center w-full"
           style={{
             backgroundColor:
