@@ -160,7 +160,7 @@ input[type="number"] {
 .row-right .tile:not(.corner) .player,
 .row-left .tile:not(.corner) .player {
   writing-mode: initial;
-  transform: rotate(90deg);
+  rotate: 90deg;
 }
 
 .row-top .mapped-players,
@@ -172,11 +172,11 @@ input[type="number"] {
   align-items: flex-start;
 }
 
-.jail .mapped-players:not(.jail-players) {
+.jail .mapped-players:not(.prisoners) {
   bottom: 60%;
 }
 
-.jail .jail-players {
+.jail .prisoners {
   top: 40%;
   right: 25%;
 }

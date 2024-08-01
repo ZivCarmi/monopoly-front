@@ -27,17 +27,19 @@ const MappedPlayers = ({ tileIndex }: { tileIndex: number }) => {
   return (
     <>
       {jailedPlayers.length > 0 && (
-        <PlayersContainer className="jail-players">
+        <PlayersContainer className="prisoners">
           {jailedPlayers.map((player) => (
             <PlayerButton key={player.id} player={player} />
           ))}
         </PlayersContainer>
       )}
-      <PlayersContainer>
-        {notJailedPlayers.map((player) => (
-          <PlayerButton key={player.id} player={player} />
-        ))}
-      </PlayersContainer>
+      {notJailedPlayers.length > 0 && (
+        <PlayersContainer>
+          {notJailedPlayers.map((player) => (
+            <PlayerButton key={player.id} player={player} />
+          ))}
+        </PlayersContainer>
+      )}
     </>
   );
 };
