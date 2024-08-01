@@ -5,17 +5,18 @@ import {
   isAirport,
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, LayoutGroup } from "framer-motion";
+import { Fragment } from "react";
 import {
   getBoardAirports,
   getPlayerAirports,
   isPlayerInJail,
 } from "../../utils";
+import MoveToNextAirportButton from "./MoveToNextAirportButton";
 import PayOutOfJailButton from "./PayOutOfJailButton";
 import PlayerIsPlayingNotice from "./PlayerIsPlayingNotice";
 import PurchasePropertyButton from "./PurchasePropertyButton";
 import RollDices from "./RollDices";
-import MoveToNextAirportButton from "./MoveToNextAirportButton";
 import UsePardonCardButton from "./UsePardonCardButton";
 
 const CenterAction = () => {
@@ -49,27 +50,30 @@ const CenterAction = () => {
     getPlayerAirports(selfPlayer.id).length === getBoardAirports().length;
 
   return (
-    <>
-      <AnimatePresence>
+    <LayoutGroup>
+      <AnimatePresence mode="wait">
         {canPurchase && (
           <PurchasePropertyButton
+            key="purchase-button"
             isDisabled={currentPlayer.money < tile.cost}
             propertyIndex={currentPlayer.tilePos}
             price={tile.cost}
           />
         )}
+        {selfPlayer && isPlayerInJail(selfPlayer.id) && !cubesRolledInTurn && (
+          <Fragment key="jail-buttons">
+            <PayOutOfJailButton
+              isDisabled={currentPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
+            />
+            <UsePardonCardButton />
+          </Fragment>
+        )}
+        {canMoveToNextAirport && (
+          <MoveToNextAirportButton key="travel-button" airport={tile} />
+        )}
       </AnimatePresence>
-      {selfPlayer && isPlayerInJail(selfPlayer.id) && !cubesRolledInTurn && (
-        <>
-          <PayOutOfJailButton
-            isDisabled={currentPlayer.money < PAY_OUT_FROM_JAIL_AMOUNT}
-          />
-          <UsePardonCardButton />
-        </>
-      )}
-      {canMoveToNextAirport && <MoveToNextAirportButton airport={tile} />}
       <RollDices />
-    </>
+    </LayoutGroup>
   );
 };
 

@@ -71,9 +71,9 @@ const GameRoom = () => {
   const backToLobby = useBackToLobby();
 
   useEffect(() => {
-    const onGameUpdate = (room: Room) => {
-      dispatch(setRoom(room));
-    };
+    // const onGameUpdate = (room: Room) => {
+    // dispatch(setRoom(room));
+    // };
 
     const onGameSettingsUpdated = (setting: GameSetting) => {
       dispatch(setGameSetting(setting));
@@ -267,7 +267,7 @@ const GameRoom = () => {
       dispatch(playerKickedThunk(kickData, notifyOnKicked));
     };
 
-    socket.on("game_updated", onGameUpdate);
+    // socket.on("game_updated", onGameUpdate);
     socket.on("game_settings_updated", onGameSettingsUpdated);
     socket.on("player_walking", onPlayerWalking);
     socket.on("player_landed", onPlayerLanded);
@@ -301,7 +301,7 @@ const GameRoom = () => {
     socket.on("player_votekicked", onPlayerKicked);
 
     return () => {
-      socket.off("game_updated", onGameUpdate);
+      // socket.off("game_updated", onGameUpdate);
       socket.off("game_settings_updated", onGameSettingsUpdated);
       socket.off("player_walking", onPlayerWalking);
       socket.off("player_landed", onPlayerLanded);

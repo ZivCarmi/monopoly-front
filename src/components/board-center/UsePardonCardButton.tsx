@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ShieldCheck } from "lucide-react";
 import { Button } from "../ui/button";
 import Icon from "../ui/icon";
+import { buttonVariant } from "./RollDices";
 
 const MotionButton = motion(Button);
 
@@ -25,10 +26,11 @@ const UsePardonCardButton = () => {
       className="order-1"
       variant="yellowFancy"
       onClick={usePardonCardHandler}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.25 }}
-      viewport={{ once: true }}
+      initial="hidden"
+      animate="visible"
+      exit="hidden"
+      layout
+      variants={buttonVariant}
     >
       <Icon icon={ShieldCheck} />
       השתמש בכרטיס חנינה

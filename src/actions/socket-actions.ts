@@ -1,6 +1,7 @@
 import { AppThunk } from "@/app/store";
 import {
   addTrade,
+  allowTurnActions,
   completeTrade,
   freePlayer,
   purchaseProperty,
@@ -148,6 +149,7 @@ export const paidOutOfJailThunk = (): AppThunk => {
 
     const playerName = getPlayerName(currentPlayerId);
 
+    dispatch(allowTurnActions(false));
     dispatch(
       transferMoney({
         payerId: currentPlayerId,
@@ -176,8 +178,9 @@ export const usedPardonCardThunk = (fromDeck: GameCardDeck): AppThunk => {
 
     const playerName = getPlayerName(currentPlayerId);
 
-    dispatch(writeLog(`${playerName} השתמש בכרטיס חנינה כדי לצאת מהכלא`));
+    dispatch(allowTurnActions(false));
     dispatch(freePlayer({ playerId: currentPlayerId }));
+    dispatch(writeLog(`${playerName} השתמש בכרטיס חנינה כדי לצאת מהכלא`));
 
     if (chances.deck === fromDeck) {
       dispatch(setPardonCardHolder({ deck: fromDeck, holder: null }));

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "../ui/button";
 import { cycleNextItem, IAirport } from "@ziv-carmi/monopoly-utils";
 import { getBoardAirports } from "@/utils";
+import { buttonVariant } from "./RollDices";
 
 const MotionButton = motion(Button);
 
@@ -21,10 +22,11 @@ const MoveToNextAirportButton = ({ airport }: { airport: IAirport }) => {
     <MotionButton
       variant="blueFancy"
       onClick={moveToNextAirportHandler}
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      transition={{ duration: 0.25 }}
-      viewport={{ once: true }}
+      initial="hidden"
+      animate="visible"
+      exit="hidden"
+      layout
+      variants={buttonVariant}
     >
       דלג ל{nextAirport.name}
     </MotionButton>

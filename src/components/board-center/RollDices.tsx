@@ -16,14 +16,14 @@ export const buttonVariant: Variants = {
   hidden: {
     opacity: 0,
     transition: {
-      duration: 0.25,
+      duration: 0,
       ease: "easeOut",
     },
   },
   visible: {
     opacity: 1,
     transition: {
-      duration: 0.25,
+      duration: 0.2,
       ease: "easeOut",
     },
   },
@@ -49,6 +49,7 @@ const RollDices = () => {
     if (cubesRolledInTurn && !hasExtraTurn) {
       return (
         <Button
+          className="min-w-28"
           variant="primary"
           onClick={switchTurnHandler}
           disabled={isInDebt}
@@ -59,7 +60,12 @@ const RollDices = () => {
       );
     } else if (!cubesRolledInTurn) {
       return (
-        <Button variant="primary" onClick={rollDiceHandler} disabled={isInDebt}>
+        <Button
+          className="min-w-28"
+          variant="primary"
+          onClick={rollDiceHandler}
+          disabled={isInDebt}
+        >
           <Icon icon={Dices} />
           הטל קוביות
         </Button>
@@ -67,6 +73,7 @@ const RollDices = () => {
     } else if (hasExtraTurn) {
       return (
         <Button
+          className="min-w-28"
           variant="blueFancy"
           onClick={rollDiceHandler}
           disabled={isInDebt}
@@ -82,7 +89,7 @@ const RollDices = () => {
     <TooltipProvider delayDuration={0}>
       <Tooltip>
         <TooltipTrigger asChild>
-          <motion.span
+          <motion.div
             tabIndex={0}
             initial="hidden"
             animate="visible"
@@ -91,7 +98,7 @@ const RollDices = () => {
             variants={buttonVariant}
           >
             {renderButton()}
-          </motion.span>
+          </motion.div>
         </TooltipTrigger>
         {isInDebt && (
           <TooltipContent className="text-balance text-center">

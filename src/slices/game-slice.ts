@@ -37,8 +37,8 @@ type RoomBase = Omit<Room, "players" | "stats" | "map"> & {
 };
 
 export interface GameRoom extends RoomBase {
-  players: Player[];
   isInRoom: boolean;
+  players: Player[];
   selfPlayer: Player | null;
   isSpectating: boolean;
   drawnGameCard: {
@@ -54,9 +54,9 @@ export interface GameRoom extends RoomBase {
 const initialState: GameRoom = {
   id: "",
   isInRoom: false,
-  hostId: null,
   players: [],
   selfPlayer: null,
+  hostId: null,
   isSpectating: false,
   map: {
     chances: {
@@ -114,36 +114,31 @@ export const gameSlice = createSlice({
     setRoom: (state, action: PayloadAction<Room>) => {
       const room = action.payload;
 
-      state.id = room.id;
-      state.isInRoom = true;
-      state.hostId = room.hostId;
-      state.players = Object.values(room.players);
-      state.map = {
-        ...room.map,
-        chances: {
-          deck: room.map.chances.deck,
-          pardonCardHolder: room.map.chances.pardonCardHolder,
+      return {
+        ...room,
+        isInRoom: true,
+        players: Object.values(room.players),
+        selfPlayer: state.selfPlayer,
+        isSpectating: state.isSpectating,
+        drawnGameCard: state.drawnGameCard,
+        gameLog: state.gameLog,
+        selectedPopover: state.selectedPopover,
+        map: {
+          ...room.map,
+          chances: {
+            deck: room.map.chances.deck,
+            pardonCardHolder: room.map.chances.pardonCardHolder,
+          },
+          surprises: {
+            deck: room.map.surprises.deck,
+            pardonCardHolder: room.map.surprises.pardonCardHolder,
+          },
         },
-        surprises: {
-          deck: room.map.surprises.deck,
-          pardonCardHolder: room.map.surprises.pardonCardHolder,
+        stats: {
+          ...room.stats,
+          participants: Object.values(room.stats.participants),
         },
       };
-      state.state = room.state;
-      state.dices = room.dices;
-      state.currentPlayerId = room.currentPlayerId;
-      state.canPerformTurnActions = room.canPerformTurnActions;
-      state.cubesRolledInTurn = room.cubesRolledInTurn;
-      state.forceNoAnotherTurn = room.forceNoAnotherTurn;
-      state.doublesInARow = room.doublesInARow;
-      state.suspendedPlayers = room.suspendedPlayers;
-      state.stats = {
-        ...room.stats,
-        participants: Object.values(room.stats.participants),
-      };
-      state.trades = room.trades;
-      state.settings = room.settings;
-      state.voteKickers = room.voteKickers;
     },
     resetRoom: () => {
       return initialState;

@@ -11,7 +11,7 @@ const PlayerButton = ({ player }: { player: Player }) => {
     <button
       className={cn(
         "pointer-events-auto bg-opacity-80",
-        isPlayerTurn && "animate-pulse duration-1000",
+        isPlayerTurn && "animate-pulse duration-700",
         "player"
       )}
     >
