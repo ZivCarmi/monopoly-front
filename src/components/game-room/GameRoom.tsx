@@ -35,7 +35,6 @@ import {
   setPlayerColor,
   setPlayerConnection,
   setPlayerInDebt,
-  setRoom,
   setWinner,
   startGame,
   writeLog,
