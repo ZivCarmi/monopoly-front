@@ -245,7 +245,7 @@ const GameRoom = () => {
     };
 
     const onPlayerKicked = (kickData: {
-      kickedPlayerId: string;
+      playerId: string;
       hostId: Room["hostId"];
     }) => {
       const notifyOnKicked = () => {

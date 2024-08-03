@@ -339,20 +339,20 @@ export const removeParticipation = ({
 
 export const playerKickedThunk = (
   kickData: {
-    kickedPlayerId: string;
+    playerId: string;
     hostId: Room["hostId"];
   },
   callback: () => void
 ): AppThunk => {
   return (dispatch, getState) => {
-    const { kickedPlayerId, hostId } = kickData;
+    const { playerId, hostId } = kickData;
     const state = getState();
-    const playerName = getPlayerName(kickedPlayerId);
+    const playerName = getPlayerName(playerId);
 
-    if (state.game.selfPlayer?.id === kickedPlayerId) {
+    if (state.game.selfPlayer?.id === playerId) {
       callback();
     } else {
-      dispatch(removeParticipation({ playerId: kickedPlayerId, hostId }));
+      dispatch(removeParticipation({ playerId, hostId }));
       dispatch(writeLog(`${playerName} הודח מהמשחק`));
       dispatch(resetVotekickers());
     }
