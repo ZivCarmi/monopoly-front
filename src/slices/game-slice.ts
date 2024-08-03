@@ -95,6 +95,14 @@ const initialState: GameRoom = {
     startingMoney: 1500,
     randomizePlayerOrder: true,
     noRentInPrison: false,
+    vacationCash: false,
+    mortgage: false,
+    evenBuild: false,
+  },
+  addons: {
+    vacationCash: {
+      amount: 0,
+    },
   },
   voteKickers: [],
   gameLog: [],
@@ -624,6 +632,9 @@ export const gameSlice = createSlice({
         state.map.chances.pardonCardHolder = holder;
       }
     },
+    setVacationCashAmount: (state, action: PayloadAction<number>) => {
+      state.addons.vacationCash.amount = action.payload;
+    },
     writeLog: (state, action: PayloadAction<string>) => {
       state.gameLog.unshift({
         id: state.gameLog.length + 1,
@@ -679,6 +690,7 @@ export const {
   setVotekickers,
   resetVotekickers,
   setPardonCardHolder,
+  setVacationCashAmount,
   writeLog,
   setSelectedPopover,
 } = gameSlice.actions;

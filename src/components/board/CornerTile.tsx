@@ -1,22 +1,21 @@
-import { CornerGameTile, isJail } from "@ziv-carmi/monopoly-utils";
+import { BoardRow } from "@/types/Board";
+import { CornerGameTile, isJail, isVacation } from "@ziv-carmi/monopoly-utils";
 import JailTile from "./JailTile";
 import Tile from "./Tile";
-import { BoardRow } from "@/types/Board";
+import VacationTile from "./VacationTile";
 
-type CornerTile = {
+export type CornerTileProps = {
   tile: CornerGameTile;
   rowSide: BoardRow;
 };
 
-const CornerTile = ({ tile, rowSide }: CornerTile) => {
-  return isJail(tile) ? (
-    <JailTile />
+const CornerTile = (props: CornerTileProps) => {
+  return isJail(props.tile) ? (
+    <JailTile {...props} />
+  ) : isVacation(props.tile) ? (
+    <VacationTile {...props} />
   ) : (
-    <Tile
-      tile={tile}
-      rowSide={rowSide}
-      className="justify-center items-center"
-    />
+    <Tile className="justify-center items-center" {...props} />
   );
 };
 

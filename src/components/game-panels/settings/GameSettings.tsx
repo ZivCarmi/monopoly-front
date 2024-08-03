@@ -6,6 +6,7 @@ import MaxPlayers from "./MaxPlayers";
 import NoRentInPrison from "./NoRentInPrison";
 import RandomizePlayerOrder from "./RandomizePlayerOrder";
 import StartingCash from "./StartingCash";
+import VacationCash from "./VacationCash";
 
 interface GameSettings extends React.HTMLAttributes<HTMLDivElement> {}
 
@@ -20,6 +21,7 @@ const GameSettings = ({ ...props }: GameSettings) => {
       </SettingsContainer>
       <SettingsTitle>חוקי משחק</SettingsTitle>
       <SettingsContainer>
+        <VacationCash />
         <NoRentInPrison />
         <RandomizePlayerOrder />
       </SettingsContainer>

@@ -8,6 +8,7 @@ import {
   setPardonCardHolder,
   setPlayerPosition,
   setSelfPlayer,
+  setVacationCashAmount,
   staySuspendedTurn,
   suspendPlayer,
   switchTurn,
@@ -166,7 +167,7 @@ export const handlePlayerLanding = (
   landedIndex: number
 ): AppThunk => {
   return (dispatch, getState) => {
-    const { players, map } = getState().game;
+    const { players, map, settings, addons } = getState().game;
     const player = players.find((player) => player.id === playerId);
 
     if (!player) {
@@ -199,8 +200,20 @@ export const handlePlayerLanding = (
       dispatch(handleTaxPayment(player, landedTile));
       paySound.play();
     } else if (isVacation(landedTile)) {
+      let log = `${player.name} יצא לחופשה`;
+      if (settings.vacationCash) {
+        log += ` והרוויח ₪${addons.vacationCash.amount}`;
+        dispatch(
+          transferMoney({
+            recieverId: playerId,
+            amount: addons.vacationCash.amount,
+          })
+        );
+        dispatch(setVacationCashAmount(0));
+      }
+
       dispatch(sendPlayerToVacation(playerId));
-      dispatch(writeLog(`${player.name} יצא לחופשה`));
+      dispatch(writeLog(log));
     } else if (isGoToJail(landedTile)) {
       dispatch(sendPlayerToJail(playerId));
       dispatch(writeLog(`${player.name} נשלח לכלא`));
@@ -330,8 +343,13 @@ export const handleGameCard = (card: GameCard): AppThunk => {
 };
 
 export const handleTaxPayment = (player: Player, tile: ITax): AppThunk => {
-  return (dispatch) => {
+  return (dispatch, getState) => {
+    const { settings, addons } = getState().game;
     const taxAmount = Math.ceil((player.money * tile.taxRate) / 100);
+
+    if (settings.vacationCash) {
+      dispatch(setVacationCashAmount(addons.vacationCash.amount + taxAmount));
+    }
 
     dispatch(
       transferMoney({

@@ -1,8 +1,10 @@
+import { CornerTileProps } from "./CornerTile";
+import { TileWrapper } from "./Tile";
 import TileName from "./TileName";
 
-const JailTile = () => {
+const JailTile = ({ tile, rowSide }: CornerTileProps) => {
   return (
-    <div className="w-full h-full flex flex-col">
+    <TileWrapper rowSide={rowSide} className="flex-col">
       <div className="grow flex items-center justify-center">
         <TileName className="text-muted-foreground">ביקורים</TileName>
       </div>
@@ -13,10 +15,10 @@ const JailTile = () => {
           ))}
         </div>
         <span className="absolute bottom-1 left-1/2 -translate-x-1/2">
-          <TileName>כלא</TileName>
+          <TileName>{tile.name}</TileName>
         </span>
       </div>
-    </div>
+    </TileWrapper>
   );
 };
 

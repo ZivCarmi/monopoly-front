@@ -29,8 +29,8 @@ const TileIcon = ({ tile, className, ...props }: TileIconProps) => {
       className={cn(
         (isCard(tile) || isTax(tile)) && "p-4",
         (isAirport(tile) || isCompany(tile)) && "p-2",
-        (isVacation(tile) || isGoToJail(tile)) && "pb-4",
-        isGo(tile) && "pt-4",
+        (isVacation(tile) || isGoToJail(tile)) && "pb-3",
+        isGo(tile) && "pt-3",
         isProperty(tile) && "rounded-full overflow-hidden",
         "tileIconWrapper",
         className
