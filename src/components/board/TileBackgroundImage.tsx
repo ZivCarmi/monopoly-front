@@ -1,5 +1,6 @@
 import { cn } from "@/utils";
 import { IProperty } from "@ziv-carmi/monopoly-utils";
+import Svg from "../ui/svg";
 
 interface TileBackgroundImage extends React.HTMLAttributes<HTMLDivElement> {
   tile: IProperty;
@@ -10,6 +11,10 @@ const TileBackgroundImage = ({
   className,
   ...props
 }: TileBackgroundImage) => {
+  if (!tile.icon) {
+    return null;
+  }
+
   return (
     <div
       className={cn(
@@ -18,8 +23,8 @@ const TileBackgroundImage = ({
       )}
       {...props}
     >
-      <img
-        src={`/${tile.icon}-icon.svg`}
+      <Svg
+        name={tile.icon}
         className="max-w-none brightness-[40%] tileImg [min-inline-size:100%] [min-block-size:100%] shrink-0"
       />
     </div>

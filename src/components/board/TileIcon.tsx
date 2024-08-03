@@ -10,6 +10,7 @@ import {
   isTax,
   isVacation,
 } from "@ziv-carmi/monopoly-utils";
+import Svg from "../ui/svg";
 
 interface TileIconProps extends React.HTMLAttributes<HTMLDivElement> {
   tile: ITile;
@@ -19,10 +20,6 @@ const TileIcon = ({ tile, className, ...props }: TileIconProps) => {
   if (!tile.icon) {
     return null;
   }
-
-  const alt = isProperty(tile)
-    ? `דגל ${tile.country.name}`
-    : `אייקון ${tile.name}`;
 
   return (
     <div
@@ -37,11 +34,7 @@ const TileIcon = ({ tile, className, ...props }: TileIconProps) => {
       )}
       {...props}
     >
-      <img
-        className="w-full h-full tileIcon"
-        src={`/${tile.icon}-icon.svg`}
-        alt={alt}
-      />
+      <Svg name={tile.icon} className="w-full h-full tileIcon" />
     </div>
   );
 };
