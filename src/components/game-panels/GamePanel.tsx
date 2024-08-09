@@ -7,12 +7,10 @@ const GamePanel = ({ className, ...props }: GamePanelProps) => {
   return (
     <motion.div
       {...props}
-      className={cn("bg-card rounded-lg grid", className)}
+      className={cn("flex flex-col bg-card rounded-lg", className)}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      transition={{
-        duration: 0.15,
-      }}
+      transition={{ duration: 0.15 }}
       layout
     />
   );

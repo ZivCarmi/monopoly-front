@@ -9,6 +9,7 @@ import {
 import {
   cityLevelChangedThunk,
   movedToNextAirportThunk,
+  newMessageThunk,
   newVotekickThunk,
   paidOutOfJailThunk,
   playerKickedThunk,
@@ -26,6 +27,7 @@ import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import useBackToLobby from "@/hooks/useBackToLobby";
 import {
+  addNewMessage,
   addPlayer,
   allowTurnActions,
   clearPlayers,
@@ -42,6 +44,7 @@ import {
 import { resetTrade } from "@/slices/trade-slice";
 import { getPlayerName } from "@/utils";
 import {
+  ChatMessage,
   Colors,
   GameCard,
   GameCardDeck,
@@ -60,6 +63,7 @@ import ScoreboardPanel from "../game-panels/scoreboard/ScoreboardPanel";
 import { useToast } from "../ui/use-toast";
 import { useGameRoom } from "./GameRoomProvider";
 import MainBoard from "./MainBoard";
+import ChatPanel from "../game-panels/chat/ChatPanel";
 
 const GameRoom = () => {
   const socket = useSocket();
@@ -266,6 +270,10 @@ const GameRoom = () => {
       dispatch(playerKickedThunk(kickData, notifyOnKicked));
     };
 
+    const onMessageRecieved = (newMessage: ChatMessage) => {
+      dispatch(newMessageThunk(newMessage));
+    };
+
     // socket.on("game_updated", onGameUpdate);
     socket.on("game_settings_updated", onGameSettingsUpdated);
     socket.on("player_walking", onPlayerWalking);
@@ -298,6 +306,7 @@ const GameRoom = () => {
     socket.on("update_votekick", onUpdateVotekick);
     socket.on("color_changed", onColorChanged);
     socket.on("player_votekicked", onPlayerKicked);
+    socket.on("message_recieved", onMessageRecieved);
 
     return () => {
       // socket.off("game_updated", onGameUpdate);
@@ -332,6 +341,7 @@ const GameRoom = () => {
       socket.off("update_votekick", onUpdateVotekick);
       socket.off("color_changed", onColorChanged);
       socket.off("player_votekicked", onPlayerKicked);
+      socket.off("message_recieved", onMessageRecieved);
     };
   }, []);
 
@@ -340,6 +350,7 @@ const GameRoom = () => {
       <div className="game-general">
         <InfoPanel />
         <InvitationPanel />
+        <ChatPanel />
       </div>
       <MainBoard className="main-board" />
       <div className="game-sidebar">

@@ -1,6 +1,6 @@
 import { cn } from "@/utils";
+import { HTMLMotionProps, motion, Variants } from "framer-motion";
 import Overlay from "./overlay";
-import { motion, HTMLMotionProps, Variants } from "framer-motion";
 
 interface ModalProps extends HTMLMotionProps<"div"> {}
 

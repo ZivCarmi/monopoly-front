@@ -1,6 +1,7 @@
 import { RootState } from "@/app/store";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import {
+  ChatMessage,
   Colors,
   GameCard,
   GameCardDeck,
@@ -48,6 +49,9 @@ export interface GameRoom extends RoomBase {
   map: _GameMap;
   stats: _GameStats;
   gameLog: GameLogType[];
+  messages: ChatMessage[];
+  isChatOpen: boolean;
+  unreadMessages: number;
   selectedPopover: PurchasableTile | PardonCard | null;
 }
 
@@ -106,6 +110,9 @@ const initialState: GameRoom = {
   },
   voteKickers: [],
   gameLog: [],
+  messages: [],
+  isChatOpen: false,
+  unreadMessages: 0,
   selectedPopover: null,
 };
 
@@ -130,6 +137,9 @@ export const gameSlice = createSlice({
         isSpectating: state.isSpectating,
         drawnGameCard: state.drawnGameCard,
         gameLog: state.gameLog,
+        messages: state.messages,
+        isChatOpen: state.isChatOpen,
+        unreadMessages: state.unreadMessages,
         selectedPopover: state.selectedPopover,
         map: {
           ...room.map,
@@ -648,6 +658,30 @@ export const gameSlice = createSlice({
     ) => {
       state.selectedPopover = action.payload;
     },
+    addNewMessage: (state, action: PayloadAction<ChatMessage>) => {
+      state.messages = [...state.messages, action.payload];
+
+      if (state.messages.length > 50) {
+        state.messages.splice(0, 1);
+      }
+
+      if (
+        state.selfPlayer?.id !== action.payload.playerId &&
+        !state.isChatOpen
+      ) {
+        state.unreadMessages++;
+      }
+    },
+    setToggleChat: (state, action: PayloadAction<boolean>) => {
+      state.isChatOpen = action.payload;
+
+      if (action.payload) {
+        state.unreadMessages = 0;
+      }
+    },
+    setUnreadMessages: (state, action: PayloadAction<number>) => {
+      state.unreadMessages = action.payload;
+    },
   },
 });
 
@@ -693,6 +727,9 @@ export const {
   setVacationCashAmount,
   writeLog,
   setSelectedPopover,
+  addNewMessage,
+  setToggleChat,
+  setUnreadMessages,
 } = gameSlice.actions;
 
 export const selectGameBoard = (state: RootState) => state.game.map.board;

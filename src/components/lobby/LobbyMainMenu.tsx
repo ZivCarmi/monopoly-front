@@ -13,6 +13,7 @@ const LobbyMainMenu = () => {
       <NicknameForm />
       <div className="flex items-center justify-center gap-2 mt-5">
         <Button
+          data-testid="create-private-room"
           onClick={() => createRoom({ isPrivate: true })}
           variant="primaryFancy"
         >

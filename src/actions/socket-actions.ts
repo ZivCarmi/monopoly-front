@@ -1,5 +1,6 @@
 import { AppThunk } from "@/app/store";
 import {
+  addNewMessage,
   addTrade,
   allowTurnActions,
   completeTrade,
@@ -30,6 +31,7 @@ import {
 } from "@/slices/trade-slice";
 import { getPlayerName } from "@/utils";
 import {
+  ChatMessage,
   GameCardDeck,
   getCityLevelText,
   isProperty,
@@ -37,11 +39,19 @@ import {
   PAY_OUT_FROM_JAIL_AMOUNT,
   Player,
   PurchasableTile,
+  RentIndexes,
   Room,
   TradeType,
 } from "@ziv-carmi/monopoly-utils";
 import { clearPlayerParticipation } from "./game-actions";
 import purchase_sound from "/sounds/purchase-property.wav";
+import tradeRecieved_sound from "/sounds/trade-recieved.wav";
+import tradeDeclined_sound from "/sounds/trade-declined.wav";
+import tradeAccepted_sound from "/sounds/trade-accepted.wav";
+import propertyUpgrade_sound from "/sounds/property-upgrade.wav";
+import propertyUpgradeMax_sound from "/sounds/property-upgrade-max.wav";
+import propertyDowngrade_sound from "/sounds/property-downgrade.wav";
+import messageRecieved_sound from "/sounds/message-recieved.wav";
 
 export const purchasedPropertyThunk = (propertyIndex: number): AppThunk => {
   return (dispatch, getState) => {
@@ -117,13 +127,23 @@ export const cityLevelChangedThunk = ({
     const selectedTileIndex = selectSelectedTileIndex(state);
 
     if (isProperty(tile)) {
+      const isUpgradedToMax = tile.rentIndex + 1 === RentIndexes.HOTEL;
       let cityLevelText = getCityLevelText(tile.rentIndex + 1);
       let message = `${playerName} שדרג ל${cityLevelText} ב${tile.name}`;
+      let sound = new Audio(propertyUpgrade_sound);
+
+      if (isUpgradedToMax) {
+        sound = new Audio(propertyUpgradeMax_sound);
+      }
 
       if (changeType === "downgrade") {
+        sound = new Audio(propertyDowngrade_sound);
         cityLevelText = getCityLevelText(tile.rentIndex - 1);
         message = `${playerName} שנמך ל${cityLevelText} ב${tile.name}`;
       }
+
+      sound.volume = getState().ui.volume;
+      sound.play();
 
       dispatch(setCityLevel({ propertyIndex, changeType }));
       dispatch(writeLog(message));
@@ -223,6 +243,10 @@ export const tradeCreatedThunk = (trade: TradeType): AppThunk => {
 
     // if offeree is the socket
     if (trade.turn === state.game.selfPlayer?.id) {
+      const sound = new Audio(tradeRecieved_sound);
+      sound.volume = getState().ui.volume;
+      sound.play();
+
       if (!state.trade.tradeIsOpen && !state.trade.selectPlayerIsOpen) {
         dispatch(setTradeIsOpen(true));
         dispatch(setTrade(trade));
@@ -244,6 +268,14 @@ export const tradeAcceptedThunk = (tradeId: string): AppThunk => {
 
     const offerorName = getPlayerName(trade.lastEditBy);
     const offereeName = getPlayerName(trade.turn);
+
+    trade.traders.forEach((trader) => {
+      if (getState().game.selfPlayer?.id === trader.id) {
+        const sound = new Audio(tradeAccepted_sound);
+        sound.volume = getState().ui.volume;
+        sound.play();
+      }
+    });
 
     dispatch(completeTrade(trade));
     dispatch(removeTrade({ tradeId }));
@@ -268,6 +300,14 @@ export const tradeDeclinedThunk = (tradeId: string): AppThunk => {
     const declinerName = getPlayerName(trade.turn);
     const otherPlayerName = getPlayerName(trade.lastEditBy);
 
+    trade.traders.forEach((trader) => {
+      if (getState().game.selfPlayer?.id === trader.id) {
+        const sound = new Audio(tradeDeclined_sound);
+        sound.volume = getState().ui.volume;
+        sound.play();
+      }
+    });
+
     dispatch(removeTrade({ tradeId }));
     dispatch(writeLog(`${declinerName} ביטל עסקה עם ${otherPlayerName}`));
 
@@ -288,6 +328,10 @@ export const tradeUpdatedThunk = (trade: TradeType): AppThunk => {
         state.trade.tradeIsOpen && state.trade.trade?.id === trade.id;
       const isNotWatchingTrade =
         !state.trade.tradeIsOpen && !state.trade.selectPlayerIsOpen;
+
+      const sound = new Audio(tradeRecieved_sound);
+      sound.volume = getState().ui.volume;
+      sound.play();
 
       if (isOnSameOldTrade) {
         dispatch(setTrade(trade));
@@ -313,6 +357,14 @@ export const tradeDeletedThunk = (tradeId: string): AppThunk => {
 
     const deleterName = getPlayerName(trade.lastEditBy);
     const otherPlayerName = getPlayerName(trade.turn);
+
+    trade.traders.forEach((trader) => {
+      if (getState().game.selfPlayer?.id === trader.id) {
+        const sound = new Audio(tradeDeclined_sound);
+        sound.volume = getState().ui.volume;
+        sound.play();
+      }
+    });
 
     dispatch(removeTrade({ tradeId }));
     dispatch(writeLog(`${deleterName} ביטל עסקה עם ${otherPlayerName}`));
@@ -389,5 +441,19 @@ export const newVotekickThunk = ({
     }
 
     dispatch(writeLog(log));
+  };
+};
+
+export const newMessageThunk = (newMessage: ChatMessage): AppThunk => {
+  return (dispatch, getState) => {
+    const { selfPlayer } = getState().game;
+
+    dispatch(addNewMessage(newMessage));
+
+    if (selfPlayer?.id !== newMessage.playerId) {
+      const sound = new Audio(messageRecieved_sound);
+      sound.volume = getState().ui.volume;
+      sound.play();
+    }
   };
 };

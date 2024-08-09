@@ -9,7 +9,7 @@ import {
 import { TradeErrorReason, TradeValidityData } from "@/types/Trade";
 import {
   Colors,
-  CountryIds,
+  Countries,
   GameTile,
   IAirport,
   ICompany,
@@ -229,7 +229,7 @@ export const isSelfPlayerParticipating = () => {
   return isInRoom && isGameStarted(state) && !!selfPlayer;
 };
 
-export const getCities = (countryId: CountryIds) => {
+export const getCities = (countryId: Countries) => {
   const { board } = store.getState().game.map;
 
   return board.filter(
@@ -250,7 +250,7 @@ export const getBoardCompanies = () => {
   return board.filter((tile): tile is ICompany => isCompany(tile));
 };
 
-export const hasBuildings = (countryId: CountryIds) => {
+export const hasBuildings = (countryId: Countries) => {
   return getCities(countryId).some(
     (city) => city.rentIndex !== RentIndexes.BLANK
   );

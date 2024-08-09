@@ -121,10 +121,11 @@ input[type="number"] {
 
 .room-container {
   display: grid;
-  grid-template-columns: minmax(20rem, 1fr) auto minmax(20rem, 1fr);
-  grid-template-areas: "left center right";
   align-items: flex-start;
-  @apply p-4 gap-4;
+  grid-template-columns: 1fr;
+  grid-template-areas: "center" "right" "left";
+
+  @apply p-4 gap-4 sm:grid-cols-2 sm:[grid-template-areas:'center_center'_'left_right'] xl:grid-cols-[auto_1fr] xl:[grid-template-areas:'center_right'_'left_right'] 2xl:grid-cols-[minmax(20rem,_1fr)_auto_minmax(20rem,_1fr)] 2xl:[grid-template-areas:'left_center_right'];
 }
 
 .game-general,
@@ -318,25 +319,4 @@ input[type="number"] {
 
 .row-left {
   flex-direction: column-reverse;
-}
-
-@media (max-width: 1600px) {
-  .room-container {
-    grid-template-columns: auto 1fr;
-    grid-template-areas: "center right" "left right";
-  }
-}
-
-@media (max-width: 1200px) {
-  .room-container {
-    grid-template-columns: 1fr 1fr;
-    grid-template-areas: "center center" "left right";
-  }
-}
-
-@media (max-width: 600px) {
-  .room-container {
-    grid-template-columns: 1fr;
-    grid-template-areas: "center" "right" "left";
-  }
 }

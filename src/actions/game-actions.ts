@@ -63,6 +63,9 @@ import dices_sound1 from "/sounds/dices1.mp3";
 import dices_sound2 from "/sounds/dices2.mp3";
 import recievedTurn_sound from "/sounds/recieved-turn.wav";
 import step_sound from "/sounds/step.ogg";
+import enterJail_sound from "/sounds/enter-jail.wav";
+import enterVacation_sound from "/sounds/enter-vacation.mp3";
+import gameCard_sound from "/sounds/game-card.flac";
 import payingRent_sound from "/sounds/paying-rent.wav";
 
 export const handleSwitchTurn = (nextPlayerId: string): AppThunk => {
@@ -179,9 +182,6 @@ export const handlePlayerLanding = (
     const landedTile = map.board[landedIndex];
     const goRewardOnLand = map.goRewards.land;
 
-    const paySound = new Audio(payingRent_sound);
-    paySound.volume = getState().ui.volume;
-
     if (isGo(landedTile)) {
       const goTile = getGoTile(map.board);
 
@@ -195,10 +195,8 @@ export const handlePlayerLanding = (
       if (!landedTile.owner || landedTile.owner === playerId) return;
 
       dispatch(handleRentPayment(player, landedTile));
-      paySound.play();
     } else if (isTax(landedTile)) {
       dispatch(handleTaxPayment(player, landedTile));
-      paySound.play();
     } else if (isVacation(landedTile)) {
       let log = `${player.name} יצא לחופשה`;
       if (settings.vacationCash) {
@@ -261,6 +259,10 @@ export const sendPlayerToVacation = (playerId: string): AppThunk => {
         position: vacationTileIndex,
       })
     );
+
+    const sound = new Audio(enterVacation_sound);
+    sound.volume = getState().ui.volume;
+    sound.play();
   };
 };
 
@@ -288,6 +290,10 @@ export const sendPlayerToJail = (playerId: string): AppThunk => {
         position: jailTileIndex,
       })
     );
+
+    const sound = new Audio(enterJail_sound);
+    sound.volume = getState().ui.volume;
+    sound.play();
   };
 };
 
@@ -315,6 +321,10 @@ export const handleGameCard = (card: GameCard): AppThunk => {
         } והוציא: ${message}`
       )
     );
+
+    const sound = new Audio(gameCard_sound);
+    sound.volume = getState().ui.volume;
+    sound.play();
 
     switch (event.type) {
       case GameCardTypes.PAYMENT:
@@ -416,6 +426,10 @@ export const handleRentPayment = (
         amount: rentAmount,
       })
     );
+
+    const sound = new Audio(payingRent_sound);
+    sound.volume = getState().ui.volume;
+    sound.play();
   };
 };
 

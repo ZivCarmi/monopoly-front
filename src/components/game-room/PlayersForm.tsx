@@ -44,12 +44,17 @@ const PlayersForm = () => {
   };
 
   useEffect(() => {
-    form.setValue("color", getAvailableRandomColor());
+    setTimeout(() => {
+      form.setValue("color", getAvailableRandomColor(), {
+        shouldValidate: true,
+      });
+    }, 0);
   }, []);
 
   return (
     <Modal
       key="players-form"
+      data-testid="players-form"
       className="grid w-full max-w-lg gap-4 p-6 shadow-lg rounded-lg md:w-full"
     >
       <Form {...form}>
@@ -66,6 +71,7 @@ const PlayersForm = () => {
                   <FormControl>
                     <Input
                       {...field}
+                      data-testid="nick-input"
                       placeholder="הכינוי שלך..."
                       maxLength={30}
                     />
@@ -96,9 +102,10 @@ const PlayersForm = () => {
                               disabled={takenColor}
                               value={color}
                               className="hidden"
+                              checked={colorWatch === color}
                             />
                           </FormControl>
-                          <FormLabel>
+                          <FormLabel data-testid="character-select">
                             <CharacterSelection
                               size={1.75}
                               color={color}
@@ -116,7 +123,11 @@ const PlayersForm = () => {
             )}
           />
           <div className="flex items-center justify-center">
-            <Button type="submit" variant="primaryFancy">
+            <Button
+              data-testid="enter-game-btn"
+              type="submit"
+              variant="primaryFancy"
+            >
               הכנס למשחק
             </Button>
           </div>
