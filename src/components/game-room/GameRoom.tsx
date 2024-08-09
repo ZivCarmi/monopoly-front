@@ -27,7 +27,6 @@ import { useAppDispatch } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
 import useBackToLobby from "@/hooks/useBackToLobby";
 import {
-  addNewMessage,
   addPlayer,
   allowTurnActions,
   clearPlayers,
@@ -57,13 +56,13 @@ import {
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import SidebarPanel from "../game-panels/SidebarPanel";
+import ChatPanel from "../game-panels/chat/ChatPanel";
 import InfoPanel from "../game-panels/general/InfoPanel";
 import InvitationPanel from "../game-panels/general/InvitationPanel";
 import ScoreboardPanel from "../game-panels/scoreboard/ScoreboardPanel";
 import { useToast } from "../ui/use-toast";
 import { useGameRoom } from "./GameRoomProvider";
 import MainBoard from "./MainBoard";
-import ChatPanel from "../game-panels/chat/ChatPanel";
 
 const GameRoom = () => {
   const socket = useSocket();
