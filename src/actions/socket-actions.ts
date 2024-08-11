@@ -446,11 +446,11 @@ export const newVotekickThunk = ({
 
 export const newMessageThunk = (newMessage: ChatMessage): AppThunk => {
   return (dispatch, getState) => {
-    const { selfPlayer } = getState().game;
+    const { selfPlayer, chatSound } = getState().game;
 
     dispatch(addNewMessage(newMessage));
 
-    if (selfPlayer?.id !== newMessage.playerId) {
+    if (selfPlayer?.id !== newMessage.playerId && chatSound) {
       const sound = new Audio(messageRecieved_sound);
       sound.volume = getState().ui.volume;
       sound.play();

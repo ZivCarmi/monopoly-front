@@ -51,6 +51,7 @@ export interface GameRoom extends RoomBase {
   gameLog: GameLogType[];
   messages: ChatMessage[];
   isChatOpen: boolean;
+  chatSound: boolean;
   unreadMessages: number;
   selectedPopover: PurchasableTile | PardonCard | null;
 }
@@ -112,6 +113,7 @@ const initialState: GameRoom = {
   gameLog: [],
   messages: [],
   isChatOpen: false,
+  chatSound: true,
   unreadMessages: 0,
   selectedPopover: null,
 };
@@ -139,6 +141,7 @@ export const gameSlice = createSlice({
         gameLog: state.gameLog,
         messages: state.messages,
         isChatOpen: state.isChatOpen,
+        chatSound: state.chatSound,
         unreadMessages: state.unreadMessages,
         selectedPopover: state.selectedPopover,
         map: {
@@ -672,15 +675,18 @@ export const gameSlice = createSlice({
         state.unreadMessages++;
       }
     },
-    setToggleChat: (state, action: PayloadAction<boolean>) => {
-      state.isChatOpen = action.payload;
+    toggleChat: (state) => {
+      state.isChatOpen = !state.isChatOpen;
 
-      if (action.payload) {
+      if (state.isChatOpen) {
         state.unreadMessages = 0;
       }
     },
     setUnreadMessages: (state, action: PayloadAction<number>) => {
       state.unreadMessages = action.payload;
+    },
+    toggleChatSound: (state) => {
+      state.chatSound = !state.chatSound;
     },
   },
 });
@@ -728,8 +734,9 @@ export const {
   writeLog,
   setSelectedPopover,
   addNewMessage,
-  setToggleChat,
+  toggleChat,
   setUnreadMessages,
+  toggleChatSound,
 } = gameSlice.actions;
 
 export const selectGameBoard = (state: RootState) => state.game.map.board;

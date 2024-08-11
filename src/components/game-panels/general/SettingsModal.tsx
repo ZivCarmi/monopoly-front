@@ -1,7 +1,13 @@
-import GameSettings from "../settings/GameSettings";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { DialogTitle } from "@radix-ui/react-dialog";
 import { Settings } from "lucide-react";
+import GameSettings from "../settings/GameSettings";
 
 const SettingsModal = () => {
   return (
@@ -13,6 +19,8 @@ const SettingsModal = () => {
         </Button>
       </DialogTrigger>
       <DialogContent>
+        <DialogTitle hidden>הגדרות</DialogTitle>
+        <DialogDescription hidden>הגדרות משחק</DialogDescription>
         <GameSettings />
       </DialogContent>
     </Dialog>

@@ -4,27 +4,75 @@ import {
   Sheet,
   SheetContent,
   SheetDescription,
+  SheetOverlay,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
-import { setToggleChat } from "@/slices/game-slice";
+import { toggleChat } from "@/slices/game-slice";
+import { cn } from "@/utils";
 import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
-import { MessagesSquare } from "lucide-react";
+import { AnimatePresence, motion, Variants } from "framer-motion";
+import { MessagesSquare, X } from "lucide-react";
 import ChatPanelContent from "./ChatPanelContent";
-import { AnimatePresence, motion } from "framer-motion";
+
+const XIconMotion = motion(X);
+const MessagesSquareIconMotion = motion(MessagesSquare);
 
 const ChatFloat = () => {
   const { isChatOpen, unreadMessages } = useAppSelector((state) => state.game);
   const dispatch = useAppDispatch();
 
+  const slideVariants: Variants = {
+    hidden: {
+      y: !isChatOpen ? -64 : 64,
+      opacity: 0,
+    },
+    visible: {
+      y: 0,
+      opacity: 1,
+      transition: { duration: 0.2, ease: "anticipate" },
+    },
+    exit: {
+      y: isChatOpen ? 64 : -64,
+      opacity: 0,
+      transition: { duration: 0.2 },
+    },
+  };
+
   return (
-    <Sheet
-      open={isChatOpen}
-      onOpenChange={(open) => dispatch(setToggleChat(open))}
+    <div
+      className={cn(
+        "fixed inset-0 flex items-end p-4 z-50 !mt-0",
+        isChatOpen ? "pointer-events-auto" : "pointer-events-none"
+      )}
     >
-      <SheetTrigger asChild>
-        <Button className="w-16 h-16 fixed bottom-4 left-4 z-[60] rounded-full">
-          <MessagesSquare className="w-8 h-8" />
+      <Sheet open={isChatOpen}>
+        <div className="relative z-[60]">
+          <Button
+            className="relative w-16 h-16 rounded-full pointer-events-auto overflow-hidden"
+            onClick={() => dispatch(toggleChat())}
+          >
+            <AnimatePresence initial={false}>
+              {isChatOpen ? (
+                <XIconMotion
+                  key="x-icon"
+                  variants={slideVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                  className="w-8 h-8 absolute flex items-center justify-center"
+                />
+              ) : (
+                <MessagesSquareIconMotion
+                  key="messages-icon"
+                  className="w-8 h-8 absolute flex items-center justify-center"
+                  variants={slideVariants}
+                  initial="hidden"
+                  animate="visible"
+                  exit="exit"
+                />
+              )}
+            </AnimatePresence>
+          </Button>
           <AnimatePresence>
             {unreadMessages && (
               <motion.span
@@ -37,23 +85,24 @@ const ChatFloat = () => {
               </motion.span>
             )}
           </AnimatePresence>
-        </Button>
-      </SheetTrigger>
-      <SheetContent
-        side="left"
-        className="w-[calc(100%-2rem)] h-[calc(100dvh-6rem*2)] p-0 right-4 left-4 top-24 sm:right-auto border-none"
-      >
-        <SheetTitle>
-          <VisuallyHidden.Root>צ'אט</VisuallyHidden.Root>
-        </SheetTitle>
-        <SheetDescription>
-          <VisuallyHidden.Root>
-            הודעות צ'אט עם שחקנים אחרים במשחק
-          </VisuallyHidden.Root>
-        </SheetDescription>
-        <ChatPanelContent className="h-full" />
-      </SheetContent>
-    </Sheet>
+        </div>
+        <SheetOverlay onClick={() => dispatch(toggleChat())} />
+        <SheetContent
+          className="w-[calc(100%-2rem)] h-[calc(100dvh-6rem*2)] p-0 right-4 top-24 border-none"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+        >
+          <SheetTitle>
+            <VisuallyHidden.Root>צ'אט</VisuallyHidden.Root>
+          </SheetTitle>
+          <SheetDescription>
+            <VisuallyHidden.Root>
+              הודעות צ'אט עם שחקנים אחרים במשחק
+            </VisuallyHidden.Root>
+          </SheetDescription>
+          <ChatPanelContent className="h-full" />
+        </SheetContent>
+      </Sheet>
+    </div>
   );
 };
 

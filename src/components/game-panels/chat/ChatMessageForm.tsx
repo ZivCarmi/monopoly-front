@@ -20,6 +20,7 @@ const ChatMessageForm = () => {
   const submitHandler = (text: z.infer<typeof ChatMessageSchema>) => {
     socket.emit("send_message", text);
     form.resetField("text");
+    form.setFocus("text");
   };
 
   return (
@@ -36,7 +37,8 @@ const ChatMessageForm = () => {
               <FormControl>
                 <Input
                   {...field}
-                  className="rounded-full"
+                  autoFocus={true}
+                  className="border-none rounded-full"
                   placeholder="ההודעה שלך..."
                 />
               </FormControl>
@@ -47,7 +49,7 @@ const ChatMessageForm = () => {
           <Button
             size="icon"
             variant="outline"
-            className="rounded-full"
+            className="border-none rounded-full"
             disabled={!form.getValues("text")}
           >
             <Send className="w-5 h-5" />

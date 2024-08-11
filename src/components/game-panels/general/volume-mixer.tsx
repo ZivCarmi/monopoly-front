@@ -2,14 +2,14 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { setVolume } from "@/slices/ui-slice";
 import { Volume1, Volume2, VolumeX } from "lucide-react";
 import { useCallback } from "react";
-import { Button } from "./button";
-import { Slider } from "./slider";
+import { Button } from "@/components/ui/button";
+import { Slider } from "@/components/ui/slider";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "./tooltip";
+} from "@/components/ui/tooltip";
 import { SOUND_VOLUME_STORAGE_KEY } from "@/utils/constants";
 
 const VolumeMixer = () => {

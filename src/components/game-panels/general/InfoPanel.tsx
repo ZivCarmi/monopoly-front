@@ -1,6 +1,6 @@
 import BackToLobbyLink from "@/components/game-room/BackToLobbyLink";
 import { ToggleTheme } from "@/components/theme/ThemeToggle";
-import VolumeMixer from "@/components/ui/volume-mixer";
+import VolumeMixer from "./volume-mixer";
 
 const InfoPanel = () => {
   return (
