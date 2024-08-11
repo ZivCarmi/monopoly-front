@@ -1,6 +1,7 @@
 import { AppThunk } from "@/app/store";
 import {
   addNewMessage,
+  addPlayer,
   addTrade,
   allowTurnActions,
   completeTrade,
@@ -44,6 +45,7 @@ import {
   TradeType,
 } from "@ziv-carmi/monopoly-utils";
 import { clearPlayerParticipation } from "./game-actions";
+import playerEnter_sound from "/sounds/player-enter.wav";
 import purchase_sound from "/sounds/purchase-property.wav";
 import tradeRecieved_sound from "/sounds/trade-recieved.wav";
 import tradeDeclined_sound from "/sounds/trade-declined.wav";
@@ -52,6 +54,17 @@ import propertyUpgrade_sound from "/sounds/property-upgrade.wav";
 import propertyUpgradeMax_sound from "/sounds/property-upgrade-max.wav";
 import propertyDowngrade_sound from "/sounds/property-downgrade.wav";
 import messageRecieved_sound from "/sounds/message-recieved.wav";
+
+export const playerEnteredGameThunk = (player: Player): AppThunk => {
+  return (dispatch, getState) => {
+    dispatch(addPlayer({ player }));
+    dispatch(writeLog(`${player.name} נכנס למשחק`));
+
+    const sound = new Audio(playerEnter_sound);
+    sound.volume = getState().ui.volume;
+    sound.play();
+  };
+};
 
 export const purchasedPropertyThunk = (propertyIndex: number): AppThunk => {
   return (dispatch, getState) => {

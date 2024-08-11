@@ -9,6 +9,7 @@ import {
   setPlayerPosition,
   setSelfPlayer,
   setVacationCashAmount,
+  startGame,
   staySuspendedTurn,
   suspendPlayer,
   switchTurn,
@@ -61,12 +62,27 @@ import {
 } from "./card-actions";
 import dices_sound1 from "/sounds/dices1.mp3";
 import dices_sound2 from "/sounds/dices2.mp3";
-import recievedTurn_sound from "/sounds/recieved-turn.wav";
-import step_sound from "/sounds/step.ogg";
 import enterJail_sound from "/sounds/enter-jail.wav";
 import enterVacation_sound from "/sounds/enter-vacation.mp3";
 import gameCard_sound from "/sounds/game-card.flac";
+import gameStart_sound from "/sounds/game-start.wav";
 import payingRent_sound from "/sounds/paying-rent.wav";
+import recievedTurn_sound from "/sounds/recieved-turn.wav";
+import step_sound from "/sounds/step.ogg";
+
+export const startGameThunk = (startGameData: {
+  generatedPlayers: Player[];
+  currentPlayerId: string;
+}): AppThunk => {
+  return (dispatch, getState) => {
+    dispatch(startGame(startGameData));
+    dispatch(writeLog("המשחק התחיל!"));
+
+    const sound = new Audio(gameStart_sound);
+    sound.volume = getState().ui.volume;
+    sound.play();
+  };
+};
 
 export const handleSwitchTurn = (nextPlayerId: string): AppThunk => {
   return (dispatch, getState) => {

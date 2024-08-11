@@ -4,6 +4,7 @@ import {
   handleGameCard,
   handlePlayerLanding,
   handleSwitchTurn,
+  startGameThunk,
   walkPlayer,
 } from "@/actions/game-actions";
 import {
@@ -12,6 +13,7 @@ import {
   newMessageThunk,
   newVotekickThunk,
   paidOutOfJailThunk,
+  playerEnteredGameThunk,
   playerKickedThunk,
   purchasedPropertyThunk,
   removeParticipation,
@@ -37,7 +39,6 @@ import {
   setPlayerConnection,
   setPlayerInDebt,
   setWinner,
-  startGame,
   writeLog,
 } from "@/slices/game-slice";
 import { resetTrade } from "@/slices/trade-slice";
@@ -120,8 +121,7 @@ const GameRoom = () => {
     };
 
     const onPlayerJoined = (player: Player) => {
-      dispatch(addPlayer({ player }));
-      dispatch(writeLog(`${player.name} נכנס למשחק`));
+      dispatch(playerEnteredGameThunk(player));
     };
 
     const onPlayerLeft = ({
@@ -135,15 +135,11 @@ const GameRoom = () => {
       dispatch(writeLog(`${getPlayerName(playerId)} עזב את המשחק`));
     };
 
-    const onGameStarted = ({
-      generatedPlayers,
-      currentPlayerId,
-    }: {
+    const onGameStarted = (startGameData: {
       generatedPlayers: Player[];
       currentPlayerId: string;
     }) => {
-      dispatch(startGame({ generatedPlayers, currentPlayerId }));
-      dispatch(writeLog("המשחק התחיל!"));
+      dispatch(startGameThunk(startGameData));
     };
 
     const onDiceRolled = (dices: number[]) => {
