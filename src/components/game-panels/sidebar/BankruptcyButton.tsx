@@ -13,7 +13,7 @@ const BankruptcyButton = () => {
   };
 
   return (
-    <Button onClick={bankruptcyHandler} variant="destructive">
+    <Button onClick={bankruptcyHandler} variant="redFancy">
       <Icon icon={Footprints} />
       פשוט רגל
     </Button>

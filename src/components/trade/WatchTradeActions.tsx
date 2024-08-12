@@ -45,7 +45,7 @@ const WatchTradeActions = () => {
             <Icon icon={Pencil} />
             התמקח
           </Button>
-          <Button variant="destructive" onClick={declineTradeHandler}>
+          <Button variant="redFancy" onClick={declineTradeHandler}>
             <Icon icon={X} />
             סרב
           </Button>
@@ -59,7 +59,7 @@ const WatchTradeActions = () => {
           </Button>
         </>
       ) : (
-        <Button variant="destructive" onClick={deleteTradeHandler}>
+        <Button variant="redFancy" onClick={deleteTradeHandler}>
           <Icon icon={X} />
           מחק עסקה
         </Button>

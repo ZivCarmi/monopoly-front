@@ -52,7 +52,7 @@ const TileCardActions = ({ tile }: { tile: PurchasableTile }) => {
                 }
               >
                 <Button
-                  variant="destructive"
+                  variant="redFancy"
                   disabled={!canSell.isValid}
                   onClick={sellPropertyHandler}
                   size="icon"

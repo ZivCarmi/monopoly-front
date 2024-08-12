@@ -21,6 +21,8 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         primaryFancy:
           "bg-gradient-to-tl from-violet-800 to-purple-600 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-300 text-primary-foreground",
+        redFancy:
+          "bg-gradient-to-tl from-rose-600 to-red-700 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-300 text-destructive-foreground",
         blueFancy:
           "bg-gradient-to-tl from-green-500 to-blue-600 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-300",
         yellowFancy:
