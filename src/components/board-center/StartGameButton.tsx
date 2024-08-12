@@ -41,7 +41,11 @@ const StartButton = ({ canStart }: { canStart: boolean }) => {
   };
 
   return (
-    <Button variant="primary" onClick={startGameHandler} disabled={!canStart}>
+    <Button
+      variant="primaryFancy"
+      onClick={startGameHandler}
+      disabled={!canStart}
+    >
       <Icon icon={Play} />
       התחל משחק
     </Button>

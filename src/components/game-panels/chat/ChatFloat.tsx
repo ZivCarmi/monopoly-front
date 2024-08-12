@@ -48,6 +48,7 @@ const ChatFloat = () => {
       <Sheet open={isChatOpen}>
         <div className="relative z-[60]">
           <Button
+            variant="primaryFancy"
             className="relative w-16 h-16 rounded-full pointer-events-auto overflow-hidden"
             onClick={() => dispatch(toggleChat())}
           >

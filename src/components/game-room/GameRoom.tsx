@@ -41,7 +41,6 @@ import {
   setWinner,
   writeLog,
 } from "@/slices/game-slice";
-import { resetTrade } from "@/slices/trade-slice";
 import { getPlayerName } from "@/utils";
 import {
   ChatMessage,
@@ -74,10 +73,6 @@ const GameRoom = () => {
   const backToLobby = useBackToLobby();
 
   useEffect(() => {
-    // const onGameUpdate = (room: Room) => {
-    // dispatch(setRoom(room));
-    // };
-
     const onGameSettingsUpdated = (setting: GameSetting) => {
       dispatch(setGameSetting(setting));
     };
@@ -197,10 +192,6 @@ const GameRoom = () => {
       dispatch(tradeDeletedThunk(tradeId));
     };
 
-    const onTradeReset = () => {
-      dispatch(resetTrade());
-    };
-
     const onPlayerInDebt = ({
       playerId,
       debtTo,
@@ -269,7 +260,6 @@ const GameRoom = () => {
       dispatch(newMessageThunk(newMessage));
     };
 
-    // socket.on("game_updated", onGameUpdate);
     socket.on("game_settings_updated", onGameSettingsUpdated);
     socket.on("player_walking", onPlayerWalking);
     socket.on("player_landed", onPlayerLanded);
@@ -293,7 +283,6 @@ const GameRoom = () => {
     socket.on("declined_trade", onTradeDeclined);
     socket.on("updated_trade", onTradeUpdated);
     socket.on("deleted_trade", onTradeDeleted);
-    socket.on("reset_trade", onTradeReset);
     socket.on("player_in_debt", onPlayerInDebt);
     socket.on("player_bankrupted", onPlayerBankrupted);
     socket.on("game_ended", onGameEnded);
@@ -304,7 +293,6 @@ const GameRoom = () => {
     socket.on("message_recieved", onMessageRecieved);
 
     return () => {
-      // socket.off("game_updated", onGameUpdate);
       socket.off("game_settings_updated", onGameSettingsUpdated);
       socket.off("player_walking", onPlayerWalking);
       socket.off("player_landed", onPlayerLanded);
@@ -328,7 +316,6 @@ const GameRoom = () => {
       socket.off("declined_trade", onTradeDeclined);
       socket.off("updated_trade", onTradeUpdated);
       socket.off("deleted_trade", onTradeDeleted);
-      socket.off("reset_trade", onTradeReset);
       socket.off("player_in_debt", onPlayerInDebt);
       socket.off("player_bankrupted", onPlayerBankrupted);
       socket.off("game_ended", onGameEnded);

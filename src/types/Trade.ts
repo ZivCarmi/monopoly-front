@@ -9,5 +9,9 @@ export type InvalidTrade = {
     playerId: string;
   };
 };
+export type CreateTradeArgs = {
+  offerorId: string;
+  offereeId: string;
+};
 
 export type TradeValidityData = ValidTrade | InvalidTrade;

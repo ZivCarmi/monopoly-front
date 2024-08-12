@@ -20,10 +20,7 @@ const LobbyMainMenu = () => {
           <Icon icon={Gamepad2} />
           צור חדר פרטי
         </Button>
-        <Button
-          asChild
-          className="bg-gradient-to-tl from-pink-500 to-yellow-500 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-500"
-        >
+        <Button asChild variant="yellowFancy">
           <Link to="/rooms">
             <Icon icon={Users2} />
             לרשימת חדרים

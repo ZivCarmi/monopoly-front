@@ -24,12 +24,7 @@ import {
   updateTrade,
   writeLog,
 } from "@/slices/game-slice";
-import {
-  resetTrade,
-  setMode,
-  setTrade,
-  setTradeIsOpen,
-} from "@/slices/trade-slice";
+import { closeTrade, watchTrade } from "@/slices/trade-slice";
 import { getPlayerName } from "@/utils";
 import {
   ChatMessage,
@@ -45,15 +40,15 @@ import {
   TradeType,
 } from "@ziv-carmi/monopoly-utils";
 import { clearPlayerParticipation } from "./game-actions";
-import playerEnter_sound from "/sounds/player-enter.wav";
-import purchase_sound from "/sounds/purchase-property.wav";
-import tradeRecieved_sound from "/sounds/trade-recieved.wav";
-import tradeDeclined_sound from "/sounds/trade-declined.wav";
-import tradeAccepted_sound from "/sounds/trade-accepted.wav";
-import propertyUpgrade_sound from "/sounds/property-upgrade.wav";
-import propertyUpgradeMax_sound from "/sounds/property-upgrade-max.wav";
-import propertyDowngrade_sound from "/sounds/property-downgrade.wav";
 import messageRecieved_sound from "/sounds/message-recieved.wav";
+import playerEnter_sound from "/sounds/player-enter.wav";
+import propertyDowngrade_sound from "/sounds/property-downgrade.wav";
+import propertyUpgradeMax_sound from "/sounds/property-upgrade-max.wav";
+import propertyUpgrade_sound from "/sounds/property-upgrade.wav";
+import purchase_sound from "/sounds/purchase-property.wav";
+import tradeAccepted_sound from "/sounds/trade-accepted.wav";
+import tradeDeclined_sound from "/sounds/trade-declined.wav";
+import tradeRecieved_sound from "/sounds/trade-recieved.wav";
 
 export const playerEnteredGameThunk = (player: Player): AppThunk => {
   return (dispatch, getState) => {
@@ -256,14 +251,15 @@ export const tradeCreatedThunk = (trade: TradeType): AppThunk => {
 
     // if offeree is the socket
     if (trade.turn === state.game.selfPlayer?.id) {
+      const shouldPopUpTrade =
+        !state.trade.tradeIsOpen && !state.trade.selectPlayerIsOpen;
+
       const sound = new Audio(tradeRecieved_sound);
       sound.volume = getState().ui.volume;
       sound.play();
 
-      if (!state.trade.tradeIsOpen && !state.trade.selectPlayerIsOpen) {
-        dispatch(setTradeIsOpen(true));
-        dispatch(setTrade(trade));
-        dispatch(setMode("watching"));
+      if (shouldPopUpTrade) {
+        dispatch(watchTrade(trade));
       }
     }
   };
@@ -273,7 +269,7 @@ export const tradeAcceptedThunk = (tradeId: string): AppThunk => {
   return (dispatch, getState) => {
     const state = getState();
     const trade = state.game.trades.find((trade) => trade.id === tradeId);
-    const isStaleTrade = state.trade.trade?.id === tradeId;
+    const isWatchingThisTrade = state.trade.trade?.id === tradeId;
 
     if (!trade) {
       throw new Error("Trade not found on tradeAcceptedThunk");
@@ -290,13 +286,13 @@ export const tradeAcceptedThunk = (tradeId: string): AppThunk => {
       }
     });
 
+    if (isWatchingThisTrade) {
+      dispatch(closeTrade());
+    }
+
     dispatch(completeTrade(trade));
     dispatch(removeTrade({ tradeId }));
     dispatch(writeLog(`${offerorName} ביצע עסקה עם ${offereeName}`));
-
-    if (isStaleTrade) {
-      dispatch(resetTrade());
-    }
   };
 };
 
@@ -304,7 +300,7 @@ export const tradeDeclinedThunk = (tradeId: string): AppThunk => {
   return (dispatch, getState) => {
     const state = getState();
     const trade = state.game.trades.find((trade) => trade.id === tradeId);
-    const isStaleTrade = state.trade.trade?.id === tradeId;
+    const isWatchingThisTrade = state.trade.trade?.id === tradeId;
 
     if (!trade) {
       throw new Error("Trade not found on tradeDeclinedThunk");
@@ -321,12 +317,12 @@ export const tradeDeclinedThunk = (tradeId: string): AppThunk => {
       }
     });
 
+    if (isWatchingThisTrade) {
+      dispatch(closeTrade());
+    }
+
     dispatch(removeTrade({ tradeId }));
     dispatch(writeLog(`${declinerName} ביטל עסקה עם ${otherPlayerName}`));
-
-    if (isStaleTrade) {
-      dispatch(resetTrade());
-    }
   };
 };
 
@@ -337,22 +333,17 @@ export const tradeUpdatedThunk = (trade: TradeType): AppThunk => {
     dispatch(updateTrade(trade));
 
     if (trade.turn === state.game.selfPlayer?.id) {
-      const isOnSameOldTrade =
+      const isWatchingSameOldTrade =
         state.trade.tradeIsOpen && state.trade.trade?.id === trade.id;
-      const isNotWatchingTrade =
+      const shouldPopUpTrade =
         !state.trade.tradeIsOpen && !state.trade.selectPlayerIsOpen;
 
       const sound = new Audio(tradeRecieved_sound);
       sound.volume = getState().ui.volume;
       sound.play();
 
-      if (isOnSameOldTrade) {
-        dispatch(setTrade(trade));
-        dispatch(setMode("watching"));
-      } else if (isNotWatchingTrade) {
-        dispatch(setTradeIsOpen(true));
-        dispatch(setTrade(trade));
-        dispatch(setMode("watching"));
+      if (isWatchingSameOldTrade || shouldPopUpTrade) {
+        dispatch(watchTrade(trade));
       }
     }
   };
@@ -362,7 +353,7 @@ export const tradeDeletedThunk = (tradeId: string): AppThunk => {
   return (dispatch, getState) => {
     const state = getState();
     const trade = state.game.trades.find((trade) => trade.id === tradeId);
-    const isStaleTrade = state.trade.trade?.id === tradeId;
+    const isWatchingThisTrade = state.trade.trade?.id === tradeId;
 
     if (!trade) {
       throw new Error("Trade not found on tradeDeletedThunk");
@@ -382,8 +373,8 @@ export const tradeDeletedThunk = (tradeId: string): AppThunk => {
     dispatch(removeTrade({ tradeId }));
     dispatch(writeLog(`${deleterName} ביטל עסקה עם ${otherPlayerName}`));
 
-    if (isStaleTrade) {
-      dispatch(resetTrade());
+    if (isWatchingThisTrade) {
+      dispatch(closeTrade());
     }
   };
 };

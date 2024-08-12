@@ -47,14 +47,16 @@ const MainBoard = ({ className, ...props }: MainBoardProps) => {
       boardDimensions.current = [boardWidth, boardHeight];
     }
 
+    console.log(boardRef.current.offsetWidth);
+
     const { paddingTop, paddingRight, paddingBottom, paddingLeft } =
       window.getComputedStyle(grid);
     const paddingX = parseFloat(paddingLeft) + parseFloat(paddingRight);
     const paddingY = parseFloat(paddingTop) + parseFloat(paddingBottom);
     const width = (window.innerWidth - paddingX) / boardWidth;
     const height = (window.innerHeight - paddingY) / boardHeight;
-    const scaleValue = Math.min(width, height);
-    const shouldScale = Math.max(scaleValue, 0.3) <= 1;
+    let scaleValue = Math.min(width, height);
+    const shouldScale = (scaleValue = Math.max(scaleValue, 0.3)) <= 1;
 
     if (
       shouldScale &&
@@ -62,16 +64,20 @@ const MainBoard = ({ className, ...props }: MainBoardProps) => {
       boardDimensions.current[1]
     ) {
       boardContainerRef.current.style.transform = `scale(${scaleValue})`;
-      boardContainerRef.current.style.width =
-        boardDimensions.current[0] * scaleValue + "px";
-      boardContainerRef.current.style.height =
-        boardDimensions.current[1] * scaleValue + "px";
+      boardContainerRef.current.style.width = `${
+        boardDimensions.current[0] * scaleValue
+      }px`;
+      boardContainerRef.current.style.height = `${
+        boardDimensions.current[1] * scaleValue
+      }px`;
     }
-  }, []);
+  }, [boardRef, boardContainerRef, boardDimensions.current[0]]);
 
   useEffect(() => {
     onResize();
+
     window.addEventListener("resize", onResize);
+
     return () => {
       window.removeEventListener("resize", onResize);
     };

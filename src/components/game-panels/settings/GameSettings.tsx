@@ -1,6 +1,3 @@
-import { Separator } from "@/components/ui/separator";
-import GamePanelContent from "../GamePanelContent";
-import PanelTitle from "../PanelTitle";
 import IsPrivate from "./IsPrivate";
 import MaxPlayers from "./MaxPlayers";
 import NoRentInPrison from "./NoRentInPrison";
@@ -8,12 +5,9 @@ import RandomizePlayerOrder from "./RandomizePlayerOrder";
 import StartingCash from "./StartingCash";
 import VacationCash from "./VacationCash";
 
-interface GameSettings extends React.HTMLAttributes<HTMLDivElement> {}
-
-const GameSettings = ({ ...props }: GameSettings) => {
+const GameSettings = () => {
   return (
-    <div {...props}>
-      <PanelTitle className="pb-0">הגדרות משחק</PanelTitle>
+    <>
       <SettingsContainer>
         <IsPrivate />
         <StartingCash />
@@ -25,20 +19,19 @@ const GameSettings = ({ ...props }: GameSettings) => {
         <NoRentInPrison />
         <RandomizePlayerOrder />
       </SettingsContainer>
-    </div>
+    </>
   );
 };
 
 const SettingsContainer = ({ children }: { children: React.ReactNode }) => {
-  return <GamePanelContent className="space-y-4">{children}</GamePanelContent>;
+  return <div className="space-y-6">{children}</div>;
 };
 
 const SettingsTitle = ({ children }: { children: React.ReactNode }) => {
   return (
-    <>
-      <Separator />
-      <PanelTitle className="pb-0">{children}</PanelTitle>
-    </>
+    <h3 className="text-center text-muted-foreground border-t p-6 mt-6">
+      {children}
+    </h3>
   );
 };
 

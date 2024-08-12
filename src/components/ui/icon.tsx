@@ -1,9 +1,14 @@
-import { LucideIcon } from "lucide-react";
+import { cn } from "@/utils";
+import { LucideIcon, LucideProps } from "lucide-react";
 
-const Icon = ({ icon }: { icon: LucideIcon }) => {
+interface IconProps extends LucideProps {
+  icon: LucideIcon;
+}
+
+const Icon = ({ icon, className, ...props }: IconProps) => {
   const Comp = icon;
 
-  return <Comp className="w-4 h-4 me-2" />;
+  return <Comp className={cn("w-4 h-4 me-2", className)} {...props} />;
 };
 
 export default Icon;

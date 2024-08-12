@@ -2,7 +2,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import PlayerCharacter from "@/components/player/PlayerCharacter";
 import PlayerName from "@/components/player/PlayerName";
 import PlayerNamePlate from "@/components/player/PlayerNamePlate";
-import { setMode, setTrade, setTradeIsOpen } from "@/slices/trade-slice";
+import { watchTrade } from "@/slices/trade-slice";
 import { cn, getPlayerColor, getPlayerName } from "@/utils";
 import { TradeType } from "@ziv-carmi/monopoly-utils";
 import { ArrowRightLeft } from "lucide-react";
@@ -13,12 +13,6 @@ const GameTradesItem = ({ trade }: { trade: TradeType }) => {
   const dispatch = useAppDispatch();
   const isSelfTurn = selfPlayer?.id === trade.turn;
 
-  const watchTradeHandler = () => {
-    dispatch(setTradeIsOpen(true));
-    dispatch(setTrade(trade));
-    dispatch(setMode("watching"));
-  };
-
   return (
     <li className="group">
       <button
@@ -27,7 +21,7 @@ const GameTradesItem = ({ trade }: { trade: TradeType }) => {
           isSelfTurn &&
             "before:bg-violet-400/15 before:absolute before:inset-0 before:animate-pulse group-last:before:rounded-bl-md group-last:before:rounded-br-md"
         )}
-        onClick={watchTradeHandler}
+        onClick={() => dispatch(watchTrade(trade))}
       >
         <div className="isolate inline-flex gap-2 items-center text-foreground text-sm">
           {trade.traders.map((trader, idx) => {

@@ -40,7 +40,7 @@ const PropertyActions = ({ property }: { property: IProperty }) => {
         <TooltipTrigger asChild>
           <span tabIndex={0}>
             <Button
-              variant="primary"
+              variant="primaryFancy"
               disabled={!upgrade.isValid}
               onClick={upgradeCityHandler}
               size="icon"
@@ -59,7 +59,7 @@ const PropertyActions = ({ property }: { property: IProperty }) => {
         <TooltipTrigger asChild>
           <span tabIndex={0}>
             <Button
-              variant="primary"
+              variant="primaryFancy"
               disabled={!downgrade.isValid}
               onClick={downgradeCityHandler}
               size="icon"

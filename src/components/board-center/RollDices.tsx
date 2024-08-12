@@ -50,7 +50,7 @@ const RollDices = () => {
       return (
         <Button
           className="min-w-28"
-          variant="primary"
+          variant="primaryFancy"
           onClick={switchTurnHandler}
           disabled={isInDebt}
         >
@@ -62,7 +62,7 @@ const RollDices = () => {
       return (
         <Button
           className="min-w-28"
-          variant="primary"
+          variant="primaryFancy"
           onClick={rollDiceHandler}
           disabled={isInDebt}
         >

@@ -1,9 +1,11 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import { setMode } from "@/slices/trade-slice";
+import { editTrade } from "@/slices/trade-slice";
 import { isParticipatingInTrade, isValidTrade } from "@/utils";
+import { Check, Pencil, X } from "lucide-react";
 import { AlertDialogFooter } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
+import Icon from "../ui/icon";
 
 const WatchTradeActions = () => {
   const dispatch = useAppDispatch();
@@ -18,10 +20,6 @@ const WatchTradeActions = () => {
   }
 
   const isDisabled = !isValidTrade(trade).valid;
-
-  const negotiateHandler = () => {
-    dispatch(setMode("editing"));
-  };
 
   const declineTradeHandler = () => {
     socket.emit("trade_decline", trade.id);
@@ -40,26 +38,30 @@ const WatchTradeActions = () => {
       {trade.turn === selfPlayer?.id ? (
         <>
           <Button
-            variant="warning"
+            variant="yellowFancy"
             className="ml-auto"
-            onClick={negotiateHandler}
+            onClick={() => dispatch(editTrade())}
           >
-            ערוך הצעה
+            <Icon icon={Pencil} />
+            התמקח
           </Button>
           <Button variant="destructive" onClick={declineTradeHandler}>
+            <Icon icon={X} />
             סרב
           </Button>
           <Button
-            variant="primary"
+            variant="primaryFancy"
             onClick={acceptTradeHandler}
             disabled={isDisabled}
           >
-            אישור
+            <Icon icon={Check} />
+            אשר
           </Button>
         </>
       ) : (
         <Button variant="destructive" onClick={deleteTradeHandler}>
-          מחק
+          <Icon icon={X} />
+          מחק עסקה
         </Button>
       )}
     </AlertDialogFooter>

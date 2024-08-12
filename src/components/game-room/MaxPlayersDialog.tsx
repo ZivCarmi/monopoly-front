@@ -15,13 +15,13 @@ const MaxPlayersDialog = () => {
       <div className="flex gap-4 mt-4">
         <Button
           onClick={() => dispatch(setIsSpectating(true))}
-          variant="primary"
+          variant="primaryFancy"
         >
           <Icon icon={Eye} />
           צפה במשחק
         </Button>
         <BackToLobbyLink>
-          <Button variant="primary" asChild>
+          <Button variant="primaryFancy" asChild>
             <span>
               <Icon icon={Home} />
               חזרה ללובי

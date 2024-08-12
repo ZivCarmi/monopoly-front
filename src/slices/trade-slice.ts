@@ -1,3 +1,5 @@
+import { CreateTradeArgs } from "@/types/Trade";
+import { generateTrade } from "@/utils";
 import { PayloadAction, createSlice } from "@reduxjs/toolkit";
 import { PardonCard, TradeType } from "@ziv-carmi/monopoly-utils";
 
@@ -24,17 +26,28 @@ export const tradeSlice = createSlice({
     resetTrade: () => {
       return initialState;
     },
-    setTradeIsOpen: (state, action: PayloadAction<boolean>) => {
-      state.tradeIsOpen = action.payload;
-    },
     setSelectPlayerIsOpen: (state, action: PayloadAction<boolean>) => {
       state.selectPlayerIsOpen = action.payload;
     },
-    setMode: (state, action: PayloadAction<TradeMode>) => {
-      state.mode = action.payload;
+    createTrade: (state, action: PayloadAction<CreateTradeArgs>) => {
+      const newTrade = generateTrade(action.payload);
+
+      state.selectPlayerIsOpen = false;
+      state.trade = newTrade;
+      state.mode = "creating";
+      state.tradeIsOpen = true;
     },
-    setTrade: (state, action: PayloadAction<TradeType>) => {
+    watchTrade: (state, action: PayloadAction<TradeType>) => {
+      state.selectPlayerIsOpen = false;
       state.trade = action.payload;
+      state.mode = "watching";
+      state.tradeIsOpen = true;
+    },
+    editTrade: (state) => {
+      state.mode = "editing";
+    },
+    closeTrade: (state) => {
+      state.tradeIsOpen = false;
     },
     setPlayerMoney: (
       state,
@@ -137,10 +150,11 @@ export const tradeSlice = createSlice({
 
 export const {
   resetTrade,
-  setTradeIsOpen,
   setSelectPlayerIsOpen,
-  setMode,
-  setTrade,
+  createTrade,
+  watchTrade,
+  editTrade,
+  closeTrade,
   setPlayerMoney,
   setPlayerPardonCard,
   setPlayerProperties,

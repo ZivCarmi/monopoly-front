@@ -1,30 +1,37 @@
-import { useAppSelector } from "@/app/hooks";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import { setSelectPlayerIsOpen } from "@/slices/trade-slice";
 import {
-  AlertDialog,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "../ui/alert-dialog";
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogOverlay,
+  DialogPortal,
+  DialogTitle,
+} from "../ui/dialog";
 import PlayersList from "./PlayersList";
-import TradeDialogCancel from "./TradeDialogCancel";
 
 const CreateTrade = () => {
   const { selectPlayerIsOpen } = useAppSelector((state) => state.trade);
+  const dispatch = useAppDispatch();
 
   return (
-    <AlertDialog open={selectPlayerIsOpen}>
-      <AlertDialogContent>
-        <AlertDialogHeader>
-          <AlertDialogTitle>ביצוע עסקה</AlertDialogTitle>
-          <AlertDialogDescription>
-            בחר את השחקן שאיתו ברצונך לבצע עסקה
-          </AlertDialogDescription>
-        </AlertDialogHeader>
-        <TradeDialogCancel />
-        <PlayersList />
-      </AlertDialogContent>
-    </AlertDialog>
+    <Dialog open={selectPlayerIsOpen}>
+      <DialogPortal>
+        <DialogOverlay onClick={() => dispatch(setSelectPlayerIsOpen(false))} />
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>ביצוע עסקה</DialogTitle>
+            <DialogDescription>
+              בחר את השחקן שאיתו ברצונך לבצע עסקה
+            </DialogDescription>
+          </DialogHeader>
+          <DialogClose onClick={() => dispatch(setSelectPlayerIsOpen(false))} />
+          <PlayersList />
+        </DialogContent>
+      </DialogPortal>
+    </Dialog>
   );
 };
 

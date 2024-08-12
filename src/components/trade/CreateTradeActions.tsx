@@ -1,9 +1,11 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import { resetTrade } from "@/slices/trade-slice";
+import { closeTrade } from "@/slices/trade-slice";
 import { isValidOffer } from "@/utils";
-import { AlertDialogFooter } from "../ui/alert-dialog";
+import { Send } from "lucide-react";
 import { Button } from "../ui/button";
+import { DialogFooter } from "../ui/dialog";
+import Icon from "../ui/icon";
 
 const CreateTradeActions = () => {
   const dispatch = useAppDispatch();
@@ -16,22 +18,20 @@ const CreateTradeActions = () => {
 
   const sendTradeHandler = () => {
     socket.emit("trade_create", trade);
-    dispatch(resetTrade());
+    dispatch(closeTrade());
   };
 
   return (
-    <AlertDialogFooter>
-      <Button variant="outline" onClick={() => dispatch(resetTrade())}>
-        בטל
-      </Button>
+    <DialogFooter>
       <Button
-        variant="primary"
+        variant="primaryFancy"
         disabled={!isValidOffer(trade)}
         onClick={sendTradeHandler}
       >
+        <Icon icon={Send} />
         שלח עסקה
       </Button>
-    </AlertDialogFooter>
+    </DialogFooter>
   );
 };
 

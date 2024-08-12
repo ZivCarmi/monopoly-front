@@ -9,7 +9,6 @@ const GameRoomPage = () => {
   const { roomId } = useParams();
   const { isInRoom } = useAppSelector((state) => state.game);
   const isFirstRender = useRef(true);
-  // const socket = useSocket();
   const joinRoom = useJoinRoom();
 
   useEffect(() => {
@@ -17,16 +16,6 @@ const GameRoomPage = () => {
       joinRoom({ roomId });
       isFirstRender.current = false;
     }
-
-    // const updateGameOnFocus = () => {
-    //   socket.emit("update_game");
-    // };
-
-    // window.addEventListener("visibilitychange", updateGameOnFocus);
-
-    // return () => {
-    //   window.removeEventListener("visibilitychange", updateGameOnFocus);
-    // };
   }, []);
 
   return (

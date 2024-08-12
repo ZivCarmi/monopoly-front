@@ -41,7 +41,7 @@ const PurchasePropertyButton = ({
           <TooltipTrigger asChild>
             <div tabIndex={0}>
               <Button
-                variant="primary"
+                variant="primaryFancy"
                 onClick={purchasePropertyHandler}
                 disabled={isDisabled}
               >

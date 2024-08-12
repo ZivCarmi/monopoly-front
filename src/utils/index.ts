@@ -6,7 +6,11 @@ import {
   OppositeSide,
   rowSide,
 } from "@/types/Board";
-import { TradeErrorReason, TradeValidityData } from "@/types/Trade";
+import {
+  CreateTradeArgs,
+  TradeErrorReason,
+  TradeValidityData,
+} from "@/types/Trade";
 import {
   Colors,
   Countries,
@@ -322,7 +326,7 @@ export const getTimeValues = (countDown: number) => {
   return { minutes, seconds };
 };
 
-export const createTrade = (offerorId: string, offereeId: string) => {
+export const generateTrade = ({ offerorId, offereeId }: CreateTradeArgs) => {
   const newTrade: TradeType = {
     id: "",
     turn: offerorId,

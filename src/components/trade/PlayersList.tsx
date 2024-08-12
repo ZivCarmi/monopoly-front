@@ -1,9 +1,8 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { setMode, setTrade, setTradeIsOpen } from "@/slices/trade-slice";
-import { createTrade } from "@/utils";
-import PlayerName from "../player/PlayerName";
 import { selectPlayersExceptSelf } from "@/app/selectors";
 import PlayerCharacter from "../player/PlayerCharacter";
+import PlayerName from "../player/PlayerName";
+import { createTrade } from "@/slices/trade-slice";
 
 const PlayersList = () => {
   const { selfPlayer } = useAppSelector((state) => state.game);
@@ -15,10 +14,7 @@ const PlayersList = () => {
   }
 
   const selectPlayerHandler = (offereeId: string) => {
-    const newTrade = createTrade(selfPlayer.id, offereeId);
-    dispatch(setTrade(newTrade));
-    dispatch(setTradeIsOpen(true));
-    dispatch(setMode("creating"));
+    dispatch(createTrade({ offereeId, offerorId: selfPlayer.id }));
   };
 
   return (

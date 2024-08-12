@@ -2,13 +2,7 @@ import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { selectPlayersExceptSelf } from "@/app/selectors";
 import { Button } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-import {
-  setMode,
-  setSelectPlayerIsOpen,
-  setTrade,
-  setTradeIsOpen,
-} from "@/slices/trade-slice";
-import { createTrade } from "@/utils";
+import { createTrade, setSelectPlayerIsOpen } from "@/slices/trade-slice";
 import { Plus } from "lucide-react";
 
 const CreateTradeButton = () => {
@@ -22,11 +16,12 @@ const CreateTradeButton = () => {
 
   const createTradeHandler = () => {
     if (playersExceptSelf.length === 1) {
-      const newTrade = createTrade(selfPlayer.id, playersExceptSelf[0].id);
-
-      dispatch(setTradeIsOpen(true));
-      dispatch(setTrade(newTrade));
-      dispatch(setMode("creating"));
+      dispatch(
+        createTrade({
+          offereeId: playersExceptSelf[0].id,
+          offerorId: selfPlayer.id,
+        })
+      );
     } else {
       dispatch(setSelectPlayerIsOpen(true));
     }
@@ -34,7 +29,7 @@ const CreateTradeButton = () => {
 
   return (
     <Button
-      variant="primary"
+      variant="primaryFancy"
       className="absolute top-1/2 left-2 -translate-y-1/2"
       onClick={createTradeHandler}
     >

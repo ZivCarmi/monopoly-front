@@ -1,19 +1,14 @@
 import { cn } from "@/utils";
-import React, { forwardRef, memo } from "react";
+import React, { forwardRef } from "react";
 
-type BoardProps = {
-  children: React.ReactNode;
-  className?: string;
-};
+interface BoardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const Board = forwardRef<HTMLDivElement, BoardProps>(
-  ({ children, className }, ref) => {
+  ({ className, ...props }, ref) => {
     return (
-      <div className={cn("board ltr gap-1", className)} ref={ref}>
-        {children}
-      </div>
+      <div ref={ref} className={cn("board ltr gap-1", className)} {...props} />
     );
   }
 );
 
-export default memo(Board);
+export default Board;

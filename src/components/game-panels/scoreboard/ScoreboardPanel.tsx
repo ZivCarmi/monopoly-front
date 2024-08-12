@@ -10,14 +10,7 @@ const ScoreboardPanel = () => {
 
   return (
     <LayoutGroup id="scoreboard-layout">
-      <GamePanel
-        className="gap-0"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{
-          duration: 0.2,
-        }}
-      >
+      <GamePanel className="gap-0">
         <GamePanelContent>
           <AnimatePresence>
             {players.length > 0 ? (

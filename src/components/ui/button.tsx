@@ -19,13 +19,12 @@ const buttonVariants = cva(
         warning: "bg-warning text-warning-foreground hover:bg-warning/80",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        primary: "bg-purple-600 hover:bg-purple-600/80", // NEED TO CHANGE IT LIKE 'warning' TYPE
         primaryFancy:
-          "bg-gradient-to-tl from-purple-600 to-purple-700 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-500",
+          "bg-gradient-to-tl from-violet-800 to-purple-600 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-300 text-primary-foreground",
         blueFancy:
-          "bg-gradient-to-tl from-green-500 to-blue-600 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-500",
+          "bg-gradient-to-tl from-green-500 to-blue-600 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-300",
         yellowFancy:
-          "bg-gradient-to-tl from-amber-500 to-yellow-600 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-500",
+          "bg-gradient-to-tl from-yellow-600 to-amber-600 bg-pos-0 hover:bg-pos-100 bg-size-100-400 transition-all duration-300",
       },
       size: {
         default: "h-10 px-4 py-2",
