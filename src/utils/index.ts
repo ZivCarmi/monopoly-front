@@ -1,3 +1,4 @@
+import { BASE_URL } from "@/api/config";
 import store from "@/app/store";
 import {
   BoardRaw,
@@ -489,4 +490,21 @@ export const isColorTaken = (color: Colors) => {
 
 export const convertRemToPixels = (rem: number) => {
   return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
+};
+
+export const authLoader = async () => {
+  try {
+    const response = await fetch(`${BASE_URL}/auth/me`, {
+      credentials: "include",
+    });
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Failed to fetch user data:", error);
+    return null;
+  }
 };

@@ -17,10 +17,11 @@ import "./index.css";
 import GameRoomPage from "./pages/GameRoom";
 import LobbyPage from "./pages/Lobby";
 import LobbyRoomsPage from "./pages/LobbyRooms";
+import { authLoader } from "./utils";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
-    <Route element={<MainLayout />}>
+    <Route element={<MainLayout />} loader={authLoader}>
       <Route path="/" element={<LobbyLayout />}>
         <Route index element={<LobbyPage />} />
         <Route path="rooms" element={<LobbyRoomsPage />} />

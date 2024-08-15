@@ -4,7 +4,14 @@ import { useSocket } from "@/app/socket-context";
 import useBackToLobby from "@/hooks/useBackToLobby";
 import useUpdateNickname from "@/hooks/useUpdateNickname";
 import { setRoom, setSelfPlayer, writeLog } from "@/slices/game-slice";
-import { setNickname, setUserId } from "@/slices/user-slice";
+import { setVolume } from "@/slices/ui-slice";
+import {
+  clearUser,
+  setNickname,
+  setUser,
+  setUserId,
+} from "@/slices/user-slice";
+import { User } from "@/types/Auth";
 import { isInIdleRoom } from "@/utils";
 import {
   PLAYER_NAME_STORAGE_KEY,
@@ -12,9 +19,13 @@ import {
 } from "@/utils/constants";
 import { Player, Room } from "@ziv-carmi/monopoly-utils";
 import { useEffect } from "react";
-import { Outlet, useNavigate, useNavigationType } from "react-router-dom";
+import {
+  Outlet,
+  useLoaderData,
+  useNavigate,
+  useNavigationType,
+} from "react-router-dom";
 import { useToast } from "./ui/use-toast";
-import { setVolume } from "@/slices/ui-slice";
 
 const STORAGED_PLAYER_NAME = localStorage.getItem(PLAYER_NAME_STORAGE_KEY);
 const STORAGED_SOUND_VOLUME = localStorage.getItem(SOUND_VOLUME_STORAGE_KEY);
@@ -27,6 +38,7 @@ const MainLayout = () => {
   const updateNickname = useUpdateNickname();
   const backToLobby = useBackToLobby();
   const navigationType = useNavigationType();
+  const userData = useLoaderData() as User | null;
 
   useEffect(() => {
     if (isInIdleRoom() && navigationType === "POP") {
@@ -35,6 +47,12 @@ const MainLayout = () => {
   }, [navigationType]);
 
   useEffect(() => {
+    if (userData) {
+      dispatch(setUser(userData));
+    } else {
+      dispatch(clearUser());
+    }
+
     if (STORAGED_PLAYER_NAME) {
       updateNickname({ nickname: STORAGED_PLAYER_NAME });
     }

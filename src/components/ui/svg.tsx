@@ -9,7 +9,7 @@ const Svg = ({ name, ...props }: SvgProps) => {
   const { loading, error, Svg } = useLazySvgImport(name);
 
   if (error) {
-    return "שגיאה התרחשה";
+    return null;
   }
 
   if (loading) {
