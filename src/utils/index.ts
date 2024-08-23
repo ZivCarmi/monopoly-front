@@ -538,8 +538,10 @@ export function getMaxLengthForPropertyInSchema<T extends z.ZodRawShape>(
     // Find the maxLength check
     const maxLengthCheck = checks.find((check) => check.kind === "max");
 
-    // Return the value if found, otherwise return undefined
-    return maxLengthCheck ? maxLengthCheck?.value : undefined;
+    // Return the value if found
+    if (maxLengthCheck && "value" in maxLengthCheck) {
+      return (maxLengthCheck as { value: number }).value;
+    }
   }
 
   return undefined;
@@ -564,8 +566,10 @@ export function extractMaxLength(
     // Find the maxLength check
     const maxLengthCheck = checks.find((check) => check.kind === "max");
 
-    // Return the value if found, otherwise return undefined
-    return maxLengthCheck ? maxLengthCheck.value : undefined;
+    // Return the value if found
+    if (maxLengthCheck && "value" in maxLengthCheck) {
+      return (maxLengthCheck as { value: number }).value;
+    }
   }
 
   // For other schema types (e.g., numbers, dates), return undefined
