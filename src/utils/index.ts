@@ -539,7 +539,7 @@ export function getMaxLengthForPropertyInSchema<T extends z.ZodRawShape>(
     const maxLengthCheck = checks.find((check) => check.kind === "max");
 
     // Return the value if found, otherwise return undefined
-    return maxLengthCheck ? maxLengthCheck.value : undefined;
+    return maxLengthCheck ? maxLengthCheck?.value : undefined;
   }
 
   return undefined;
