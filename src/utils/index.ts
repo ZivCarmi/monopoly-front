@@ -32,7 +32,9 @@ import {
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
 import { clsx, type ClassValue } from "clsx";
+import { LoaderFunction } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
+import { z } from "zod";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -492,7 +494,7 @@ export const convertRemToPixels = (rem: number) => {
   return rem * parseFloat(getComputedStyle(document.documentElement).fontSize);
 };
 
-export const authLoader = async () => {
+export const authLoader: LoaderFunction = async () => {
   try {
     const response = await fetch(`${BASE_URL}/auth/me`, {
       credentials: "include",
@@ -508,3 +510,64 @@ export const authLoader = async () => {
     return null;
   }
 };
+
+export const profileLoader: LoaderFunction = async ({ params }) => {
+  try {
+    const response = await fetch(`${BASE_URL}/user/${params.userId}`);
+
+    if (!response.ok) {
+      return null;
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Failed to fetch user data:", error);
+    return null;
+  }
+};
+
+export function getMaxLengthForPropertyInSchema<T extends z.ZodRawShape>(
+  schema: z.ZodObject<T>,
+  property: keyof T
+): number | undefined {
+  const fieldSchema = schema.shape[property];
+
+  if (fieldSchema instanceof z.ZodString) {
+    const checks = fieldSchema._def.checks as z.ZodStringCheck[];
+
+    // Find the maxLength check
+    const maxLengthCheck = checks.find((check) => check.kind === "max");
+
+    // Return the value if found, otherwise return undefined
+    return maxLengthCheck ? maxLengthCheck.value : undefined;
+  }
+
+  return undefined;
+}
+
+export function extractMaxLength(
+  schema: z.ZodType<any, any, any>,
+  property?: string
+): number | undefined {
+  if (schema instanceof z.ZodObject) {
+    if (property) {
+      return getMaxLengthForPropertyInSchema(
+        schema,
+        property as keyof typeof schema.shape
+      );
+    }
+    // Handle ZodObject with no specific property
+    return undefined;
+  } else if (schema instanceof z.ZodString) {
+    const checks = schema._def.checks;
+
+    // Find the maxLength check
+    const maxLengthCheck = checks.find((check) => check.kind === "max");
+
+    // Return the value if found, otherwise return undefined
+    return maxLengthCheck ? maxLengthCheck.value : undefined;
+  }
+
+  // For other schema types (e.g., numbers, dates), return undefined
+  return undefined;
+}

@@ -5,14 +5,14 @@ export interface UserState {
   user: User | null;
   isAuthenticated: boolean;
   nickname: string;
-  userId: string;
+  socketId: string;
 }
 
 const initialState: UserState = {
   user: null,
   isAuthenticated: false,
   nickname: "",
-  userId: "",
+  socketId: "",
 };
 
 export const userSlice = createSlice({
@@ -22,20 +22,23 @@ export const userSlice = createSlice({
     setUser(state, action: PayloadAction<User>) {
       state.user = action.payload;
       state.isAuthenticated = true;
+      state.nickname = action.payload.name;
     },
     clearUser(state) {
       state.user = null;
       state.isAuthenticated = false;
+      state.nickname = "";
     },
     setNickname: (state, action: PayloadAction<string>) => {
       state.nickname = action.payload;
     },
-    setUserId: (state, action: PayloadAction<string>) => {
-      state.userId = action.payload;
+    setSocketId: (state, action: PayloadAction<string>) => {
+      state.socketId = action.payload;
     },
   },
 });
 
-export const { setUser, clearUser, setNickname, setUserId } = userSlice.actions;
+export const { setUser, clearUser, setNickname, setSocketId } =
+  userSlice.actions;
 
 export default userSlice.reducer;

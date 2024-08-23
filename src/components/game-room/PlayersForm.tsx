@@ -10,7 +10,12 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { setNickname } from "@/slices/user-slice";
-import { getAllColors, getAvailableRandomColor, isColorTaken } from "@/utils";
+import {
+  extractMaxLength,
+  getAllColors,
+  getAvailableRandomColor,
+  isColorTaken,
+} from "@/utils";
 import { PLAYER_NAME_STORAGE_KEY } from "@/utils/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Colors, PlayerSchema } from "@ziv-carmi/monopoly-utils";
@@ -24,24 +29,57 @@ import { Input } from "../ui/input";
 import Modal from "../ui/modal";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 
+type FormData = z.infer<typeof PlayerSchema>;
+
 const PlayersForm = () => {
+  const [showError, setShowError] = useState(false);
   const socket = useSocket();
-  const { nickname } = useAppSelector((state) => state.user);
+  const { nickname, isAuthenticated } = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
-  const form = useForm<z.infer<typeof PlayerSchema>>({
+  const form = useForm<FormData>({
     resolver: zodResolver(PlayerSchema),
-    defaultValues: {
-      name: nickname || "",
-      color: undefined,
-    },
+    reValidateMode: "onSubmit", // SUB OPTIMAL, TRY TO ACHIEVE NORMAL VALIDATION BUT WITHOUT HIDING THE NICKNAME INPUT
+    defaultValues: { name: nickname || "" },
   });
   const colorWatch = form.watch("color");
 
-  const submitHandler = (player: z.infer<typeof PlayerSchema>) => {
+  const submitWrapper = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setShowError(true);
+
+    form.handleSubmit(submitHandler)();
+  };
+
+  const submitHandler = (player: FormData) => {
     socket.emit("create_player", player);
     dispatch(setNickname(player.name));
-    localStorage.setItem(PLAYER_NAME_STORAGE_KEY, player.name);
+
+    if (!isAuthenticated) {
+      localStorage.setItem(PLAYER_NAME_STORAGE_KEY, player.name);
+    }
   };
+
+  useEffect(() => {
+    const validateForm = async () => {
+      await form.trigger("name", { shouldFocus: true });
+
+      const { error } = form.getFieldState("name");
+
+      // trimming the nickname to match the max length of the schema
+      if (error && error.type === "too_big") {
+        const maxLength = extractMaxLength(PlayerSchema, "name");
+        const trimmedNickname = form.getValues("name").substring(0, maxLength);
+
+        form.setValue("name", trimmedNickname);
+
+        if (!isAuthenticated) {
+          localStorage.setItem(PLAYER_NAME_STORAGE_KEY, trimmedNickname);
+        }
+      }
+    };
+
+    validateForm();
+  }, [nickname]);
 
   useEffect(() => {
     setTimeout(() => {
@@ -59,10 +97,10 @@ const PlayersForm = () => {
     >
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(submitHandler)}
+          onSubmit={submitWrapper}
           className="max-w-60 w-full m-auto space-y-8"
         >
-          {!nickname && (
+          {form.getFieldState("name").invalid && (
             <FormField
               control={form.control}
               name="name"
@@ -76,7 +114,7 @@ const PlayersForm = () => {
                       maxLength={30}
                     />
                   </FormControl>
-                  <FormMessage />
+                  {showError && <FormMessage />}
                 </FormItem>
               )}
             />

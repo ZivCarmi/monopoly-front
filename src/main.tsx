@@ -9,22 +9,31 @@ import {
   RouterProvider,
 } from "react-router-dom";
 import { SocketProvider } from "./app/socket-context";
-import LobbyLayout from "./components/lobby/LobbyLayout";
-import MainLayout from "./components/MainLayout";
+import LobbyLayout from "./components/layouts/LobbyLayout";
+import MainLayout from "./components/layouts/MainLayout";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
 import { Toaster } from "./components/ui/toaster";
 import "./index.css";
 import GameRoomPage from "./pages/GameRoom";
 import LobbyPage from "./pages/Lobby";
 import LobbyRoomsPage from "./pages/LobbyRooms";
-import { authLoader } from "./utils";
+import { authLoader, profileLoader } from "./utils";
+import UserProfilePage from "./pages/UserProfile";
+import PageLayout from "./components/layouts/PageLayout";
 
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route element={<MainLayout />} loader={authLoader}>
       <Route path="/" element={<LobbyLayout />}>
         <Route index element={<LobbyPage />} />
-        <Route path="rooms" element={<LobbyRoomsPage />} />
+        <Route path="browse" element={<LobbyRoomsPage />} />
+      </Route>
+      <Route path="/" element={<PageLayout />}>
+        <Route
+          path="/profile/:userId"
+          element={<UserProfilePage />}
+          loader={profileLoader}
+        />
       </Route>
       <Route path="/rooms/:roomId" element={<GameRoomPage />} />
     </Route>

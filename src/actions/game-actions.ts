@@ -94,7 +94,7 @@ export const handleSwitchTurn = (nextPlayerId: string): AppThunk => {
 
     dispatch(switchTurn({ nextPlayerId }));
 
-    if (nextPlayerId === state.user.userId) {
+    if (nextPlayerId === state.user.socketId) {
       const sound = new Audio(recievedTurn_sound);
       sound.volume = state.ui.volume;
       sound.play();

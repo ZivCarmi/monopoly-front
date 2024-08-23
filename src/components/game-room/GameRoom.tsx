@@ -126,8 +126,10 @@ const GameRoom = () => {
       playerId: string;
       hostId: Room["hostId"];
     }) => {
+      const playerName = getPlayerName(playerId);
+
       dispatch(removeParticipation({ playerId, hostId }));
-      dispatch(writeLog(`${getPlayerName(playerId)} עזב את המשחק`));
+      dispatch(writeLog(`${playerName} עזב את המשחק`));
     };
 
     const onGameStarted = (startGameData: {

@@ -1,14 +1,18 @@
 import { BASE_URL } from "@/api/config";
 import { Button, ButtonProps } from "@/components/ui/button";
 import Icon from "@/components/ui/icon";
-import { PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import Svg from "@/components/ui/svg";
 import { cn } from "@/utils";
 import { LogIn } from "lucide-react";
 
 const UnauthPopoverContent = () => {
   return (
-    <>
+    <Popover>
       <PopoverTrigger asChild>
         <Button className="h-auto px-3 py-2" variant="ghost">
           <Icon icon={LogIn} />
@@ -32,7 +36,7 @@ const UnauthPopoverContent = () => {
           />
         </div>
       </PopoverContent>
-    </>
+    </Popover>
   );
 };
 

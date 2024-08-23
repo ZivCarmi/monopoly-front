@@ -1,7 +1,9 @@
 import { BASE_URL } from "@/api/config";
 import Loader from "@/components/ui/loader";
+import { setSocketId } from "@/slices/user-slice";
 import { createContext, useContext, useEffect, useState } from "react";
 import { Socket, io } from "socket.io-client";
+import { useAppDispatch } from "./hooks";
 
 const SocketContext = createContext<Socket | null>(null);
 
@@ -17,15 +19,16 @@ export function useSocket() {
 
 export function SocketProvider({ children }: { children: React.ReactNode }) {
   const [socket, setSocket] = useState<Socket | null>(null);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    const newSocket = io(BASE_URL, {
-      withCredentials: true,
-    });
+    const newSocket = io(BASE_URL, { withCredentials: true });
 
     newSocket.on("connect", () => {
       setSocket(newSocket);
-      newSocket.emit("get_user_id");
+      newSocket.emit("get_socket_id", (socketId: string) => {
+        dispatch(setSocketId(socketId));
+      });
     });
 
     return () => {

@@ -16,4 +16,4 @@ https://github.com/ZivCarmi/Socket.IO-Monopoly/assets/53994703/76096271-96f3-4b2
 
 # Link
 
-https://socket-io-monopoly.vercel.app
+https://monopoly-io.zivi.dev

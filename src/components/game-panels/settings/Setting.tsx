@@ -25,10 +25,10 @@ type SettingProps = {
 } & (SettingTypeSelect | SettingTypeSwitch);
 
 const Setting = ({ title, description, ...props }: SettingProps) => {
-  const { userId } = useAppSelector((state) => state.user);
+  const { socketId } = useAppSelector((state) => state.user);
   const { state } = useAppSelector((state) => state.game);
   const isGameInProgress = isGameStarted(state);
-  const isNotHost = !isHost(userId);
+  const isNotHost = !isHost(socketId);
   const isDisabled = isGameInProgress || isNotHost;
 
   const renderSetting = () => {

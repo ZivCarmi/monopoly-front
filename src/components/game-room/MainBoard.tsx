@@ -47,7 +47,7 @@ const MainBoard = ({ className, ...props }: MainBoardProps) => {
       boardDimensions.current = [boardWidth, boardHeight];
     }
 
-    console.log(boardRef.current.offsetWidth);
+    // console.log(boardRef.current.offsetWidth);
 
     const { paddingTop, paddingRight, paddingBottom, paddingLeft } =
       window.getComputedStyle(grid);

@@ -1,98 +1,81 @@
-import { useAppDispatch, useAppSelector } from "@/app/hooks";
-import { useSocket } from "@/app/socket-context";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage,
-} from "@/components/ui/form";
-import useUpdateNickname from "@/hooks/useUpdateNickname";
+import { useAppDispatch } from "@/app/hooks";
+import { Form, FormControl, FormField } from "@/components/ui/form";
 import { setNickname } from "@/slices/user-slice";
+import { getMaxLengthForPropertyInSchema } from "@/utils";
 import { PLAYER_NAME_STORAGE_KEY } from "@/utils/constants";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { NicknameSchema } from "@ziv-carmi/monopoly-utils";
-import { CheckCircle } from "lucide-react";
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Input } from "../ui/input";
-import Loader from "../ui/loader";
+
+type FormData = z.infer<typeof NicknameSchema>;
 
 const NicknameForm = () => {
-  const { nickname } = useAppSelector((state) => state.user);
-  const socket = useSocket();
+  const STORAGED_NAME = localStorage.getItem(PLAYER_NAME_STORAGE_KEY);
   const dispatch = useAppDispatch();
-  const updateNickname = useUpdateNickname();
-  const form = useForm<z.infer<typeof NicknameSchema>>({
+  const form = useForm<FormData>({
     resolver: zodResolver(NicknameSchema),
-    defaultValues: {
-      nickname,
-    },
+    defaultValues: { nickname: STORAGED_NAME || "" },
   });
-  const watchedNickname = form.watch("nickname");
 
-  const submitHandler = (nickname: z.infer<typeof NicknameSchema>) => {
-    updateNickname(nickname);
-    form.setValue("nickname", nickname.nickname);
+  const submitHandler = ({ nickname }: FormData) => {
+    dispatch(setNickname(nickname));
+    localStorage.setItem(PLAYER_NAME_STORAGE_KEY, nickname);
   };
 
   useEffect(() => {
-    const STORAGED_NAME = localStorage.getItem(PLAYER_NAME_STORAGE_KEY);
+    const validateForm = async () => {
+      await form.trigger("nickname", { shouldFocus: true });
 
-    if (STORAGED_NAME?.trim()) {
-      form.setValue("nickname", STORAGED_NAME);
-    }
+      const { error } = form.getFieldState("nickname");
 
-    const onNicknameSelected = (nickname: string) => {
-      localStorage.setItem(PLAYER_NAME_STORAGE_KEY, nickname);
-      form.setValue("nickname", nickname);
-      dispatch(setNickname(nickname));
+      // trimming the nickname to match the max length of the schema
+      if (error && error.type === "too_big") {
+        const maxLength = getMaxLengthForPropertyInSchema(
+          NicknameSchema,
+          "nickname"
+        );
+        const trimmedNickname = form
+          .getValues("nickname")
+          .substring(0, maxLength);
+
+        form.setValue("nickname", trimmedNickname);
+        localStorage.setItem(PLAYER_NAME_STORAGE_KEY, trimmedNickname);
+      }
     };
 
-    socket.on("nickname_selected", onNicknameSelected);
-
-    return () => {
-      socket.off("nickname_selected", onNicknameSelected);
-    };
+    validateForm();
   }, []);
 
+  useEffect(() => {
+    const subscription = form.watch(() => form.handleSubmit(submitHandler)());
+    return () => subscription.unsubscribe();
+  }, [form.handleSubmit, form.watch]);
+
   return (
-    <>
-      {form.formState.isSubmitting && (
-        <div className="fixed inset-1/2">
-          <Loader />
-        </div>
-      )}
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(submitHandler)}
-          className="relative w-fit m-auto flex items-center justify-center gap-2"
-        >
-          <FormField
-            control={form.control}
-            name="nickname"
-            render={({ field }) => (
-              <FormItem className="space-y-0">
-                <FormControl>
-                  <Input
-                    {...field}
-                    placeholder="הכינוי שלך..."
-                    maxLength={30}
-                  />
-                </FormControl>
-                <FormMessage className="absolute [bottom:calc(100%+0.5rem)] left-1/2 -translate-x-1/2 w-full text-center" />
-              </FormItem>
-            )}
-          />
-          {watchedNickname !== nickname && form.formState.isValid && (
-            <button className="absolute h-8 top-1 left-1 duration-200 z-10 p-2 bg-background">
-              <CheckCircle className="w-5 h-5 hover:text-green-500 duration-200" />
-            </button>
+    <Form {...form}>
+      <form
+        onSubmit={(e) => e.preventDefault()}
+        className="relative m-auto flex items-center justify-center"
+      >
+        <FormField
+          control={form.control}
+          name="nickname"
+          render={({ field }) => (
+            <FormControl>
+              <Input
+                {...field}
+                placeholder="הכינוי שלך..."
+                className="[unicode-bidi:plaintext]"
+                maxLength={30}
+              />
+            </FormControl>
           )}
-        </form>
-      </Form>
-    </>
+        />
+      </form>
+    </Form>
   );
 };
 

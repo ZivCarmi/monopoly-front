@@ -1,8 +1,10 @@
 import LoginPopover from "./login/LoginPopover";
 
-const Navigation = () => {
+interface NavigationProps extends React.HTMLAttributes<HTMLElement> {}
+
+const Navigation = ({ ...props }: NavigationProps) => {
   return (
-    <nav className="absolute top-8 right-8">
+    <nav {...props}>
       <ul>
         <li>
           <LoginPopover />
