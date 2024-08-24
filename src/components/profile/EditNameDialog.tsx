@@ -41,7 +41,6 @@ const EditNameDialog = () => {
         <DialogOverlay />
         <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogClose />
-
           <EditNameForm closeDialog={setIsOpen} />
         </DialogContent>
       </DialogPortal>

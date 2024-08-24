@@ -3,8 +3,8 @@ import { useSocket } from "@/app/socket-context";
 import { editTrade } from "@/slices/trade-slice";
 import { isParticipatingInTrade, isValidTrade } from "@/utils";
 import { Check, Pencil, X } from "lucide-react";
-import { AlertDialogFooter } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
+import { DialogFooter } from "../ui/dialog";
 import Icon from "../ui/icon";
 
 const WatchTradeActions = () => {
@@ -34,14 +34,10 @@ const WatchTradeActions = () => {
   };
 
   return (
-    <AlertDialogFooter>
+    <DialogFooter>
       {trade.turn === selfPlayer?.id ? (
         <>
-          <Button
-            variant="yellowFancy"
-            className="ml-auto"
-            onClick={() => dispatch(editTrade())}
-          >
+          <Button variant="yellowFancy" onClick={() => dispatch(editTrade())}>
             <Icon icon={Pencil} />
             התמקח
           </Button>
@@ -64,7 +60,7 @@ const WatchTradeActions = () => {
           מחק עסקה
         </Button>
       )}
-    </AlertDialogFooter>
+    </DialogFooter>
   );
 };
 

@@ -6,8 +6,8 @@ import { isParticipatingInTrade, isValidOffer, isValidTrade } from "@/utils";
 import { TradeType } from "@ziv-carmi/monopoly-utils";
 import { Redo2, Send } from "lucide-react";
 import { useEffect, useMemo } from "react";
-import { AlertDialogFooter } from "../ui/alert-dialog";
 import { Button } from "../ui/button";
+import { DialogFooter } from "../ui/dialog";
 import Icon from "../ui/icon";
 
 const EditTradeActions = () => {
@@ -37,10 +37,9 @@ const EditTradeActions = () => {
   }, [tradeValidity.valid]);
 
   return (
-    <AlertDialogFooter>
+    <DialogFooter>
       <Button
         variant="yellowFancy"
-        className="ml-auto"
         onClick={() => dispatch(watchTrade(originalTrade))}
       >
         <Icon icon={Redo2} />
@@ -54,7 +53,7 @@ const EditTradeActions = () => {
         <Icon icon={Send} />
         שלח הצעה
       </Button>
-    </AlertDialogFooter>
+    </DialogFooter>
   );
 };
 

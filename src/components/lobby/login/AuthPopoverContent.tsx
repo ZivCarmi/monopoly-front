@@ -30,7 +30,7 @@ const AuthPopoverContent = () => {
       </PopoverTrigger>
       <PopoverContent className="w-64 border-none">
         <div className="flex flex-col">
-          <div className="text-center pt-4 mb-8">{nickname}</div>
+          <div className="text-xl text-center pt-4 mb-8">{nickname}</div>
           <div className="border-t border-b mb-8">
             <Link
               className="flex items-center gap-4 py-4 px-3 leading-4"

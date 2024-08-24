@@ -23,7 +23,9 @@ const ProfileHeader = () => {
           />
         </Avatar>
         <div className="flex items-center gap-2">
-          <h1 className="text-4xl font-bold">{isThisUser ? nickname : name}</h1>
+          <h1 className="text-4xl tracking-tight font-bold">
+            {isThisUser ? nickname : name}
+          </h1>
           {isThisUser && <EditNameDialog />}
         </div>
       </div>
