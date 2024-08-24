@@ -24,6 +24,8 @@ import {
 import { Form, FormControl, FormField } from "../ui/form";
 import Icon from "../ui/icon";
 import { Input } from "../ui/input";
+import Loader from "../ui/loader";
+import Overlay from "../ui/overlay";
 
 const EditNameDialog = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -39,9 +41,7 @@ const EditNameDialog = () => {
         <DialogOverlay />
         <DialogContent onOpenAutoFocus={(e) => e.preventDefault()}>
           <DialogClose />
-          <DialogTitle className="text-center text-card-foreground mb-4">
-            שנה שם
-          </DialogTitle>
+
           <EditNameForm closeDialog={setIsOpen} />
         </DialogContent>
       </DialogPortal>
@@ -56,6 +56,7 @@ type EditNameFormProps = {
 };
 
 const EditNameForm = ({ closeDialog }: EditNameFormProps) => {
+  const [isLoading, setIsLoading] = useState(false);
   const { user_id } = useLoaderData() as UserProfile;
   const { nickname } = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
@@ -65,6 +66,8 @@ const EditNameForm = ({ closeDialog }: EditNameFormProps) => {
   });
 
   const updateName = async (name: string) => {
+    setIsLoading(true);
+
     try {
       const response = await fetch(`${BASE_URL}/user/${user_id}/update-name`, {
         method: "PUT",
@@ -86,6 +89,8 @@ const EditNameForm = ({ closeDialog }: EditNameFormProps) => {
     } catch (error) {
       console.error("Failed to update user name:", error);
       return null;
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -97,9 +102,12 @@ const EditNameForm = ({ closeDialog }: EditNameFormProps) => {
   return (
     <Form {...form}>
       <form
-        className="grid justify-items-center items-center gap-4"
+        className="relative grid justify-items-center items-center gap-4"
         onSubmit={form.handleSubmit(submitHandler)}
       >
+        <DialogTitle className="text-center text-card-foreground mb-4">
+          שנה שם
+        </DialogTitle>
         <FormField
           control={form.control}
           name="nickname"
@@ -123,15 +131,22 @@ const EditNameForm = ({ closeDialog }: EditNameFormProps) => {
             variant="outline"
             type="button"
             onClick={() => updateName("")}
+            disabled={isLoading}
           >
             <Icon icon={RotateCcw} />
             אפס לברירת מחדל
           </Button>
-          <Button variant="primaryFancy" type="submit">
+          <Button variant="primaryFancy" type="submit" disabled={isLoading}>
             <Icon icon={Check} />
             שמור שינויים
           </Button>
         </DialogFooter>
+        {isLoading && (
+          <>
+            <Overlay className="backdrop-blur-0" />
+            <Loader className="absolute z-50" />
+          </>
+        )}
       </form>
     </Form>
   );

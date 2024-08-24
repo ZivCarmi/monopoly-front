@@ -1,19 +1,16 @@
 .loader {
-  width: 48px;
-  height: 48px;
-  border: 5px solid #fff;
-  border-bottom-color: transparent;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
-  display: inline-block;
-  box-sizing: border-box;
-  animation: rotation 1s linear infinite;
+  background: radial-gradient(farthest-side, #ffffff 94%, #0000) top/3px 3px
+      no-repeat,
+    conic-gradient(#0000 30%, #ffffff);
+  -webkit-mask: radial-gradient(farthest-side, #0000 calc(100% - 3px), #000 0);
+  animation: spinner-c7wet2 1s infinite linear;
 }
 
-@keyframes rotation {
-  0% {
-    transform: rotate(0deg);
-  }
+@keyframes spinner-c7wet2 {
   100% {
-    transform: rotate(360deg);
+    transform: rotate(1turn);
   }
 }
