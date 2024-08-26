@@ -1,4 +1,5 @@
 import ProfileHeader from "@/components/profile/ProfileHeader";
+import UserNotFound from "@/components/profile/UserNotFound";
 import UserStats from "@/components/profile/UserStats";
 import { UserProfile as UserProfileType } from "@/types/Auth";
 import { Suspense } from "react";
@@ -11,10 +12,7 @@ export const UserProfilePage = () => {
 
   return (
     <Suspense fallback={<p className="text-center">טוען פרופיל משתמש...</p>}>
-      <Await
-        resolve={data?.userProfile}
-        errorElement={<p>Error loading user profile!</p>}
-      >
+      <Await resolve={data?.userProfile} errorElement={<UserNotFound />}>
         <ProfileHeader />
         <UserStats />
       </Await>

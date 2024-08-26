@@ -19,17 +19,17 @@ import {
   IAirport,
   ICompany,
   IProperty,
+  isAirport,
+  isCompany,
+  isGameStarted,
+  isProperty,
+  isPurchasable,
   PardonCard,
   PurchasableTile,
   RentIndexes,
   SuspensionProps,
   TileTypes,
   TradeType,
-  isAirport,
-  isCompany,
-  isGameStarted,
-  isProperty,
-  isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
 import { clsx, type ClassValue } from "clsx";
 import {

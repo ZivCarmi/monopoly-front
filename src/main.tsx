@@ -12,7 +12,6 @@ import { SocketProvider } from "./app/socket-context";
 import LobbyLayout from "./components/layouts/LobbyLayout";
 import MainLayout from "./components/layouts/MainLayout";
 import PageLayout from "./components/layouts/PageLayout";
-import UserNotFound from "./components/profile/UserNotFound";
 import { ThemeProvider } from "./components/theme/ThemeProvider";
 import { Toaster } from "./components/ui/toaster";
 import "./index.css";
@@ -31,7 +30,6 @@ const router = createBrowserRouter(
       <Route path="/" element={<PageLayout />}>
         <Route
           path="/profile/:userId"
-          errorElement={<UserNotFound />}
           lazy={async () =>
             await import("./pages/UserProfile").then((module) => ({
               loader: profileLoader,
