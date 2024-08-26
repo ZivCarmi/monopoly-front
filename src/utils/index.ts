@@ -32,7 +32,7 @@ import {
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
 import { clsx, type ClassValue } from "clsx";
-import { LoaderFunction } from "react-router-dom";
+import { defer, LoaderFunction } from "react-router-dom";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
 
@@ -519,7 +519,9 @@ export const profileLoader: LoaderFunction = async ({ params }) => {
       return null;
     }
 
-    return response;
+    return defer({
+      userProfile: await response.json(),
+    });
   } catch (error) {
     console.error("Failed to fetch user data:", error);
     return null;

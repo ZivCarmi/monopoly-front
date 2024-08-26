@@ -1,12 +1,12 @@
 import { useAppSelector } from "@/app/hooks";
 import { UserProfile } from "@/types/Auth";
+import { useAsyncValue } from "react-router-dom";
 import { Avatar, AvatarImage } from "../ui/avatar";
 import EditNameDialog from "./EditNameDialog";
-import { useLoaderData } from "react-router-dom";
 
 const ProfileHeader = () => {
   const { statistics, avatar_url, user_id, name } =
-    useLoaderData() as UserProfile;
+    useAsyncValue() as UserProfile;
   const { user, nickname } = useAppSelector((state) => state.user);
   const isThisUser = user_id === user?.user_id;
   const hasWinrateStat =

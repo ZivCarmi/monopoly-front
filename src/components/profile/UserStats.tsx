@@ -1,7 +1,7 @@
 import { UserProfile } from "@/types/Auth";
 import { cn } from "@/utils";
 import { CalendarPlus, Gamepad2, Trophy } from "lucide-react";
-import { useLoaderData } from "react-router-dom";
+import { useAsyncValue } from "react-router-dom";
 import TimeAgo from "react-timeago";
 import buildFormatter from "react-timeago/lib/formatters/buildFormatter";
 import heStrings from "react-timeago/lib/language-strings/he";
@@ -14,7 +14,7 @@ const UserStats = () => {
   const {
     statistics: { gamesPlayed, gamesWon },
     created_at,
-  } = useLoaderData() as UserProfile;
+  } = useAsyncValue() as UserProfile;
 
   return (
     <ProfileSection title="סטטיסטיקות">
