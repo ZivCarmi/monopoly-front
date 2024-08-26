@@ -6,7 +6,7 @@ import { CallbackResponseData } from "@/types/Socket";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChatMessageSchema } from "@ziv-carmi/monopoly-utils";
 import { Send } from "lucide-react";
-import { useState } from "react";
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
@@ -22,7 +22,7 @@ type SendMessageResponseData = CallbackResponseData &
   );
 
 const ChatMessageForm = () => {
-  const [lastMessageTime, setLastMessageTime] = useState<number | null>(null);
+  const lastMessageTimeRef = useRef<number | null>(null);
   const socket = useSocket();
   const form = useForm<z.infer<typeof ChatMessageSchema>>({
     resolver: zodResolver(ChatMessageSchema),
@@ -33,11 +33,12 @@ const ChatMessageForm = () => {
 
   const submitHandler = (text: z.infer<typeof ChatMessageSchema>) => {
     const now = new Date().getTime();
+    const { current } = lastMessageTimeRef;
 
-    if (!lastMessageTime || now - lastMessageTime >= 1000) {
+    if (!current || now - current >= 1000) {
       socket.emit("send_message", text, (response: SendMessageResponseData) => {
         if (response.success) {
-          setLastMessageTime(response.lastMessageTime);
+          lastMessageTimeRef.current = response.lastMessageTime;
           form.resetField("text");
           form.setFocus("text");
         }
