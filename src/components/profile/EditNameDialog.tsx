@@ -7,7 +7,7 @@ import { NicknameSchema } from "@ziv-carmi/monopoly-utils";
 import { Check, Pencil, RotateCcw } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { useLoaderData } from "react-router-dom";
+import { useAsyncValue } from "react-router-dom";
 import { z } from "zod";
 import { Button } from "../ui/button";
 import {
@@ -56,7 +56,7 @@ type EditNameFormProps = {
 
 const EditNameForm = ({ closeDialog }: EditNameFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const { user_id } = useLoaderData() as UserProfile;
+  const { user_id } = useAsyncValue() as UserProfile;
   const { nickname } = useAppSelector((state) => state.user);
   const dispatch = useAppDispatch();
   const form = useForm<FormData>({
