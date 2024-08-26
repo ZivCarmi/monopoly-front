@@ -2,13 +2,27 @@ import { useSocket } from "@/app/socket-context";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { CallbackResponseData } from "@/types/Socket";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChatMessageSchema } from "@ziv-carmi/monopoly-utils";
 import { Send } from "lucide-react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+type SendMessageResponseData = CallbackResponseData &
+  (
+    | {
+        success: true;
+        lastMessageTime: number;
+      }
+    | {
+        success: false;
+      }
+  );
+
 const ChatMessageForm = () => {
+  const [lastMessageTime, setLastMessageTime] = useState<number | null>(null);
   const socket = useSocket();
   const form = useForm<z.infer<typeof ChatMessageSchema>>({
     resolver: zodResolver(ChatMessageSchema),
@@ -18,9 +32,17 @@ const ChatMessageForm = () => {
   });
 
   const submitHandler = (text: z.infer<typeof ChatMessageSchema>) => {
-    socket.emit("send_message", text);
-    form.resetField("text");
-    form.setFocus("text");
+    const now = new Date().getTime();
+
+    if (!lastMessageTime || now - lastMessageTime >= 1000) {
+      socket.emit("send_message", text, (response: SendMessageResponseData) => {
+        if (response.success) {
+          setLastMessageTime(response.lastMessageTime);
+          form.resetField("text");
+          form.setFocus("text");
+        }
+      });
+    }
   };
 
   return (

@@ -5,7 +5,7 @@ import { setRoom, setSelfPlayer, writeLog } from "@/slices/game-slice";
 import { JoinRoomArgs, Player, Room } from "@ziv-carmi/monopoly-utils";
 import { useNavigate } from "react-router-dom";
 
-type JoinRoomCallbackResponse = { success: boolean } & (
+type JoinRoomCallback = { success: boolean } & (
   | {
       success: true;
       room: Room;
@@ -25,7 +25,7 @@ const useJoinRoom = () => {
   const navigate = useNavigate();
 
   const joinRoomHandler = (args?: JoinRoomArgs) => {
-    const joinRoomCallback = (response: JoinRoomCallbackResponse) => {
+    const joinRoomCallback = (response: JoinRoomCallback) => {
       if (response.success) {
         const { room, selfPlayer } = response;
         navigate(`/rooms/${room.id}`);

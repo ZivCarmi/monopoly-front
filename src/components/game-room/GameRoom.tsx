@@ -262,6 +262,14 @@ const GameRoom = () => {
       dispatch(newMessageThunk(newMessage));
     };
 
+    const onMessageThrottled = () => {
+      toast({
+        variant: "destructive",
+        title: "יש לחכות מעט בין שליחת הודעות",
+        duration: 2500,
+      });
+    };
+
     socket.on("game_settings_updated", onGameSettingsUpdated);
     socket.on("player_walking", onPlayerWalking);
     socket.on("player_landed", onPlayerLanded);
@@ -293,6 +301,7 @@ const GameRoom = () => {
     socket.on("color_changed", onColorChanged);
     socket.on("player_votekicked", onPlayerKicked);
     socket.on("message_recieved", onMessageRecieved);
+    socket.on("message_throttled", onMessageThrottled);
 
     return () => {
       socket.off("game_settings_updated", onGameSettingsUpdated);
@@ -326,6 +335,7 @@ const GameRoom = () => {
       socket.off("color_changed", onColorChanged);
       socket.off("player_votekicked", onPlayerKicked);
       socket.off("message_recieved", onMessageRecieved);
+      socket.off("message_throttled", onMessageThrottled);
     };
   }, []);
 
