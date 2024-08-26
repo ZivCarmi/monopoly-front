@@ -32,7 +32,12 @@ import {
   isPurchasable,
 } from "@ziv-carmi/monopoly-utils";
 import { clsx, type ClassValue } from "clsx";
-import { defer, LoaderFunction } from "react-router-dom";
+import {
+  defer,
+  json,
+  LoaderFunction,
+  LoaderFunctionArgs,
+} from "react-router-dom";
 import { twMerge } from "tailwind-merge";
 import { z } from "zod";
 
@@ -511,21 +516,26 @@ export const authLoader: LoaderFunction = async () => {
   }
 };
 
-export const profileLoader: LoaderFunction = async ({ params }) => {
+export const fetchProfileLoader = async ({ params }: LoaderFunctionArgs) => {
   try {
     const response = await fetch(`${BASE_URL}/user/${params.userId}`);
 
     if (!response.ok) {
-      return null;
+      throw json({ message: "Could not fetch data!" }, { status: 500 });
     }
 
-    return defer({
-      userProfile: await response.json(),
-    });
+    const resJson = await response.json();
+    return resJson;
   } catch (error) {
     console.error("Failed to fetch user data:", error);
     return null;
   }
+};
+
+export const profileLoader: LoaderFunction = async (args) => {
+  return defer({
+    userProfile: fetchProfileLoader(args),
+  });
 };
 
 export function getMaxLengthForPropertyInSchema<T extends z.ZodRawShape>(

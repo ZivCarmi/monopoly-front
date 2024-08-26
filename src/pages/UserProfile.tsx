@@ -10,16 +10,14 @@ export const UserProfilePage = () => {
   const data = useLoaderData() as RouteLoaderType;
 
   return (
-    <div>
-      <Suspense fallback={<p>Loading user profile...</p>}>
-        <Await
-          resolve={data?.userProfile}
-          errorElement={<p>Error loading user profile!</p>}
-        >
-          <ProfileHeader />
-          <UserStats />
-        </Await>
-      </Suspense>
-    </div>
+    <Suspense fallback={<p className="text-center">טוען פרופיל משתמש...</p>}>
+      <Await
+        resolve={data?.userProfile}
+        errorElement={<p>Error loading user profile!</p>}
+      >
+        <ProfileHeader />
+        <UserStats />
+      </Await>
+    </Suspense>
   );
 };
