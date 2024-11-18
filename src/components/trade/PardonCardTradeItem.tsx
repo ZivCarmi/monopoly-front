@@ -1,36 +1,28 @@
 import { cn } from "@/utils";
+import { PardonCard, TradePlayer } from "@ziv-carmi/monopoly-utils";
 import { ShieldCheck } from "lucide-react";
 import { Button, ButtonProps } from "../ui/button";
 import Icon from "../ui/icon";
-import { PardonCard } from "@ziv-carmi/monopoly-utils";
 
 interface PardonCardTradeItemProps extends ButtonProps {
-  hasPardonCardInDeck: PardonCard | undefined;
+  trader: TradePlayer;
+  card: PardonCard;
 }
 
 const PardonCardTradeItem = ({
-  hasPardonCardInDeck,
   onClick,
   disabled,
   ...props
 }: PardonCardTradeItemProps) => {
   return disabled ? (
-    <PardonCardElement
-      hasPardonCardInDeck={hasPardonCardInDeck}
-      asChild
-      {...props}
-    >
+    <PardonCardElement asChild {...props}>
       <div>
         <Icon icon={ShieldCheck} />
         כרטיס חנינה
       </div>
     </PardonCardElement>
   ) : (
-    <PardonCardElement
-      hasPardonCardInDeck={hasPardonCardInDeck}
-      onClick={onClick}
-      {...props}
-    >
+    <PardonCardElement onClick={onClick} {...props}>
       <Icon icon={ShieldCheck} />
       כרטיס חנינה
     </PardonCardElement>
@@ -40,10 +32,15 @@ const PardonCardTradeItem = ({
 interface PardonCardElementProps extends PardonCardTradeItemProps {}
 
 const PardonCardElement = ({
-  hasPardonCardInDeck,
+  trader,
+  card,
   className,
   ...props
 }: PardonCardElementProps) => {
+  const hasPardonCardInDeck = trader.pardonCards.find(
+    ({ deck }) => deck === card.deck
+  );
+
   return (
     <Button
       variant="outline"

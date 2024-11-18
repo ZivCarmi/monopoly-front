@@ -27,9 +27,8 @@ const TradeBoardCenter = ({
             <PardonCardTradeItem
               key={pardonCard.deck}
               onClick={() => addPardonCardHandler(pardonCard)}
-              hasPardonCardInDeck={trader.pardonCards.find(
-                ({ deck }) => deck === pardonCard.deck
-              )}
+              trader={trader}
+              card={pardonCard}
               disabled={isDisabled}
             />
           ))}

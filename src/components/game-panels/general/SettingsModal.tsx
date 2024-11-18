@@ -1,10 +1,8 @@
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
-  DialogClose,
   DialogContent,
   DialogDescription,
-  DialogOverlay,
   DialogPortal,
   DialogTrigger,
 } from "@/components/ui/dialog";

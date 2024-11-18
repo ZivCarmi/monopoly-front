@@ -37,8 +37,8 @@ const TradeBoardList = ({ trader }: { trader: TradePlayer }) => {
         ))}
         {playerPardonCards.map((pardonCard) => (
           <PardonCardTradeItem
-            className="justify-start"
             key={pardonCard.deck}
+            className="justify-start"
             trader={trader}
             card={pardonCard}
             disabled={isDisabled}
