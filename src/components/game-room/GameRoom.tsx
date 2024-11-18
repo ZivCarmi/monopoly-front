@@ -262,14 +262,6 @@ const GameRoom = () => {
       dispatch(newMessageThunk(newMessage));
     };
 
-    const onMessageThrottled = () => {
-      toast({
-        variant: "destructive",
-        title: "יש לחכות מעט בין שליחת הודעות",
-        duration: 2500,
-      });
-    };
-
     socket.on("game_settings_updated", onGameSettingsUpdated);
     socket.on("player_walking", onPlayerWalking);
     socket.on("player_landed", onPlayerLanded);
@@ -301,7 +293,6 @@ const GameRoom = () => {
     socket.on("color_changed", onColorChanged);
     socket.on("player_votekicked", onPlayerKicked);
     socket.on("message_recieved", onMessageRecieved);
-    socket.on("message_throttled", onMessageThrottled);
 
     return () => {
       socket.off("game_settings_updated", onGameSettingsUpdated);
@@ -335,21 +326,24 @@ const GameRoom = () => {
       socket.off("color_changed", onColorChanged);
       socket.off("player_votekicked", onPlayerKicked);
       socket.off("message_recieved", onMessageRecieved);
-      socket.off("message_throttled", onMessageThrottled);
     };
   }, []);
 
   return (
-    <div className="room-container" id="main-board">
-      <div className="game-general">
-        <InfoPanel />
-        <InvitationPanel />
-        <ChatPanel />
-      </div>
-      <MainBoard className="main-board" />
-      <div className="game-sidebar">
-        <ScoreboardPanel />
-        <SidebarPanel />
+    <div className="flex flex-col m-auto relative max-h-dvh">
+      <div className="room-container" id="main-board">
+        <div className="flex flex-col h-full gap-4 game-general">
+          <InfoPanel />
+          <InvitationPanel />
+          <ChatPanel />
+        </div>
+        <MainBoard className="main-board 1.5xl:sticky 1.5xl:top-4 1.5xl:bottom-4" />
+        <div className="flex h-full game-sidebar">
+          <div className="flex flex-col gap-4 grow">
+            <ScoreboardPanel />
+            <SidebarPanel />
+          </div>
+        </div>
       </div>
     </div>
   );

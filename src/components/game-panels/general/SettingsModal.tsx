@@ -23,14 +23,12 @@ const SettingsModal = () => {
         </Button>
       </DialogTrigger>
       <DialogPortal>
-        <DialogOverlay />
         <DialogContent className="gap-0">
           <DialogTitle asChild>
             <PanelTitle className="pt-0">הגדרות חדר</PanelTitle>
           </DialogTitle>
           <DialogDescription hidden>הגדרות משחק</DialogDescription>
           <GameSettings />
-          <DialogClose />
         </DialogContent>
       </DialogPortal>
     </Dialog>

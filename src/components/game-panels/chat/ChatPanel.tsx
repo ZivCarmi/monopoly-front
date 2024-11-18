@@ -3,9 +3,9 @@ import ChatFloat from "./ChatFloat";
 import ChatFluid from "./ChatFluid";
 
 const ChatPanel = () => {
-  const width = useWindowSize();
+  const { width } = useWindowSize();
 
-  return width <= 1600 ? <ChatFloat /> : <ChatFluid />;
+  return width <= 1365 ? <ChatFloat /> : <ChatFluid />;
 };
 
 export default ChatPanel;

@@ -30,7 +30,7 @@ const CreateTradeButton = () => {
   return (
     <Button
       variant="primaryFancy"
-      className="absolute top-1/2 left-2 -translate-y-1/2"
+      className="h-auto absolute top-1/2 left-4 -translate-y-1/2"
       onClick={createTradeHandler}
     >
       <Icon icon={Plus} />

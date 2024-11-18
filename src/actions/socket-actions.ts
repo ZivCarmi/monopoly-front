@@ -24,7 +24,7 @@ import {
   updateTrade,
   writeLog,
 } from "@/slices/game-slice";
-import { closeTrade, watchTrade } from "@/slices/trade-slice";
+import { toggleTrade, watchTrade } from "@/slices/trade-slice";
 import { getPlayerName } from "@/utils";
 import {
   ChatMessage,
@@ -287,7 +287,7 @@ export const tradeAcceptedThunk = (tradeId: string): AppThunk => {
     });
 
     if (isWatchingThisTrade) {
-      dispatch(closeTrade());
+      dispatch(toggleTrade(false));
     }
 
     dispatch(completeTrade(trade));
@@ -318,7 +318,7 @@ export const tradeDeclinedThunk = (tradeId: string): AppThunk => {
     });
 
     if (isWatchingThisTrade) {
-      dispatch(closeTrade());
+      dispatch(toggleTrade(false));
     }
 
     dispatch(removeTrade({ tradeId }));
@@ -374,7 +374,7 @@ export const tradeDeletedThunk = (tradeId: string): AppThunk => {
     dispatch(writeLog(`${deleterName} ביטל עסקה עם ${otherPlayerName}`));
 
     if (isWatchingThisTrade) {
-      dispatch(closeTrade());
+      dispatch(toggleTrade(false));
     }
   };
 };

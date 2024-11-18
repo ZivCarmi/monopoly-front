@@ -268,15 +268,42 @@ export const hasBuildings = (countryId: Countries) => {
   );
 };
 
-export const getPlayerPurchasables = (playerId: string) => {
+export type PlayerPurchasableWithIndex = {
+  index: number;
+  tile: GameTile;
+};
+
+// Function overloads
+export function getPlayerPurchasables(
+  playerId: string,
+  withIndex: true
+): PlayerPurchasableWithIndex[];
+export function getPlayerPurchasables(
+  playerId: string,
+  withIndex?: false
+): PurchasableTile[];
+export function getPlayerPurchasables(playerId: string, withIndex?: boolean) {
   const { board } = store.getState().game.map;
+
+  if (withIndex) {
+    const playerPropertiesWithIndex = board
+      .map((tile, index) => {
+        if (isPurchasable(tile) && tile.owner === playerId) {
+          return { index, tile };
+        }
+        return null;
+      })
+      .filter(Boolean) as PlayerPurchasableWithIndex[];
+
+    return playerPropertiesWithIndex;
+  }
 
   const playerProperties = board.filter(
     (tile) => isPurchasable(tile) && tile.owner === playerId
-  );
+  ) as PurchasableTile[];
 
-  return playerProperties as PurchasableTile[];
-};
+  return playerProperties;
+}
 
 export const getPlayerAirports = (playerId: string) => {
   const playerAirports = getBoardAirports().filter(

@@ -5,9 +5,7 @@ interface BoardProps extends React.HTMLAttributes<HTMLDivElement> {}
 
 const Board = forwardRef<HTMLDivElement, BoardProps>(
   ({ className, ...props }, ref) => {
-    return (
-      <div ref={ref} className={cn("board ltr gap-1", className)} {...props} />
-    );
+    return <div ref={ref} className={cn("board ltr", className)} {...props} />;
   }
 );
 

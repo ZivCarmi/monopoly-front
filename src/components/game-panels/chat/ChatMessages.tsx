@@ -15,7 +15,11 @@ const ChatMessages = () => {
   }, [messages]);
 
   return (
-    <ScrollArea className="h-72 rounded-md grow" viewportRef={viewportRef}>
+    <ScrollArea
+      className="h-72 rounded-md grow"
+      viewportRef={viewportRef}
+      dir="rtl"
+    >
       <ul className="space-y-2 p-4">
         <AnimatePresence initial={false}>
           {messages.map((message) => (

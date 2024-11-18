@@ -1,15 +1,9 @@
 import { useAppDispatch } from "@/app/hooks";
 import { setPlayerPardonCard } from "@/slices/trade-slice";
-import { cn, getPlayerPardonCards } from "@/utils";
-import {
-  GameCardDeck,
-  PardonCard,
-  TradePlayer,
-} from "@ziv-carmi/monopoly-utils";
-import { ShieldCheck } from "lucide-react";
+import { getPlayerPardonCards } from "@/utils";
+import { PardonCard, TradePlayer } from "@ziv-carmi/monopoly-utils";
 import BoardCenter from "../board-center/BoardCenter";
-import { Button } from "../ui/button";
-import Icon from "../ui/icon";
+import PardonCardTradeItem from "./PardonCardTradeItem";
 
 const TradeBoardCenter = ({
   trader,
@@ -18,37 +12,29 @@ const TradeBoardCenter = ({
   trader: TradePlayer;
   isDisabled: boolean;
 }) => {
-  const playerPardonCards = getPlayerPardonCards(trader.id);
   const dispatch = useAppDispatch();
+  const playerPardonCards = getPlayerPardonCards(trader.id);
 
   const addPardonCardHandler = (pardonCard: PardonCard) => {
     dispatch(setPlayerPardonCard({ traderId: trader.id, pardonCard }));
   };
 
   return (
-    <BoardCenter className="min-w-[15rem] min-h-[15rem]">
-      {playerPardonCards.length > 0 &&
-        playerPardonCards.map((pardonCard) => (
-          <div
-            key={pardonCard.deck}
-            className="flex items-center justify-center"
-          >
-            <Button
-              disabled={isDisabled}
-              variant="outline"
-              className={cn(
-                "bg-transparent hover:bg-transparent outline outline-2 outline-transparent transition-all",
-                trader.pardonCards.find(
-                  ({ deck }) => deck === pardonCard.deck
-                ) && "shadow-pardon-card-shadow outline-white"
-              )}
+    <BoardCenter className="min-w-[13rem] min-h-[13rem]">
+      {playerPardonCards.length > 0 && (
+        <div className="flex flex-col justify-center gap-4">
+          {playerPardonCards.map((pardonCard) => (
+            <PardonCardTradeItem
+              key={pardonCard.deck}
               onClick={() => addPardonCardHandler(pardonCard)}
-            >
-              <Icon icon={ShieldCheck} />
-              כרטיס חנינה {GameCardDeck[pardonCard.deck]}
-            </Button>
-          </div>
-        ))}
+              hasPardonCardInDeck={trader.pardonCards.find(
+                ({ deck }) => deck === pardonCard.deck
+              )}
+              disabled={isDisabled}
+            />
+          ))}
+        </div>
+      )}
     </BoardCenter>
   );
 };

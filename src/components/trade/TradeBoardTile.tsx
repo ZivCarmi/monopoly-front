@@ -1,15 +1,15 @@
 export interface TradeBoardTileProps
   extends React.ButtonHTMLAttributes<HTMLDivElement | HTMLButtonElement> {
-  isOwned: boolean;
+  clickable: boolean;
 }
 
 const TradeBoardTile = ({
-  isOwned,
+  clickable,
   onClick,
   children,
   ...props
 }: TradeBoardTileProps) => {
-  return isOwned ? (
+  return clickable ? (
     <button {...props} onClick={onClick}>
       {children}
     </button>

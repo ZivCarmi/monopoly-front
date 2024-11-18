@@ -8,15 +8,7 @@ interface SvgProps extends ComponentProps<"svg"> {
 const Svg = ({ name, ...props }: SvgProps) => {
   const { loading, error, Svg } = useLazySvgImport(name);
 
-  if (error) {
-    return null;
-  }
-
-  if (loading) {
-    return "טוען...";
-  }
-
-  if (!Svg) {
+  if (error || loading || !Svg) {
     return null;
   }
 

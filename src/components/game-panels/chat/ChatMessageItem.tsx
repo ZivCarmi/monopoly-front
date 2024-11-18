@@ -27,7 +27,7 @@ const ChatMessageItem = ({ message }: { message: ChatMessage }) => {
       <div
         className={cn(
           "flex gap-2 items-start",
-          !isSelfPlayer && "flex-row-reverse"
+          isSelfPlayer && "flex-row-reverse"
         )}
       >
         {color && (

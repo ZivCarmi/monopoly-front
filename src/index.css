@@ -123,14 +123,12 @@ input[type="number"] {
   display: grid;
   align-items: flex-start;
   grid-template-columns: 1fr;
-  grid-template-areas: "center" "right" "left";
+  grid-template-areas: "left" "center" "right";
 
-  @apply p-4 gap-4 sm:grid-cols-2 sm:[grid-template-areas:'center_center'_'left_right'] xl:grid-cols-[auto_1fr] xl:[grid-template-areas:'center_right'_'left_right'] 1.5xl:grid-cols-[minmax(20rem,_1fr)_auto_minmax(20rem,_1fr)] 1.5xl:[grid-template-areas:'left_center_right'];
-}
-
-.game-general,
-.game-sidebar {
-  @apply space-y-4;
+  @apply p-4 gap-4;
+  @apply sm:grid-cols-2 sm:[grid-template-areas:'center_center'_'left_right'];
+  @apply lg:grid-cols-[auto_1fr] lg:[grid-template-areas:'center_right'_'left_right'];
+  @apply 1.5xl:grid-cols-[minmax(20rem,_1fr)_auto_minmax(20rem,_1fr)] 1.5xl:[grid-template-areas:'left_center_right'];
 }
 
 .game-general {

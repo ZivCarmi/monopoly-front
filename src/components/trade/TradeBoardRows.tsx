@@ -47,21 +47,23 @@ const TradeBoardRows = ({
         <BoardRow key={rowIndex} area={row.area}>
           {row.tiles.map((tile, tileIndexInRow) => {
             const tileIndex = 10 * rowIndex + tileIndexInRow;
-            const isPropertyHasBuilds =
-              isProperty(tile) && hasBuildings(tile.country.id);
             const oppositeSide = getOppositeBoardSide(row.area);
+            const isOwner = isPurchasable(tile) && tile.owner === trader.id;
+            const isClickable = isOwner && !isDisabled;
+            const isPropertyHasBuilds =
+              isClickable && isProperty(tile) && hasBuildings(tile.country.id);
 
             return (
               <BoardRowTile key={tileIndex} tile={tile}>
                 {isPurchasable(tile) && (
                   <TradeBoardTile
-                    isOwned={tile.owner === trader.id}
+                    clickable={isClickable}
                     onClick={() => setPropertiesHandler(tileIndex)}
-                    disabled={isDisabled || isPropertyHasBuilds}
+                    disabled={isPropertyHasBuilds}
                     className={cn(
-                      "w-full h-full flex justify-between rounded-sm",
+                      "relative z-10 w-full h-full flex justify-between rounded-sm before:transition-colors before:duration-300  before:absolute before:z-30 before:inset-0 before:backdrop-invert-0 before:brightness-[0.3]",
                       trader.properties.includes(tileIndex) &&
-                        "outline outline-2 outline-white"
+                        "before:brightness-150"
                     )}
                   >
                     <TooltipProvider delayDuration={0} disableHoverableContent>
@@ -73,7 +75,10 @@ const TradeBoardRows = ({
                       )}
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <div tabIndex={0} className="w-full h-full">
+                          <div
+                            tabIndex={0}
+                            className="relative z-30 w-full h-full"
+                          >
                             <TileWrapper
                               rowSide={row.area}
                               className="justify-between items-center relative"

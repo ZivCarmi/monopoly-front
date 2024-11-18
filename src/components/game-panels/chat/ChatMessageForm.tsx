@@ -2,6 +2,7 @@ import { useSocket } from "@/app/socket-context";
 import { Button } from "@/components/ui/button";
 import { Form, FormControl, FormField, FormItem } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 import { CallbackResponseData } from "@/types/Socket";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { ChatMessageSchema } from "@ziv-carmi/monopoly-utils";
@@ -30,20 +31,37 @@ const ChatMessageForm = () => {
       text: "",
     },
   });
+  const { toast } = useToast();
 
   const submitHandler = (text: z.infer<typeof ChatMessageSchema>) => {
     const now = new Date().getTime();
     const { current } = lastMessageTimeRef;
+    const toastMessage = () =>
+      toast({
+        variant: "destructive",
+        title: "יש לחכות מעט בין שליחת הודעות",
+        duration: 2500,
+      });
 
     if (!current || now - current >= 1000) {
-      socket.emit("send_message", text, (response: SendMessageResponseData) => {
-        if (response.success) {
+      return socket.emit(
+        "send_message",
+        text,
+        (response: SendMessageResponseData) => {
+          console.log(response);
+
+          if (!response.success) {
+            return toastMessage();
+          }
+
           lastMessageTimeRef.current = response.lastMessageTime;
           form.resetField("text");
           form.setFocus("text");
         }
-      });
+      );
     }
+
+    toastMessage();
   };
 
   return (

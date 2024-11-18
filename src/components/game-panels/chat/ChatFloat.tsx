@@ -13,6 +13,7 @@ import * as VisuallyHidden from "@radix-ui/react-visually-hidden";
 import { AnimatePresence, motion, Variants } from "framer-motion";
 import { MessagesSquare, X } from "lucide-react";
 import ChatPanelContent from "./ChatPanelContent";
+import useWindowSize from "@/hooks/useWindowSize";
 
 const XIconMotion = motion(X);
 const MessagesSquareIconMotion = motion(MessagesSquare);
@@ -20,6 +21,7 @@ const MessagesSquareIconMotion = motion(MessagesSquare);
 const ChatFloat = () => {
   const { isChatOpen, unreadMessages } = useAppSelector((state) => state.game);
   const dispatch = useAppDispatch();
+  const { height } = useWindowSize();
 
   const slideVariants: Variants = {
     hidden: {
@@ -89,7 +91,12 @@ const ChatFloat = () => {
         </div>
         <SheetOverlay onClick={() => dispatch(toggleChat())} />
         <SheetContent
-          className="w-[calc(100%-2rem)] h-[calc(100dvh-6rem*2)] p-0 right-4 top-24 border-none"
+          className={cn(
+            "w-[calc(100%-2rem)] p-0 right-4 border-none",
+            height <= 600
+              ? "top-4 h-[calc(100dvh-6rem-1rem)]"
+              : "top-24 h-[calc(100dvh-6rem*2)]"
+          )}
           onOpenAutoFocus={(e) => e.preventDefault()}
         >
           <SheetTitle>

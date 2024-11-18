@@ -94,7 +94,7 @@ const MainBoard = ({ className, ...props }: MainBoardProps) => {
         {showMaxPlayersModal && <MaxPlayersDialog />}
         {isGameEnded(state) && <WinnerScreen />}
         <Board className="h-fit" ref={boardRef}>
-          <BoardCenter className="w-[47rem] h-[47rem]">
+          <BoardCenter className="w-[45rem] h-[45rem]">
             <CenterContent />
           </BoardCenter>
           <GameBoardRows />

@@ -1,7 +1,7 @@
 import { sanitizeTradeOnErrorThunk } from "@/actions/game-actions";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import { closeTrade, watchTrade } from "@/slices/trade-slice";
+import { toggleTrade, watchTrade } from "@/slices/trade-slice";
 import { isParticipatingInTrade, isValidOffer, isValidTrade } from "@/utils";
 import { TradeType } from "@ziv-carmi/monopoly-utils";
 import { Redo2, Send } from "lucide-react";
@@ -27,7 +27,7 @@ const EditTradeActions = () => {
 
   const updateTradeHandler = () => {
     socket.emit("trade_update", trade);
-    dispatch(closeTrade());
+    dispatch(toggleTrade(false));
   };
 
   useEffect(() => {

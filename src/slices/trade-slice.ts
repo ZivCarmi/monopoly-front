@@ -46,8 +46,8 @@ export const tradeSlice = createSlice({
     editTrade: (state) => {
       state.mode = "editing";
     },
-    closeTrade: (state) => {
-      state.tradeIsOpen = false;
+    toggleTrade: (state, action: PayloadAction<boolean>) => {
+      state.tradeIsOpen = action.payload;
     },
     setPlayerMoney: (
       state,
@@ -154,7 +154,7 @@ export const {
   createTrade,
   watchTrade,
   editTrade,
-  closeTrade,
+  toggleTrade,
   setPlayerMoney,
   setPlayerPardonCard,
   setPlayerProperties,

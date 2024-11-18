@@ -6,7 +6,7 @@ const MyPropertyItem = ({
   popoverTrigger,
   ...props
 }: CardPopoverProps) => {
-  const width = useWindowSize();
+  const { width } = useWindowSize();
   const isMobile = width <= 768;
 
   return (

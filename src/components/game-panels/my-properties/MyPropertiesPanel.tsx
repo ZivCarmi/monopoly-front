@@ -3,6 +3,7 @@ import { getPlayerPardonCards, getPlayerPurchasables } from "@/utils";
 import GamePanel from "../GamePanel";
 import PanelTitle from "../PanelTitle";
 import MyPropertiesList from "./MyPropertiesList";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 const MyPropertiesPanel = () => {
   const { selfPlayer } = useAppSelector((state) => state.game);
@@ -16,15 +17,17 @@ const MyPropertiesPanel = () => {
   const propertiesAndPardonsCount = myProperties.length + myPardonCards.length;
 
   return (
-    // height to be changed
-    <GamePanel className="overflow-y-auto max-h-[38.2rem]">
-      <PanelTitle
-        className={propertiesAndPardonsCount > 0 ? "pb-2" : undefined}
-      >
-        הנכסים שלי ({propertiesAndPardonsCount})
-      </PanelTitle>
-      {propertiesAndPardonsCount > 0 && (
-        <MyPropertiesList properties={myProperties} pardons={myPardonCards} />
+    <GamePanel className="grow">
+      <PanelTitle>הנכסים שלי ({propertiesAndPardonsCount})</PanelTitle>
+      {!!propertiesAndPardonsCount && (
+        <ScrollArea dir="rtl" className="h-0 grow">
+          {propertiesAndPardonsCount > 0 && (
+            <MyPropertiesList
+              properties={myProperties}
+              pardons={myPardonCards}
+            />
+          )}
+        </ScrollArea>
       )}
     </GamePanel>
   );

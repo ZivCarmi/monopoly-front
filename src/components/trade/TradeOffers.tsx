@@ -5,6 +5,8 @@ import PlayerName from "../player/PlayerName";
 import PlayerNamePlate from "../player/PlayerNamePlate";
 import MoneySlider from "./MoneySlider";
 import TradeBoard from "./TradeBoard";
+import useWindowSize from "@/hooks/useWindowSize";
+import TradeBoardList from "./TradeBoardList";
 
 const TradeOffers = () => {
   const { selfPlayer } = useAppSelector((state) => state.game);
@@ -15,6 +17,8 @@ const TradeOffers = () => {
   const secondTrader = trade?.traders.find(
     (trader) => trader.id !== trade.createdBy
   );
+  const { width } = useWindowSize();
+  const tradeAsList = width <= 700;
 
   if (!trade) {
     return null;
@@ -23,17 +27,25 @@ const TradeOffers = () => {
   const sortedTraders = [firstTrader, secondTrader];
 
   return (
-    <div className="grid grid-cols-2 gap-10 justify-items-center">
+    <div className="grid grid-cols-2 gap-6">
       {sortedTraders.map(
         (trader) =>
           trader && (
-            <div className="flex flex-col" key={trader.id}>
-              <PlayerNamePlate className="mb-2">
+            <div className="flex flex-col gap-2" key={trader.id}>
+              <PlayerNamePlate>
                 <PlayerCharacter color={getPlayerColor(trader.id)!} />
-                <PlayerName name={getPlayerName(trader.id)} />
-                {selfPlayer?.id === trader.id && "(אתה)"}
+                <PlayerName
+                  name={getPlayerName(trader.id)}
+                  className="break-keep"
+                >
+                  {selfPlayer?.id === trader.id && " (אתה)"}
+                </PlayerName>
               </PlayerNamePlate>
-              <TradeBoard trader={trader} />
+              {tradeAsList ? (
+                <TradeBoardList trader={trader} />
+              ) : (
+                <TradeBoard trader={trader} />
+              )}
               <MoneySlider trader={trader} />
             </div>
           )

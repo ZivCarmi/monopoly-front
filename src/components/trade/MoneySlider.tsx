@@ -41,7 +41,7 @@ const MoneySlider = ({ trader }: { trader: TradePlayer }) => {
   };
 
   return (
-    <div className="mt-4 space-y-4">
+    <div className="flex flex-col gap-3">
       <Label className="relative flex items-center ltr">
         <span className="absolute top-1/2 -translate-y-1/2 left-0 w-7 flex items-center justify-center text-muted-foreground">
           ₪

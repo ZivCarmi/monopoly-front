@@ -14,7 +14,7 @@ const ChatFluid = () => {
     };
   }, []);
 
-  return <ChatPanelContent />;
+  return <ChatPanelContent className="grow" />;
 };
 
 export default ChatFluid;

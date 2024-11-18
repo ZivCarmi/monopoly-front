@@ -10,7 +10,7 @@ const TradeBoard = ({ trader }: { trader: TradePlayer }) => {
   const isDisabled = mode !== "creating" && mode !== "editing";
 
   return (
-    <Board className={cn("tradeBoard", isDisabled && "opacity-50")}>
+    <Board className={cn("tradeBoard")}>
       <TradeBoardCenter trader={trader} isDisabled={isDisabled} />
       <TradeBoardRows trader={trader} isDisabled={isDisabled} />
     </Board>

@@ -1,6 +1,6 @@
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { useSocket } from "@/app/socket-context";
-import { closeTrade } from "@/slices/trade-slice";
+import { toggleTrade } from "@/slices/trade-slice";
 import { isValidOffer } from "@/utils";
 import { Send } from "lucide-react";
 import { Button } from "../ui/button";
@@ -18,7 +18,7 @@ const CreateTradeActions = () => {
 
   const sendTradeHandler = () => {
     socket.emit("trade_create", trade);
-    dispatch(closeTrade());
+    dispatch(toggleTrade(false));
   };
 
   return (
