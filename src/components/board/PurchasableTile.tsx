@@ -39,6 +39,7 @@ const PurchasableTile = ({ tile, rowSide }: PurchaseableTileProps) => {
 
   return (
     <CardPopover
+      className="rounded-[inherit]"
       _content={tile}
       popoverTrigger={{ children: popoverTrigger }}
       side={getOppositeBoardSide(rowSide)}

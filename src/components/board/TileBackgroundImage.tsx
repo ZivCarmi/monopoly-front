@@ -16,7 +16,7 @@ const TileBackgroundImage = ({
   }
 
   return (
-    <div className="overflow-hidden flex items-center justify-center absolute inset-0">
+    <div className="rounded-[inherit] overflow-hidden flex items-center justify-center absolute inset-0">
       <div
         className={cn(
           "flex items-center justify-center absolute inset-0 blur-sm",

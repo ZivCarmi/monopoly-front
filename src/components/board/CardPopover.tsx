@@ -34,6 +34,7 @@ const CardPopover = ({
         asChild
         className={cn(
           "w-full h-full flex cursor-pointer",
+          className,
           popoverTriggerClassname
         )}
         onClick={() => dispatch(setSelectedPopover(_content))}
